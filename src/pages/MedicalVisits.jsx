@@ -14,6 +14,7 @@ import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
 import VisitFormDialog from '@/components/visits/VisitFormDialog';
+import PreventiveVisitFormDialog from '@/components/visits/PreventiveVisitFormDialog';
 
 const visitTypeLabels = {
   preventiva: 'Preventiva',
