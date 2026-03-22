@@ -29,6 +29,7 @@ export default function MedicalVisits() {
   const [search, setSearch] = useState('');
   const [companyFilter, setCompanyFilter] = useState('all');
   const [formOpen, setFormOpen] = useState(false);
+  const [preventiveOpen, setPreventiveOpen] = useState(false);
   const [editVisit, setEditVisit] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const queryClient = useQueryClient();
