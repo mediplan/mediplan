@@ -140,7 +140,7 @@ export default function MedicalVisits() {
                           <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setEditVisit(v); setFormOpen(true); }}>
+                          <DropdownMenuItem onClick={() => { setEditVisit(v); v.visit_type === 'preventiva' ? setPreventiveOpen(true) : setFormOpen(true); }}>
                             <Pencil className="h-4 w-4 mr-2" /> Modifica
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(v.id)}>
