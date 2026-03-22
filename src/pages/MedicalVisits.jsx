@@ -158,6 +158,7 @@ export default function MedicalVisits() {
       )}
 
       <VisitFormDialog open={formOpen} onOpenChange={setFormOpen} visit={editVisit} onSave={handleSave} />
+      <PreventiveVisitFormDialog open={preventiveOpen} onOpenChange={setPreventiveOpen} visit={editVisit?.visit_type === 'preventiva' ? editVisit : null} onSave={handleSave} />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
