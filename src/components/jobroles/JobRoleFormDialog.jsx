@@ -62,7 +62,7 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
     e.preventDefault();
     const data = {
       ...form,
-      company_id: Number(form.company_id),
+      company_id: String(form.company_id),
       surveillance_frequency_months: Number(form.surveillance_frequency_months) || 12,
     };
     onSave(data);

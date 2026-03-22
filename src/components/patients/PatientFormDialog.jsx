@@ -59,7 +59,7 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const data = { ...form, company_id: Number(form.company_id), job_role_id: form.job_role_id ? Number(form.job_role_id) : undefined };
+    const data = { ...form, company_id: String(form.company_id), job_role_id: form.job_role_id ? String(form.job_role_id) : undefined };
     onSave(data);
   };
 

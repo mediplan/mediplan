@@ -79,8 +79,8 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave }) {
     e.preventDefault();
     const data = {
       ...form,
-      patient_id: Number(form.patient_id),
-      company_id: Number(form.company_id || selectedCompanyId),
+      patient_id: String(form.patient_id),
+      company_id: String(form.company_id || selectedCompanyId),
       height_cm: form.height_cm ? Number(form.height_cm) : undefined,
       weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
       blood_pressure_systolic: form.blood_pressure_systolic ? Number(form.blood_pressure_systolic) : undefined,
