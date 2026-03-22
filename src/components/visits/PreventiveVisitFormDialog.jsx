@@ -135,6 +135,16 @@ export default function PreventiveVisitFormDialog({ open, onOpenChange, visit, o
     }
   }, [visit, open]);
 
+  const fillNormal = (scope) => {
+    if (scope === 'apparati') {
+      const apparatiKeys = Object.keys(normalValues).filter(k => k.startsWith('systems_'));
+      setForm(prev => ({ ...prev, ...Object.fromEntries(apparatiKeys.map(k => [k, normalValues[k]])) }));
+    } else if (scope === 'obiettivo') {
+      const obKeys = Object.keys(normalValues).filter(k => k.startsWith('obj_'));
+      setForm(prev => ({ ...prev, ...Object.fromEntries(obKeys.map(k => [k, normalValues[k]])) }));
+    }
+  };
+
   const handleChange = (field, value) => {
     const updates = { [field]: value };
     if (field === 'patient_id') {
