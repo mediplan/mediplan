@@ -79,9 +79,14 @@ export default function MedicalVisits() {
         title="Visite Mediche"
         description="Cartelle sanitarie e visite periodiche"
         action={
-          <Button onClick={() => { setEditVisit(null); setFormOpen(true); }}>
-            <Plus className="h-4 w-4 mr-2" /> Nuova Visita
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => { setEditVisit(null); setPreventiveOpen(true); }}>
+              <Plus className="h-4 w-4 mr-2" /> Visita Preventiva
+            </Button>
+            <Button onClick={() => { setEditVisit(null); setFormOpen(true); }}>
+              <Plus className="h-4 w-4 mr-2" /> Altra Visita
+            </Button>
+          </div>
         }
       />
 
