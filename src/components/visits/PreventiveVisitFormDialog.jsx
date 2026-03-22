@@ -309,7 +309,12 @@ export default function PreventiveVisitFormDialog({ open, onOpenChange, visit, o
 
             {/* PER APPARATI */}
             <TabsContent value="apparati" className="mt-4">
-              <p className="text-xs text-muted-foreground mb-3">Seleziona lo stato per apparato. Di default: nessun sintomo.</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-muted-foreground">Seleziona lo stato per apparato.</p>
+                <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('apparati')} className="gap-2 text-primary border-primary/40 hover:bg-primary/5">
+                  <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
+                </Button>
+              </div>
               <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground mb-1 px-1">
                 <span>Apparato</span><span>Stato</span><span>Dettagli / sintomi</span>
               </div>
