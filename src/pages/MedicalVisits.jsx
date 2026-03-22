@@ -46,12 +46,12 @@ export default function MedicalVisits() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.MedicalVisit.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['visits'] }); setFormOpen(false); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['visits'] }); setFormOpen(false); setPreventiveOpen(false); },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.MedicalVisit.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['visits'] }); setFormOpen(false); setEditVisit(null); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['visits'] }); setFormOpen(false); setPreventiveOpen(false); setEditVisit(null); },
   });
 
   const deleteMutation = useMutation({
