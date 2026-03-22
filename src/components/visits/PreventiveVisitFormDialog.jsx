@@ -360,6 +360,11 @@ export default function PreventiveVisitFormDialog({ open, onOpenChange, visit, o
 
             {/* ESAME OBIETTIVO */}
             <TabsContent value="obiettivo" className="space-y-4 mt-4">
+              <div className="flex justify-end">
+                <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('obiettivo')} className="gap-2 text-primary border-primary/40 hover:bg-primary/5">
+                  <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
+                </Button>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div><Label className="text-xs">Altezza (cm)</Label><Input type="number" value={form.height_cm} onChange={e => handleChange('height_cm', e.target.value)} /></div>
                 <div><Label className="text-xs">Peso (kg)</Label><Input type="number" value={form.weight_kg} onChange={e => handleChange('weight_kg', e.target.value)} /></div>
