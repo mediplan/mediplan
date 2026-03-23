@@ -18,6 +18,7 @@ import { Stethoscope } from 'lucide-react';
 
 export default function Patients() {
   const urlParams = new URLSearchParams(window.location.search);
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [companyFilter, setCompanyFilter] = useState(urlParams.get('company') || 'all');
   const [formOpen, setFormOpen] = useState(false);
