@@ -174,19 +174,9 @@ export default function CompanyWorkers({ company }) {
                 return (
                   <TableRow key={p.id}>
                     <TableCell>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">
-                          {p.last_name} {p.first_name}
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 text-xs px-2 gap-1 text-primary border-primary/40 hover:bg-primary/10"
-                          onClick={(e) => handleVisitNow(e, p)}
-                        >
-                          <Stethoscope className="h-3 w-3" /> Visita ora
-                        </Button>
-                      </div>
+                      <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">
+                        {p.last_name} {p.first_name}
+                      </Link>
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-muted-foreground text-sm">{p.job_role_name || '—'}</TableCell>
                     <TableCell>
