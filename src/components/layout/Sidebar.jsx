@@ -47,16 +47,12 @@ export default function Sidebar({ isOpen, onToggle }) {
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-              <Shield className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-semibold text-foreground text-sm tracking-tight">MedLavoro</h1>
-              <p className="text-[11px] text-muted-foreground">Medicina del Lavoro</p>
-            </div>
-          </div>
+        <div className="p-5 border-b border-border">
+          <img
+            src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/5aeed46b4_Gemini_Generated_Image_o3prqo3prqo3prqo.png"
+            alt="MEDIPLAN"
+            className="w-full object-contain max-h-16"
+          />
         </div>
 
         {/* Navigation */}
