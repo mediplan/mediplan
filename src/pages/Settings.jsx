@@ -225,7 +225,6 @@ function MansionarioTab() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-foreground">{role.name}</h3>
-                  <p className="text-xs text-muted-foreground">{role.company_name}</p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
