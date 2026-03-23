@@ -191,6 +191,16 @@ export default function CompanyWorkers({ company }) {
                     </TableCell>
                     <TableCell><StatusBadge status={p.status} /></TableCell>
                     <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs px-2 gap-1 text-primary border-primary/40 hover:bg-primary/10"
+                        onClick={(e) => handleVisitNow(e, p)}
+                      >
+                        <Stethoscope className="h-3 w-3" /> Visita ora
+                      </Button>
+                    </TableCell>
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
