@@ -13,7 +13,8 @@ import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
 import PatientFormDialog from '@/components/patients/PatientFormDialog';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Stethoscope } from 'lucide-react';
 
 export default function Patients() {
   const urlParams = new URLSearchParams(window.location.search);
