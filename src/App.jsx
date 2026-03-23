@@ -9,7 +9,6 @@ import AppLayout from '@/components/layout/AppLayout';
 import Dashboard from '@/pages/Dashboard';
 import Companies from '@/pages/Companies';
 import CompanyDetail from '@/pages/CompanyDetail';
-import Patients from '@/pages/Patients';
 import PatientDetail from '@/pages/PatientDetail';
 
 import Settings from '@/pages/Settings';
@@ -45,7 +44,6 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/aziende" element={<Companies />} />
         <Route path="/aziende/:id" element={<CompanyDetail />} />
-        <Route path="/pazienti" element={<Patients />} />
         <Route path="/pazienti/:id" element={<PatientDetail />} />
 
         <Route path="/scadenze" element={<Scadenze />} />

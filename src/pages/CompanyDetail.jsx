@@ -2,13 +2,13 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Briefcase, FileHeart, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Briefcase, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import StatusBadge from '@/components/shared/StatusBadge';
+import CompanyWorkers from '@/components/companies/CompanyWorkers';
 
 export default function CompanyDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
   const companyId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
 
@@ -17,12 +17,6 @@ export default function CompanyDetail() {
     queryFn: () => base44.entities.Company.list(),
   });
   const company = companies.find(c => String(c.id) === companyId);
-
-  const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => base44.entities.Patient.list(),
-  });
-  const companyPatients = patients.filter(p => String(p.company_id) === companyId);
 
   const { data: jobRoles = [] } = useQuery({
     queryKey: ['jobRoles'],
@@ -76,51 +70,33 @@ export default function CompanyDetail() {
         </Card>
       </div>
 
-      {/* Linked data */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold">Lavoratori ({companyPatients.length})</h2>
-            </div>
-            <Link to={`/pazienti?company=${companyId}`} className="text-xs text-primary hover:underline">Vai ai lavoratori</Link>
-          </div>
-          {companyPatients.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nessun lavoratore associato</p>
-          ) : (
-            <div className="space-y-2">
-              {companyPatients.slice(0, 10).map(p => (
-                <div key={p.id} className="flex items-center justify-between text-sm">
-                  <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">{p.last_name} {p.first_name}</Link>
-                  <span className="text-muted-foreground">{p.job_role_name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-accent" />
-              <h2 className="text-sm font-semibold">Mansioni ({companyRoles.length})</h2>
-            </div>
-            <Link to="/mansioni" className="text-xs text-primary hover:underline">Gestisci</Link>
-          </div>
-          {companyRoles.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nessuna mansione definita</p>
-          ) : (
-            <div className="space-y-2">
-              {companyRoles.map(r => (
-                <div key={r.id} className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{r.name}</span>
-                  <span className="text-muted-foreground">{r.risks?.length || 0} rischi</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
+      {/* Workers list */}
+      <div className="mb-6">
+        <CompanyWorkers company={company} />
       </div>
+
+      {/* Job roles */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4 text-accent" />
+            <h2 className="text-sm font-semibold">Mansioni ({companyRoles.length})</h2>
+          </div>
+          <Link to="/impostazioni" className="text-xs text-primary hover:underline">Gestisci</Link>
+        </div>
+        {companyRoles.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nessuna mansione definita</p>
+        ) : (
+          <div className="space-y-2">
+            {companyRoles.map(r => (
+              <div key={r.id} className="flex items-center justify-between text-sm">
+                <span className="font-medium">{r.name}</span>
+                <span className="text-muted-foreground">{r.risks?.length || 0} rischi</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
