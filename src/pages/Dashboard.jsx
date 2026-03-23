@@ -102,16 +102,17 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {expiredAlerts.map(({ company, earliestExpiry }) => (
-                  <Link
+                  <div
                     key={company.id}
-                    to={`/aziende/${company.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/10"
                   >
-                    <span className="text-sm font-medium text-foreground">{company.name}</span>
+                    <Link to={`/aziende/${company.id}`} className="text-sm font-medium text-foreground hover:text-primary hover:underline">
+                      {company.name}
+                    </Link>
                     <Badge variant="destructive" className="text-xs shrink-0">
                       Scad. {earliestExpiry.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </Badge>
-                  </Link>
+                  </div>
                 ))}
               </CardContent>
             </Card>
