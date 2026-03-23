@@ -23,30 +23,8 @@ export default function Dashboard() {
     queryKey: ['jobRoles'],
     queryFn: () => base44.entities.JobRole.list(),
   });
-  const { data: visits = [] } = useQuery({
-    queryKey: ['visits'],
-    queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 100),
-  });
-
   const activeCompanies = companies.filter(c => c.status === 'active').length;
   const activePatients = patients.filter(p => p.status === 'active').length;
-
-  // Upcoming visits (next 30 days)
-  const today = new Date();
-  const in30Days = addDays(today, 30);
-  const upcomingVisits = visits.filter(v => {
-    if (!v.next_visit_date) return false;
-    const d = new Date(v.next_visit_date);
-    return d >= today && d <= in30Days;
-  });
-
-  // Overdue visits
-  const overdueVisits = visits.filter(v => {
-    if (!v.next_visit_date) return false;
-    return isBefore(new Date(v.next_visit_date), today);
-  });
-
-  const recentVisits = visits.slice(0, 8);
 
   return (
     <div>
