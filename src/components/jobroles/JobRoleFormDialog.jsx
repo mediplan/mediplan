@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
@@ -15,7 +14,7 @@ const emptyRisk = { risk_name: '', risk_category: '', risk_level: '', descriptio
 const emptyExam = { exam_name: '', frequency_months: 12 };
 
 const emptyForm = {
-  name: '', company_id: '', company_name: '', description: '',
+  name: '', description: '',
   risks: [], required_exams: [], surveillance_frequency_months: 12,
   ppe_required: '', notes: ''
 };
@@ -23,11 +22,6 @@ const emptyForm = {
 export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave }) {
   const [form, setForm] = useState(emptyForm);
   const isEdit = !!jobRole;
-
-  const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
-  });
 
   useEffect(() => {
     if (jobRole) {
@@ -38,12 +32,7 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
   }, [jobRole, open]);
 
   const handleChange = (field, value) => {
-    const updates = { [field]: value };
-    if (field === 'company_id') {
-      const comp = companies.find(c => String(c.id) === String(value));
-      updates.company_name = comp?.name || '';
-    }
-    setForm(prev => ({ ...prev, ...updates }));
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const updateRisk = (index, field, value) => {
@@ -62,7 +51,6 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
     e.preventDefault();
     const data = {
       ...form,
-      company_id: String(form.company_id),
       surveillance_frequency_months: Number(form.surveillance_frequency_months) || 12,
     };
     onSave(data);
@@ -79,15 +67,6 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
             <div className="md:col-span-2">
               <Label>Nome mansione *</Label>
               <Input value={form.name} onChange={e => handleChange('name', e.target.value)} required />
-            </div>
-            <div>
-              <Label>Azienda *</Label>
-              <Select value={String(form.company_id)} onValueChange={v => handleChange('company_id', v)}>
-                <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-                <SelectContent>
-                  {companies.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label>Periodicità sorveglianza (mesi)</Label>
