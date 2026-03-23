@@ -43,6 +43,47 @@ const PREDEFINED_RISKS = [
   'Videoterminali (VDT)',
 ];
 
+const PREDEFINED_EXAMS = [
+  'Titmus',
+  'Visiotest',
+  'Stampa Verbale Prelievo Liquidi Biologici',
+  'Test Droghe 1° Liv.',
+  'Visita Spec. Tossicologica',
+  'Audit',
+  'Audit-C',
+  'Questionario Disturbi Nasali',
+  'Questionario Videoterminali',
+  'Rachide',
+  'Arti superiori',
+  'Questionario addetti gestione emergenze',
+  'Questionario Lavoro Notturno',
+  'Audiometria',
+  'Questionario App. Muscholo-Scheletrico',
+  'Elettrocardiogramma',
+  'Matrice di West',
+  'Sonno - OSAS',
+  'Rientro da trasferta estero',
+  'CECA',
+  'Covid',
+  'Covid (Test Antigenico)',
+  'Esegui Monitoraggio Biologico',
+  'Esame urine / sangue',
+  'Vestibolare',
+  'Radiazioni Ionizzanti',
+  'Campi Elettromagnetici',
+  'Tetan Test',
+  "E' un Test Alcol",
+  "E' un Test Droghe",
+];
+
+const FREQUENCY_OPTIONS = [
+  { label: 'Annuale', value: 12 },
+  { label: 'Semestrale', value: 6 },
+  { label: 'Biennale', value: 24 },
+  { label: 'Quadriennale', value: 48 },
+  { label: 'Quinquennale', value: 60 },
+];
+
 const emptyCustomRisk = { risk_name: '', risk_category: '', risk_level: '', description: '' };
 const emptyExam = { exam_name: '', frequency_months: 12 };
 
