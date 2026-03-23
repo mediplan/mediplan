@@ -181,10 +181,6 @@ function MansionarioTab() {
     queryKey: ['jobRoles'],
     queryFn: () => base44.entities.JobRole.list('-created_date'),
   });
-  const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
-  });
 
   const createMutation = useMutation({
     mutationFn: data => base44.entities.JobRole.create(data),
