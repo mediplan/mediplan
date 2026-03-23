@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Search, Users, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Users, MoreHorizontal, Pencil, Trash2, Stethoscope, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,48 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import StatusBadge from '@/components/shared/StatusBadge';
 import PatientFormDialog from '@/components/patients/PatientFormDialog';
+import VisitFormDialog from '@/components/visits/VisitFormDialog';
 import { Link } from 'react-router-dom';
+import { format, differenceInDays, parseISO } from 'date-fns';
+import { it } from 'date-fns/locale';
+
+function getExpiryInfo(patient, visits) {
+  // Trova la visita più recente con next_visit_date oppure first_visit_expiry sul paziente
+  const patientVisits = visits.filter(v => String(v.patient_id) === String(patient.id));
+  
+  // Ultima visita con next_visit_date impostato
+  const withNextDate = patientVisits
+    .filter(v => v.next_visit_date)
+    .sort((a, b) => new Date(b.visit_date) - new Date(a.visit_date));
+
+  let expiryDate = null;
+
+  if (withNextDate.length > 0) {
+    expiryDate = withNextDate[0].next_visit_date;
+  } else if (patient.first_visit_expiry) {
+    expiryDate = patient.first_visit_expiry;
+  }
+
+  if (!expiryDate) {
+    // Nessuna visita e nessuna scadenza impostata
+    if (patientVisits.length === 0 && patient.subject_to_surveillance) {
+      return { status: 'missing', label: 'Nessuna visita', color: 'text-destructive', bgColor: 'bg-destructive/10', icon: AlertTriangle };
+    }
+    return null;
+  }
+
+  const today = new Date();
+  const expiry = parseISO(expiryDate);
+  const daysLeft = differenceInDays(expiry, today);
+
+  if (daysLeft < 0) {
+    return { status: 'expired', label: `Scaduta ${format(expiry, 'dd/MM/yyyy')}`, color: 'text-destructive', bgColor: 'bg-destructive/10', icon: AlertTriangle, daysLeft };
+  } else if (daysLeft <= 30) {
+    return { status: 'expiring', label: `Scade ${format(expiry, 'dd/MM/yyyy')}`, color: 'text-amber-600', bgColor: 'bg-amber-50', icon: Clock, daysLeft };
+  } else {
+    return { status: 'ok', label: format(expiry, 'dd/MM/yyyy'), color: 'text-emerald-600', bgColor: 'bg-emerald-50', icon: CheckCircle, daysLeft };
+  }
+}
 
 export default function CompanyWorkers({ company }) {
   const companyId = String(company.id);
@@ -19,10 +60,17 @@ export default function CompanyWorkers({ company }) {
   const [formOpen, setFormOpen] = useState(false);
   const [editPatient, setEditPatient] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [visitOpen, setVisitOpen] = useState(false);
+  const [visitPatient, setVisitPatient] = useState(null);
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
     queryFn: () => base44.entities.Patient.list('-created_date'),
+  });
+
+  const { data: visits = [] } = useQuery({
+    queryKey: ['medicalVisits'],
+    queryFn: () => base44.entities.MedicalVisit.list('-visit_date'),
   });
 
   const companyPatients = patients.filter(p => String(p.company_id) === companyId);
@@ -46,6 +94,11 @@ export default function CompanyWorkers({ company }) {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['patients'] }); setDeleteId(null); },
   });
 
+  const createVisitMutation = useMutation({
+    mutationFn: (data) => base44.entities.MedicalVisit.create(data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['medicalVisits'] }); setVisitOpen(false); setVisitPatient(null); },
+  });
+
   const handleSave = (data) => {
     if (editPatient) {
       updateMutation.mutate({ id: editPatient.id, data });
@@ -53,6 +106,26 @@ export default function CompanyWorkers({ company }) {
       createMutation.mutate({ ...data, company_id: companyId, company_name: company.name });
     }
   };
+
+  const handleVisitNow = (e, patient) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setVisitPatient(patient);
+    setVisitOpen(true);
+  };
+
+  const handleSaveVisit = (data) => {
+    createVisitMutation.mutate(data);
+  };
+
+  // Pre-populate visit form with patient data
+  const visitPreset = visitPatient ? {
+    patient_id: visitPatient.id,
+    patient_name: `${visitPatient.last_name} ${visitPatient.first_name}`,
+    company_id: visitPatient.company_id,
+    company_name: visitPatient.company_name,
+    visit_date: new Date().toISOString().split('T')[0],
+  } : null;
 
   return (
     <Card className="p-5">
@@ -87,40 +160,63 @@ export default function CompanyWorkers({ company }) {
             <TableHeader>
               <TableRow>
                 <TableHead>Cognome e Nome</TableHead>
-                <TableHead className="hidden md:table-cell">Cod. Fiscale</TableHead>
-                <TableHead className="hidden sm:table-cell">Mansione</TableHead>
+                <TableHead className="hidden md:table-cell">Mansione</TableHead>
+                <TableHead>Scadenza visita</TableHead>
                 <TableHead>Stato</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(p => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">
-                      {p.last_name} {p.first_name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground font-mono text-xs">{p.fiscal_code}</TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">{p.job_role_name}</TableCell>
-                  <TableCell><StatusBadge status={p.status} /></TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => { setEditPatient(p); setFormOpen(true); }}>
-                          <Pencil className="h-4 w-4 mr-2" /> Modifica
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(p.id)}>
-                          <Trash2 className="h-4 w-4 mr-2" /> Elimina
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filtered.map(p => {
+                const expiry = getExpiryInfo(p, visits);
+                const ExpiryIcon = expiry?.icon;
+                return (
+                  <TableRow key={p.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">
+                          {p.last_name} {p.first_name}
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 text-xs px-2 gap-1 text-primary border-primary/40 hover:bg-primary/10"
+                          onClick={(e) => handleVisitNow(e, p)}
+                        >
+                          <Stethoscope className="h-3 w-3" /> Visita ora
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground text-sm">{p.job_role_name || '—'}</TableCell>
+                    <TableCell>
+                      {expiry ? (
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${expiry.bgColor} ${expiry.color}`}>
+                          <ExpiryIcon className="h-3 w-3" />
+                          {expiry.label}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell><StatusBadge status={p.status} /></TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => { setEditPatient(p); setFormOpen(true); }}>
+                            <Pencil className="h-4 w-4 mr-2" /> Modifica
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(p.id)}>
+                            <Trash2 className="h-4 w-4 mr-2" /> Elimina
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -132,6 +228,14 @@ export default function CompanyWorkers({ company }) {
         patient={editPatient}
         onSave={handleSave}
         defaultCompany={company}
+      />
+
+      <VisitFormDialog
+        open={visitOpen}
+        onOpenChange={(v) => { setVisitOpen(v); if (!v) setVisitPatient(null); }}
+        visit={visitPreset}
+        onSave={handleSaveVisit}
+        lockPatient={true}
       />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
