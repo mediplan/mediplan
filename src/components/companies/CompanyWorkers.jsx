@@ -163,6 +163,7 @@ export default function CompanyWorkers({ company }) {
                 <TableHead className="hidden md:table-cell">Mansione</TableHead>
                 <TableHead>Scadenza visita</TableHead>
                 <TableHead>Stato</TableHead>
+                <TableHead></TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
