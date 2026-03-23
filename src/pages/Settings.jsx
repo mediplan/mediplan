@@ -173,7 +173,6 @@ const riskLevelColors = {
 function MansionarioTab() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
-  const [companyFilter, setCompanyFilter] = useState('all');
   const [formOpen, setFormOpen] = useState(false);
   const [editRole, setEditRole] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
