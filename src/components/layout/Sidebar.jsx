@@ -4,6 +4,8 @@ import {
   LayoutDashboard, Building2, Users, Briefcase, 
   FileHeart, Menu, X, Shield, Settings, CalendarClock
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
