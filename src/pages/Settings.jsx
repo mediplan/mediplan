@@ -211,13 +211,6 @@ function MansionarioTab() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Cerca mansione..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Filtra per azienda" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tutte le aziende</SelectItem>
-            {companies.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
         <Button onClick={() => { setEditRole(null); setFormOpen(true); }} className="gap-2">
           <Plus className="h-4 w-4" /> Nuova Mansione
         </Button>
