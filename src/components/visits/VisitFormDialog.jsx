@@ -39,7 +39,7 @@ const judgments = [
   { value: 'non_idoneo', label: 'Non idoneo' },
 ];
 
-export default function VisitFormDialog({ open, onOpenChange, visit, onSave }) {
+export default function VisitFormDialog({ open, onOpenChange, visit, onSave, lockPatient = false }) {
   const [form, setForm] = useState(emptyForm);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const isEdit = !!visit;
@@ -99,23 +99,29 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Basic info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Azienda</Label>
-              <Select value={selectedCompanyId} onValueChange={v => { setSelectedCompanyId(v); }}>
-                <SelectTrigger><SelectValue placeholder="Filtra per azienda" /></SelectTrigger>
-                <SelectContent>
-                  {companies.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {!lockPatient && (
+              <div>
+                <Label>Azienda</Label>
+                <Select value={selectedCompanyId} onValueChange={v => { setSelectedCompanyId(v); }}>
+                  <SelectTrigger><SelectValue placeholder="Filtra per azienda" /></SelectTrigger>
+                  <SelectContent>
+                    {companies.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <Label>Lavoratore *</Label>
-              <Select value={String(form.patient_id)} onValueChange={v => handleChange('patient_id', v)}>
-                <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
-                <SelectContent>
-                  {filteredPatients.map(p => <SelectItem key={p.id} value={String(p.id)}>{p.last_name} {p.first_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {lockPatient ? (
+                <p className="text-sm font-medium py-2">{form.patient_name}</p>
+              ) : (
+                <Select value={String(form.patient_id)} onValueChange={v => handleChange('patient_id', v)}>
+                  <SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger>
+                  <SelectContent>
+                    {filteredPatients.map(p => <SelectItem key={p.id} value={String(p.id)}>{p.last_name} {p.first_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div>
               <Label>Data visita *</Label>
