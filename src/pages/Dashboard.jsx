@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, Users, Briefcase, FileHeart, AlertTriangle, CalendarClock } from 'lucide-react';
+import { Building2, Users, Briefcase, AlertTriangle, CalendarClock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { format, isBefore, addDays } from 'date-fns';
