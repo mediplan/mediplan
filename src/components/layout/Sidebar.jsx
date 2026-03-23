@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/aziende', label: 'Aziende', icon: Building2 },
-  { path: '/scadenze', label: 'Scadenze', icon: CalendarClock },
+  { path: '/scadenze', label: 'Scadenziario', icon: CalendarClock },
   { path: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];
 
