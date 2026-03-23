@@ -200,11 +200,9 @@ function MansionarioTab() {
     else createMutation.mutate(data);
   };
 
-  const filtered = jobRoles.filter(r => {
-    const matchSearch = r.name?.toLowerCase().includes(search.toLowerCase());
-    const matchCompany = companyFilter === 'all' || String(r.company_id) === companyFilter;
-    return matchSearch && matchCompany;
-  });
+  const filtered = jobRoles.filter(r =>
+    r.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div>
