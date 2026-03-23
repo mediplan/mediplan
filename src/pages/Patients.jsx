@@ -126,7 +126,19 @@ export default function Patients() {
                     <TableCell className="hidden md:table-cell text-muted-foreground font-mono text-xs">{p.fiscal_code}</TableCell>
                     <TableCell className="hidden sm:table-cell text-muted-foreground">{p.company_name}</TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground">{p.job_role_name}</TableCell>
-                    <TableCell><StatusBadge status={p.status} /></TableCell>
+                    <TableCell>
+                       <div className="flex items-center gap-2">
+                         <StatusBadge status={p.status} />
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className="h-7 text-xs gap-1 text-primary border-primary/30 hover:bg-primary/10"
+                           onClick={() => navigate(`/visite?patient=${p.id}&patient_name=${encodeURIComponent(p.last_name + ' ' + p.first_name)}&company=${p.company_id}&company_name=${encodeURIComponent(p.company_name || '')}`)}
+                         >
+                           <Stethoscope className="h-3 w-3" /> Visita ora
+                         </Button>
+                       </div>
+                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
