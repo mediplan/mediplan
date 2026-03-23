@@ -49,7 +49,7 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
   const { data: companies = [] } = useQuery({ queryKey: ['companies'], queryFn: () => base44.entities.Company.list() });
   const { data: jobRoles = [] } = useQuery({ queryKey: ['jobRoles'], queryFn: () => base44.entities.JobRole.list() });
 
-  const filteredRoles = jobRoles.filter(r => String(r.company_id) === String(form.company_id));
+  const filteredRoles = jobRoles;
 
   useEffect(() => {
     setForm(patient ? { ...emptyForm, ...patient } : emptyForm);
