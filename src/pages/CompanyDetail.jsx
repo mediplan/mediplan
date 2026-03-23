@@ -92,7 +92,7 @@ export default function CompanyDetail() {
             <div className="space-y-2">
               {companyPatients.slice(0, 10).map(p => (
                 <div key={p.id} className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{p.last_name} {p.first_name}</span>
+                  <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">{p.last_name} {p.first_name}</Link>
                   <span className="text-muted-foreground">{p.job_role_name}</span>
                 </div>
               ))}
