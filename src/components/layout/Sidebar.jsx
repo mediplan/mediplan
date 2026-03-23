@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2,
-  FileHeart, Menu, X, Shield, Settings, CalendarClock
+  Menu, X, Settings, CalendarClock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,6 @@ const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/aziende', label: 'Aziende', icon: Building2 },
   { path: '/scadenze', label: 'Scadenze', icon: CalendarClock },
-  { path: '/visite', label: 'Visite Mediche', icon: FileHeart },
   { path: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];
 
