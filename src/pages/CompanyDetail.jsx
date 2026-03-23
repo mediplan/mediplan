@@ -84,7 +84,7 @@ export default function CompanyDetail() {
               <Users className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold">Lavoratori ({companyPatients.length})</h2>
             </div>
-            <Link to="/pazienti" className="text-xs text-primary hover:underline">Gestisci</Link>
+            <Link to={`/pazienti?company=${companyId}`} className="text-xs text-primary hover:underline">Vai ai lavoratori</Link>
           </div>
           {companyPatients.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nessun lavoratore associato</p>

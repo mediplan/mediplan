@@ -16,8 +16,9 @@ import PatientFormDialog from '@/components/patients/PatientFormDialog';
 import { Link } from 'react-router-dom';
 
 export default function Patients() {
+  const urlParams = new URLSearchParams(window.location.search);
   const [search, setSearch] = useState('');
-  const [companyFilter, setCompanyFilter] = useState('all');
+  const [companyFilter, setCompanyFilter] = useState(urlParams.get('company') || 'all');
   const [formOpen, setFormOpen] = useState(false);
   const [editPatient, setEditPatient] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
