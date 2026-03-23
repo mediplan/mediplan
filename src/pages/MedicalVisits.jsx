@@ -26,11 +26,25 @@ const visitTypeLabels = {
 };
 
 export default function MedicalVisits() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const prePatientId = urlParams.get('patient');
+  const prePatientName = urlParams.get('patient_name') ? decodeURIComponent(urlParams.get('patient_name')) : '';
+  const preCompanyId = urlParams.get('company') || '';
+  const preCompanyName = urlParams.get('company_name') ? decodeURIComponent(urlParams.get('company_name')) : '';
+
+  const prefilledVisit = prePatientId ? {
+    patient_id: prePatientId,
+    patient_name: prePatientName,
+    company_id: preCompanyId,
+    company_name: preCompanyName,
+    visit_date: new Date().toISOString().split('T')[0],
+  } : null;
+
   const [search, setSearch] = useState('');
   const [companyFilter, setCompanyFilter] = useState('all');
   const [formOpen, setFormOpen] = useState(false);
-  const [preventiveOpen, setPreventiveOpen] = useState(false);
-  const [editVisit, setEditVisit] = useState(null);
+  const [preventiveOpen, setPreventiveOpen] = useState(!!prePatientId);
+  const [editVisit, setEditVisit] = useState(prefilledVisit);
   const [deleteId, setDeleteId] = useState(null);
   const queryClient = useQueryClient();
 
