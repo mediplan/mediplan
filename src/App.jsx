@@ -13,6 +13,7 @@ import Patients from '@/pages/Patients';
 import PatientDetail from '@/pages/PatientDetail';
 import JobRoles from '@/pages/JobRoles';
 import MedicalVisits from '@/pages/MedicalVisits';
+import Settings from '@/pages/Settings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/pazienti/:id" element={<PatientDetail />} />
         <Route path="/mansioni" element={<JobRoles />} />
         <Route path="/visite" element={<MedicalVisits />} />
+        <Route path="/impostazioni" element={<Settings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

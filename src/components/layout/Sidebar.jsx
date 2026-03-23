@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, Briefcase, 
-  FileHeart, Menu, X, Shield
+  FileHeart, Menu, X, Shield, Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/pazienti', label: 'Lavoratori', icon: Users },
   { path: '/mansioni', label: 'Mansionario', icon: Briefcase },
   { path: '/visite', label: 'Visite Mediche', icon: FileHeart },
+  { path: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
