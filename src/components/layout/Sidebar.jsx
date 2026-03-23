@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Building2, Users, Briefcase, 
+  LayoutDashboard, Building2,
   FileHeart, Menu, X, Shield, Settings, CalendarClock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,6 @@ const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/aziende', label: 'Aziende', icon: Building2 },
   { path: '/scadenze', label: 'Scadenze', icon: CalendarClock },
-  { path: '/pazienti', label: 'Lavoratori', icon: Users },
-  { path: '/mansioni', label: 'Mansionario', icon: Briefcase },
   { path: '/visite', label: 'Visite Mediche', icon: FileHeart },
   { path: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];

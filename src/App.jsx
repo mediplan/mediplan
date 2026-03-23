@@ -11,7 +11,7 @@ import Companies from '@/pages/Companies';
 import CompanyDetail from '@/pages/CompanyDetail';
 import Patients from '@/pages/Patients';
 import PatientDetail from '@/pages/PatientDetail';
-import JobRoles from '@/pages/JobRoles';
+
 import MedicalVisits from '@/pages/MedicalVisits';
 import Settings from '@/pages/Settings';
 import Scadenze from '@/pages/Scadenze';
@@ -48,7 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/aziende/:id" element={<CompanyDetail />} />
         <Route path="/pazienti" element={<Patients />} />
         <Route path="/pazienti/:id" element={<PatientDetail />} />
-        <Route path="/mansioni" element={<JobRoles />} />
+
         <Route path="/visite" element={<MedicalVisits />} />
         <Route path="/scadenze" element={<Scadenze />} />
         <Route path="/impostazioni" element={<Settings />} />
