@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, Users, Stethoscope, AlertTriangle, Clock } from 'lucide-react';
-import { addDays, isBefore, isAfter, parseISO } from 'date-fns';
+import { Building2, Users, Stethoscope, AlertTriangle, Clock, CalendarDays } from 'lucide-react';
+import { addDays, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
+import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import StatCard from '@/components/shared/StatCard';
 import PageHeader from '@/components/shared/PageHeader';
@@ -73,6 +74,60 @@ export default function Dashboard() {
 
   const expiredAlerts = companyAlerts.filter(a => a.isExpired);
   const expiringSoonAlerts = companyAlerts.filter(a => a.isExpiringSoon);
+
+  // Attività del mese successivo: lavoratori con scadenza nel mese prossimo
+  const nextMonthStart = startOfMonth(addDays(today, 31));
+  const nextMonthEnd = endOfMonth(nextMonthStart);
+  const nextMonthLabel = format(nextMonthStart, 'MMMM yyyy', { locale: it });
+
+  const nextMonthActivities = useMemo(() => {
+    const items = [];
+
+    // Da visite con next_visit_date
+    for (const v of visits) {
+      if (!v.next_visit_date) continue;
+      const d = parseISO(v.next_visit_date);
+      if (isAfter(d, nextMonthStart) || d.toDateString() === nextMonthStart.toDateString()) {
+        if (isBefore(d, nextMonthEnd) || d.toDateString() === nextMonthEnd.toDateString()) {
+          const patient = patients.find(p => String(p.id) === String(v.patient_id));
+          const company = companies.find(c => String(c.id) === String(v.company_id));
+          items.push({
+            date: d,
+            patientName: v.patient_name || (patient ? `${patient.last_name} ${patient.first_name}` : '—'),
+            patientId: v.patient_id,
+            companyName: v.company_name || company?.name || '—',
+            companyId: v.company_id,
+            type: 'Visita periodica',
+          });
+        }
+      }
+    }
+
+    // Da pazienti con first_visit_expiry
+    for (const p of patients) {
+      if (!p.first_visit_expiry) continue;
+      const d = parseISO(p.first_visit_expiry);
+      if (isAfter(d, nextMonthStart) || d.toDateString() === nextMonthStart.toDateString()) {
+        if (isBefore(d, nextMonthEnd) || d.toDateString() === nextMonthEnd.toDateString()) {
+          // Evita duplicati se già inserito da visita
+          const alreadyIn = items.some(i => String(i.patientId) === String(p.id));
+          if (!alreadyIn) {
+            const company = companies.find(c => String(c.id) === String(p.company_id));
+            items.push({
+              date: d,
+              patientName: `${p.last_name} ${p.first_name}`,
+              patientId: p.id,
+              companyName: p.company_name || company?.name || '—',
+              companyId: p.company_id,
+              type: 'Prima visita',
+            });
+          }
+        }
+      }
+    }
+
+    return items.sort((a, b) => a.date - b.date);
+  }, [visits, patients, companies, nextMonthStart, nextMonthEnd]);
 
   return (
     <div>
@@ -152,6 +207,45 @@ export default function Dashboard() {
           Nessuna scadenza imminente o adempimento scaduto
         </Card>
       )}
+
+      {/* Attività mese successivo */}
+      <div className="mt-8">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-foreground">
+              <CalendarDays className="h-4 w-4 text-primary" />
+              Attività programmate — <span className="capitalize">{nextMonthLabel}</span>
+              <Badge variant="secondary" className="ml-auto">{nextMonthActivities.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {nextMonthActivities.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Nessuna attività programmata per il mese di {nextMonthLabel}</p>
+            ) : (
+              <div className="space-y-2">
+                {nextMonthActivities.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-xs font-mono text-muted-foreground w-16 shrink-0">
+                        {format(item.date, 'dd/MM/yyyy')}
+                      </span>
+                      <div className="min-w-0">
+                        <Link to={`/pazienti/${item.patientId}`} className="text-sm font-medium hover:text-primary hover:underline truncate block">
+                          {item.patientName}
+                        </Link>
+                        <Link to={`/aziende/${item.companyId}`} className="text-xs text-muted-foreground hover:text-primary hover:underline truncate block">
+                          {item.companyName}
+                        </Link>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-xs shrink-0">{item.type}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
