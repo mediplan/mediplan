@@ -2,8 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
-import { it } from 'date-fns/locale';
-import { Receipt, Building2, Stethoscope, Download } from 'lucide-react';
+import { Receipt, Building2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,20 +19,31 @@ const VISIT_TYPE_LABELS = {
   cessazione: 'Visita cessazione',
 };
 
+// Accertamenti integrativi: campo → etichetta
+const EXAM_FIELDS = [
+  { key: 'audiometry_result', label: 'Audiometria' },
+  { key: 'spirometry_result', label: 'Spirometria' },
+  { key: 'ecg_result', label: 'ECG' },
+  { key: 'blood_tests_result', label: 'Esami ematici' },
+  { key: 'urine_test_result', label: 'Esame urine' },
+  { key: 'visual_acuity', label: 'Acuità visiva' },
+  { key: 'drug_test_result', label: 'Droga Test' },
+  { key: 'other_exams', label: 'Altri accertamenti' },
+];
+
+function getExams(v) {
+  return EXAM_FIELDS.filter(f => v[f.key] && String(v[f.key]).trim() !== '');
+}
+
 export default function Fatturazione() {
   const today = new Date();
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(today), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(endOfMonth(today), 'yyyy-MM-dd'));
-  const [groupBy, setGroupBy] = useState('company'); // 'company' | 'none'
+  const [groupBy, setGroupBy] = useState('company');
 
   const { data: visits = [], isLoading } = useQuery({
     queryKey: ['medicalVisits'],
     queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 5000),
-  });
-
-  const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
   });
 
   const filtered = useMemo(() => {
@@ -47,6 +57,21 @@ export default function Fatturazione() {
       return true;
     });
   }, [visits, dateFrom, dateTo]);
+
+  // Totali accertamenti per tipo
+  const examTotals = useMemo(() => {
+    const map = {};
+    for (const v of filtered) {
+      for (const f of EXAM_FIELDS) {
+        if (v[f.key] && String(v[f.key]).trim() !== '') {
+          map[f.key] = (map[f.key] || 0) + 1;
+        }
+      }
+    }
+    return map;
+  }, [filtered]);
+
+  const totalExams = Object.values(examTotals).reduce((a, b) => a + b, 0);
 
   // Raggruppa per azienda
   const byCompany = useMemo(() => {
@@ -77,13 +102,14 @@ export default function Fatturazione() {
 
   const handleExportCSV = () => {
     const rows = [
-      ['Data', 'Paziente', 'Azienda', 'Tipo visita', 'Giudizio'],
+      ['Data', 'Paziente', 'Azienda', 'Tipo visita', 'Giudizio', 'Accertamenti integrativi'],
       ...filtered.map(v => [
         v.visit_date,
         v.patient_name || '',
         v.company_name || '',
         VISIT_TYPE_LABELS[v.visit_type] || v.visit_type || '',
         v.judgment || '',
+        getExams(v).map(f => f.label).join(' | '),
       ]),
     ];
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -98,10 +124,7 @@ export default function Fatturazione() {
 
   return (
     <div>
-      <PageHeader
-        title="Fatturazione"
-        description="Conteggio prestazioni eseguite per periodo"
-      />
+      <PageHeader title="Fatturazione" description="Conteggio prestazioni eseguite per periodo" />
 
       {/* Filtri periodo */}
       <Card className="mb-6">
@@ -109,21 +132,11 @@ export default function Fatturazione() {
           <div className="flex flex-wrap items-end gap-4">
             <div>
               <label className="text-xs text-muted-foreground font-medium mb-1 block">Dal</label>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={e => setDateFrom(e.target.value)}
-                className="h-9 w-40"
-              />
+              <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-9 w-40" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground font-medium mb-1 block">Al</label>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={e => setDateTo(e.target.value)}
-                className="h-9 w-40"
-              />
+              <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-9 w-40" />
             </div>
             <div className="flex gap-2 ml-auto">
               <Button
@@ -143,23 +156,45 @@ export default function Fatturazione() {
         </CardContent>
       </Card>
 
-      {/* Riepilogo totali */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-        <Card className="p-4">
-          <div className="text-xs text-muted-foreground mb-1">Totale prestazioni</div>
-          <div className="text-2xl font-bold text-primary">{filtered.length}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-xs text-muted-foreground mb-1">Aziende coinvolte</div>
-          <div className="text-2xl font-bold">{byCompany.length}</div>
-        </Card>
-        {Object.entries(countByType).map(([type, count]) => (
-          <Card key={type} className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">{VISIT_TYPE_LABELS[type] || type}</div>
-            <div className="text-2xl font-bold">{count}</div>
+      {/* Riepilogo visite */}
+      <div className="mb-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Visite</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+          <Card className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">Totale visite</div>
+            <div className="text-2xl font-bold text-primary">{filtered.length}</div>
           </Card>
-        ))}
+          <Card className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">Aziende coinvolte</div>
+            <div className="text-2xl font-bold">{byCompany.length}</div>
+          </Card>
+          {Object.entries(countByType).map(([type, count]) => (
+            <Card key={type} className="p-4">
+              <div className="text-xs text-muted-foreground mb-1">{VISIT_TYPE_LABELS[type] || type}</div>
+              <div className="text-2xl font-bold">{count}</div>
+            </Card>
+          ))}
+        </div>
       </div>
+
+      {/* Riepilogo accertamenti integrativi */}
+      {totalExams > 0 && (
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Accertamenti integrativi</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <Card className="p-4 border-accent/30">
+              <div className="text-xs text-muted-foreground mb-1">Totale accertamenti</div>
+              <div className="text-2xl font-bold text-accent">{totalExams}</div>
+            </Card>
+            {EXAM_FIELDS.filter(f => examTotals[f.key]).map(f => (
+              <Card key={f.key} className="p-4">
+                <div className="text-xs text-muted-foreground mb-1">{f.label}</div>
+                <div className="text-2xl font-bold">{examTotals[f.key]}</div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Tabella */}
       {isLoading ? (
@@ -170,20 +205,26 @@ export default function Fatturazione() {
         </Card>
       ) : groupBy === 'company' ? (
         <div className="space-y-6">
-          {byCompany.map(group => (
-            <Card key={group.company_id || 'nessuna'}>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Building2 className="h-4 w-4 text-primary" />
-                  {group.company_name}
-                  <Badge variant="secondary" className="ml-auto">{group.visits.length} prestazioni</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <VisitTable visits={group.visits} />
-              </CardContent>
-            </Card>
-          ))}
+          {byCompany.map(group => {
+            const groupExamTotal = group.visits.reduce((sum, v) => sum + getExams(v).length, 0);
+            return (
+              <Card key={group.company_id || 'nessuna'}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    {group.company_name}
+                    <div className="ml-auto flex gap-2">
+                      <Badge variant="secondary">{group.visits.length} visite</Badge>
+                      {groupExamTotal > 0 && <Badge variant="outline" className="text-accent border-accent/40">{groupExamTotal} accertamenti</Badge>}
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <VisitTable visits={group.visits} />
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <Card>
@@ -205,29 +246,42 @@ function VisitTable({ visits }) {
           <TableRow>
             <TableHead>Data</TableHead>
             <TableHead>Paziente</TableHead>
-            <TableHead className="hidden sm:table-cell">Azienda</TableHead>
-            <TableHead>Tipo visita</TableHead>
+            <TableHead className="hidden sm:table-cell">Tipo visita</TableHead>
+            <TableHead>Accertamenti</TableHead>
             <TableHead className="hidden md:table-cell">Giudizio</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sorted.map(v => (
-            <TableRow key={v.id}>
-              <TableCell className="text-sm whitespace-nowrap">
-                {v.visit_date ? format(parseISO(v.visit_date), 'dd/MM/yyyy') : '—'}
-              </TableCell>
-              <TableCell className="font-medium text-sm">{v.patient_name || '—'}</TableCell>
-              <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">{v.company_name || '—'}</TableCell>
-              <TableCell>
-                <Badge variant="outline" className="text-xs">
-                  {VISIT_TYPE_LABELS[v.visit_type] || v.visit_type || '—'}
-                </Badge>
-              </TableCell>
-              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                {v.judgment ? v.judgment.replace(/_/g, ' ') : '—'}
-              </TableCell>
-            </TableRow>
-          ))}
+          {sorted.map(v => {
+            const exams = getExams(v);
+            return (
+              <TableRow key={v.id}>
+                <TableCell className="text-sm whitespace-nowrap">
+                  {v.visit_date ? format(parseISO(v.visit_date), 'dd/MM/yyyy') : '—'}
+                </TableCell>
+                <TableCell className="font-medium text-sm">{v.patient_name || '—'}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  <Badge variant="outline" className="text-xs">
+                    {VISIT_TYPE_LABELS[v.visit_type] || v.visit_type || '—'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {exams.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  ) : (
+                    <div className="flex flex-wrap gap-1">
+                      {exams.map(f => (
+                        <Badge key={f.key} className="text-xs bg-accent/10 text-accent border-0">{f.label}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                  {v.judgment ? v.judgment.replace(/_/g, ' ') : '—'}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
