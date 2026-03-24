@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Wand2 } from 'lucide-react';
+import DianaIntegration from '@/components/visits/DianaIntegration';
 
 const systemsOptions = [
   { value: 'non_sintomi', label: 'Non sintomi' },
