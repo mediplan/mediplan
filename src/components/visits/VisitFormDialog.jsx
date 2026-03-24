@@ -19,7 +19,7 @@ const emptyForm = {
   anamnesis_family: '', anamnesis_physiological: '', anamnesis_pathological: '', anamnesis_work: '',
   current_symptoms: '', physical_exam: '',
   height_cm: '', weight_kg: '', blood_pressure_systolic: '', blood_pressure_diastolic: '', heart_rate: '',
-  visual_acuity: '', audiometry_result: '', spirometry_result: '',
+  visual_acuity: '', drug_test_result: '', audiometry_result: '', spirometry_result: '',
   blood_tests_result: '', urine_test_result: '', ecg_result: '', other_exams: '',
   judgment: '', judgment_details: '', next_visit_date: '', notes: ''
 };
@@ -207,8 +207,12 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
             <TabsContent value="accertamenti" className="space-y-3 mt-4">
               <DianaIntegration
                 patient={patients.find(p => String(p.id) === String(form.patient_id))}
-                onResult={text => setForm(prev => ({ ...prev, other_exams: prev.other_exams ? prev.other_exams + '\n' + text : text }))}
+                onResult={text => setForm(prev => ({ ...prev, drug_test_result: prev.drug_test_result ? prev.drug_test_result + '\n' + text : text }))}
               />
+              <div>
+                <Label>Droga Test – note</Label>
+                <Textarea value={form.drug_test_result || ''} onChange={e => handleChange('drug_test_result', e.target.value)} rows={2} />
+              </div>
               <PdfExamUpload
                 label="Audiometro"
                 settingsKey="audiometro"
