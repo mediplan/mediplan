@@ -207,7 +207,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
             <TabsContent value="accertamenti" className="space-y-3 mt-4">
               <DianaIntegration
                 patient={patients.find(p => String(p.id) === String(form.patient_id))}
-                onResult={text => handleChange('other_exams', form.other_exams ? form.other_exams + '\n' + text : text)}
+                onResult={text => setForm(prev => ({ ...prev, other_exams: prev.other_exams ? prev.other_exams + '\n' + text : text }))}
               />
               <PdfExamUpload
                 label="Audiometro"
@@ -215,7 +215,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
                 color="text-chart-3"
                 borderColor="border-chart-3/20"
                 bgColor="bg-chart-3/5"
-                onResult={text => handleChange('audiometry_result', form.audiometry_result ? form.audiometry_result + '\n' + text : text)}
+                onResult={text => setForm(prev => ({ ...prev, audiometry_result: prev.audiometry_result ? prev.audiometry_result + '\n' + text : text }))}
               />
               <div>
                 <Label>Audiometria – note</Label>
@@ -227,7 +227,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
                 color="text-chart-2"
                 borderColor="border-chart-2/20"
                 bgColor="bg-chart-2/5"
-                onResult={text => handleChange('spirometry_result', form.spirometry_result ? form.spirometry_result + '\n' + text : text)}
+                onResult={text => setForm(prev => ({ ...prev, spirometry_result: prev.spirometry_result ? prev.spirometry_result + '\n' + text : text }))}
               />
               <div>
                 <Label>Spirometria – note</Label>
@@ -247,7 +247,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
                 color="text-destructive"
                 borderColor="border-destructive/20"
                 bgColor="bg-destructive/5"
-                onResult={text => handleChange('ecg_result', form.ecg_result ? form.ecg_result + '\n' + text : text)}
+                onResult={text => setForm(prev => ({ ...prev, ecg_result: prev.ecg_result ? prev.ecg_result + '\n' + text : text }))}
               />
               <div>
                 <Label>ECG – note</Label>
