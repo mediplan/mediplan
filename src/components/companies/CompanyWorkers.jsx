@@ -160,6 +160,7 @@ export default function CompanyWorkers({ company }) {
             <TableHeader>
               <TableRow>
                 <TableHead>Cognome e Nome</TableHead>
+                <TableHead className="hidden md:table-cell">Data di nascita</TableHead>
                 <TableHead className="hidden md:table-cell">Mansione</TableHead>
                 <TableHead>Scadenza visita</TableHead>
                 <TableHead>Stato</TableHead>
@@ -177,6 +178,9 @@ export default function CompanyWorkers({ company }) {
                       <Link to={`/pazienti/${p.id}`} className="font-medium hover:text-primary hover:underline">
                         {p.last_name} {p.first_name}
                       </Link>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                      {p.birth_date ? format(parseISO(p.birth_date), 'dd/MM/yyyy') : '—'}
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-muted-foreground text-sm">{p.job_role_name || '—'}</TableCell>
                     <TableCell>
