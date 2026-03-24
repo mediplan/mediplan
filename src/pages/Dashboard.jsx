@@ -9,6 +9,7 @@ import StatCard from '@/components/shared/StatCard';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import AppointmentCalendar from '@/components/calendar/AppointmentCalendar';
 
 export default function Dashboard() {
   const { data: companies = [] } = useQuery({
@@ -207,6 +208,11 @@ export default function Dashboard() {
           Nessuna scadenza imminente o adempimento scaduto
         </Card>
       )}
+
+      {/* Calendario appuntamenti */}
+      <div className="mt-8">
+        <AppointmentCalendar />
+      </div>
 
       {/* Attività mese successivo */}
       <div className="mt-8">
