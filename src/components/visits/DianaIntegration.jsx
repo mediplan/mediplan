@@ -9,6 +9,7 @@ export default function DianaIntegration({ patient, onResult }) {
   return (
     <PdfExamUpload
       label="Droga Test (Diana)"
+      settingsKey="diana"
       color="text-primary"
       borderColor="border-primary/20"
       bgColor="bg-primary/5"

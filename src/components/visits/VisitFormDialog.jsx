@@ -211,6 +211,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
               />
               <PdfExamUpload
                 label="Audiometro"
+                settingsKey="audiometro"
                 color="text-chart-3"
                 borderColor="border-chart-3/20"
                 bgColor="bg-chart-3/5"
@@ -222,6 +223,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
               </div>
               <PdfExamUpload
                 label="Spirometro"
+                settingsKey="spirometro"
                 color="text-chart-2"
                 borderColor="border-chart-2/20"
                 bgColor="bg-chart-2/5"
@@ -241,6 +243,7 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
               </div>
               <PdfExamUpload
                 label="ECG"
+                settingsKey="ecg"
                 color="text-destructive"
                 borderColor="border-destructive/20"
                 bgColor="bg-destructive/5"
