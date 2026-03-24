@@ -18,8 +18,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import UtentiTab from '@/components/settings/UtentiTab';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
 
@@ -529,6 +530,11 @@ export default function Settings() {
               <UserCheck className="h-4 w-4" /> Medici Incaricati
             </TabsTrigger>
           )}
+          {isAdmin && (
+            <TabsTrigger value="utenti" className="gap-2">
+              <Users className="h-4 w-4" /> Utenti
+            </TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="modulistica">
           <ModulisticaTab />
@@ -542,6 +548,11 @@ export default function Settings() {
         {isAdmin && (
           <TabsContent value="medici">
             <MediciTab />
+          </TabsContent>
+        )}
+        {isAdmin && (
+          <TabsContent value="utenti">
+            <UtentiTab />
           </TabsContent>
         )}
       </Tabs>

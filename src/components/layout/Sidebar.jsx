@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Building2,
-  Menu, X, Settings, CalendarClock, Receipt, Users, LogOut
+  Menu, X, Settings, CalendarClock, Receipt, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,6 @@ const ALL_NAV_ITEMS = [
   { path: '/aziende',      label: 'Aziende',       icon: Building2,       section: 'aziende' },
   { path: '/scadenze',     label: 'Scadenziario',  icon: CalendarClock,   section: 'scadenze' },
   { path: '/fatturazione', label: 'Fatturazione',  icon: Receipt,         section: 'fatturazione' },
-  { path: '/utenti',       label: 'Utenti',        icon: Users,           section: 'utenti' },
   { path: '/impostazioni', label: 'Impostazioni',  icon: Settings,        section: 'impostazioni' },
 ];
 
