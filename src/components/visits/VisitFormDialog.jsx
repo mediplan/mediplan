@@ -204,6 +204,10 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
             </TabsContent>
 
             <TabsContent value="accertamenti" className="space-y-3 mt-4">
+              <DianaIntegration
+                patient={patients.find(p => String(p.id) === String(form.patient_id))}
+                onResult={text => handleChange('other_exams', form.other_exams ? form.other_exams + '\n' + text : text)}
+              />
               <div>
                 <Label>Audiometria</Label>
                 <Textarea value={form.audiometry_result} onChange={e => handleChange('audiometry_result', e.target.value)} rows={2} />
