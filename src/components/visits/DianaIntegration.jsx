@@ -82,6 +82,14 @@ function formatTimestamp(ts) {
   return `${d}/${m}/${y}`;
 }
 
+const DIANA_SETTINGS_KEY = 'mediplan_diana_settings';
+
+function getDianaSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(DIANA_SETTINGS_KEY)) || {};
+  } catch { return {}; }
+}
+
 /**
  * Componente integrazione Diana per droga test
  * Props:
@@ -89,6 +97,7 @@ function formatTimestamp(ts) {
  *   onResult: callback(resultText) chiamato con il testo formattato da incollare nel campo accertamenti
  */
 export default function DianaIntegration({ patient, onResult }) {
+  const dianaSettings = getDianaSettings();
   const fileInputRef = useRef(null);
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState('');
@@ -103,7 +112,10 @@ export default function DianaIntegration({ patient, onResult }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `diana_config_${patient.last_name || 'paziente'}.xml`;
+    // Usa il nome file dal percorso configurato, altrimenti default
+    const configPath = dianaSettings.config_path || '';
+    const fileName = configPath ? configPath.split(/[\\/]/).pop() : `diana_config_${patient.last_name || 'paziente'}.xml`;
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -180,9 +192,17 @@ export default function DianaIntegration({ patient, onResult }) {
         />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        1. Esporta il file config → passalo a <code className="font-mono bg-muted px-1 rounded">diana.exe --config</code> → 2. Importa il file HL7 prodotto da Diana per caricare i risultati.
-      </p>
+      {dianaSettings.exe_path && dianaSettings.config_path && dianaSettings.hl7_path ? (
+        <div className="rounded-md bg-muted p-2 text-[10px] font-mono text-muted-foreground break-all leading-relaxed">
+          <span className="font-semibold text-foreground">Comando: </span>
+          {`"${dianaSettings.exe_path}" --config "${dianaSettings.config_path}" --hl7 "${dianaSettings.hl7_path}"${dianaSettings.pdf_path ? ` --pdf "${dianaSettings.pdf_path}"` : ''}`}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          1. Esporta il file config → passalo a <code className="font-mono bg-muted px-1 rounded">diana.exe --config</code> → 2. Importa il file HL7 per caricare i risultati.
+          {' '}<span className="text-primary">Configura i percorsi in Impostazioni → Integrazioni Strumenti.</span>
+        </p>
+      )}
 
       {error && (
         <p className="text-xs text-destructive flex items-center gap-1">
