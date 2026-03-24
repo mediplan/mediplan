@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
+import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -37,6 +40,9 @@ const JUDGMENT_COLORS = {
 };
 
 export default function Scadenze() {
+  const { user } = useAuth();
+  if (!canAccess(user, 'scadenze')) return <AccessDenied />;
+
   const today = new Date();
   const defaultFrom = '2025-01-01';
   const defaultTo = format(new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()), 'yyyy-MM-dd');

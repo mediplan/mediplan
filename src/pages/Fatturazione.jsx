@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
+import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
@@ -36,6 +39,9 @@ function getExams(v) {
 }
 
 export default function Fatturazione() {
+  const { user } = useAuth();
+  if (!canAccess(user, 'fatturazione')) return <AccessDenied />;
+
   const today = new Date();
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(today), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(endOfMonth(today), 'yyyy-MM-dd'));

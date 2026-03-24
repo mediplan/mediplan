@@ -1,29 +1,34 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
+import {
   LayoutDashboard, Building2,
-  Menu, X, Settings, CalendarClock, Receipt
+  Menu, X, Settings, CalendarClock, Receipt, Users, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { canAccess, ROLE_LABELS } from '@/lib/roles';
+import { useAuth } from '@/lib/AuthContext';
 
-const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/aziende', label: 'Aziende', icon: Building2 },
-  { path: '/scadenze', label: 'Scadenziario', icon: CalendarClock },
-  { path: '/fatturazione', label: 'Fatturazione', icon: Receipt },
-
-  { path: '/impostazioni', label: 'Impostazioni', icon: Settings },
+const ALL_NAV_ITEMS = [
+  { path: '/',             label: 'Dashboard',    icon: LayoutDashboard, section: 'dashboard' },
+  { path: '/aziende',      label: 'Aziende',       icon: Building2,       section: 'aziende' },
+  { path: '/scadenze',     label: 'Scadenziario',  icon: CalendarClock,   section: 'scadenze' },
+  { path: '/fatturazione', label: 'Fatturazione',  icon: Receipt,         section: 'fatturazione' },
+  { path: '/utenti',       label: 'Utenti',        icon: Users,           section: 'utenti' },
+  { path: '/impostazioni', label: 'Impostazioni',  icon: Settings,        section: 'impostazioni' },
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const navItems = ALL_NAV_ITEMS.filter(item => canAccess(user, item.section));
 
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/30 z-40 lg:hidden backdrop-blur-sm"
           onClick={onToggle}
         />
@@ -66,8 +71,8 @@ export default function Sidebar({ isOpen, onToggle }) {
                 onClick={() => { if (window.innerWidth < 1024) onToggle(); }}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                  isActive 
-                    ? "bg-primary text-primary-foreground shadow-sm" 
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -78,11 +83,24 @@ export default function Sidebar({ isOpen, onToggle }) {
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <p className="text-[10px] text-muted-foreground text-center">
-            D.Lgs. 81/2008
-          </p>
+        {/* User info + logout */}
+        <div className="p-4 border-t border-border space-y-2">
+          {user && (
+            <div className="px-1">
+              <p className="text-xs font-medium text-foreground truncate">{user.full_name || user.email}</p>
+              <p className="text-[10px] text-muted-foreground">{ROLE_LABELS[user.role] || user.role}</p>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-muted-foreground hover:text-destructive text-xs gap-2"
+            onClick={() => logout()}
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Esci
+          </Button>
+          <p className="text-[10px] text-muted-foreground text-center pt-1">D.Lgs. 81/2008</p>
         </div>
       </aside>
     </>

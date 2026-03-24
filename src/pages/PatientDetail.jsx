@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
 import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,6 +21,9 @@ export default function PatientDetail() {
   const patientId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canSeeClinic = canAccess(user, 'dati_clinici');
+  const canWriteVisit = canAccess(user, 'visite_write');
 
   const [visitDialogOpen, setVisitDialogOpen] = useState(false);
   const [editingVisit, setEditingVisit] = useState(null);
@@ -104,39 +109,43 @@ export default function PatientDetail() {
           {patient.phone && <p className="text-sm">Tel: {patient.phone}</p>}
           {patient.email && <p className="text-sm">Email: {patient.email}</p>}
         </Card>
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Heart className="h-4 w-4 text-destructive" />
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Anamnesi</p>
-          </div>
-          {patient.blood_type && patient.blood_type !== 'unknown' && <p className="text-sm">Gruppo: <span className="font-medium">{patient.blood_type}</span></p>}
-          {patient.allergies && <p className="text-sm">Allergie: {patient.allergies}</p>}
-          {patient.chronic_conditions && <p className="text-sm">Patologie: {patient.chronic_conditions}</p>}
-          {!patient.allergies && !patient.chronic_conditions && <p className="text-sm text-muted-foreground">Nessun dato</p>}
-        </Card>
-        <Card className="p-4 space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Pill className="h-4 w-4 text-accent" />
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Terapie</p>
-          </div>
-          {patient.current_medications ? (
-            <p className="text-sm">{patient.current_medications}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">Nessuna terapia in corso</p>
-          )}
-        </Card>
+        {canSeeClinic ? (
+          <>
+            <Card className="p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Heart className="h-4 w-4 text-destructive" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Anamnesi</p>
+              </div>
+              {patient.blood_type && patient.blood_type !== 'unknown' && <p className="text-sm">Gruppo: <span className="font-medium">{patient.blood_type}</span></p>}
+              {patient.allergies && <p className="text-sm">Allergie: {patient.allergies}</p>}
+              {patient.chronic_conditions && <p className="text-sm">Patologie: {patient.chronic_conditions}</p>}
+              {!patient.allergies && !patient.chronic_conditions && <p className="text-sm text-muted-foreground">Nessun dato</p>}
+            </Card>
+            <Card className="p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Pill className="h-4 w-4 text-accent" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Terapie</p>
+              </div>
+              {patient.current_medications ? (
+                <p className="text-sm">{patient.current_medications}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Nessuna terapia in corso</p>
+              )}
+            </Card>
+          </>
+        ) : null}
       </div>
 
-      {/* Visit history */}
-      <Card className="p-5">
+      {/* Visit history - solo admin e operatori */}
+      {canSeeClinic && <Card className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <FileHeart className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-semibold">Storico visite ({patientVisits.length})</h2>
           </div>
-          <Button size="sm" onClick={handleNewVisit}>
+          {canWriteVisit && <Button size="sm" onClick={handleNewVisit}>
             <Plus className="h-4 w-4 mr-1" /> Nuova visita
-          </Button>
+          </Button>}
         </div>
         {patientVisits.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nessuna visita registrata</p>
@@ -154,19 +163,21 @@ export default function PatientDetail() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <StatusBadge status={v.judgment} />
-                  <Button variant="ghost" size="icon" onClick={() => handleEditVisit(v)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingVisit(v)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                   <StatusBadge status={v.judgment} />
+                   {canWriteVisit && <>
+                     <Button variant="ghost" size="icon" onClick={() => handleEditVisit(v)}>
+                       <Pencil className="h-3.5 w-3.5" />
+                     </Button>
+                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingVisit(v)}>
+                       <Trash2 className="h-3.5 w-3.5" />
+                     </Button>
+                   </>}
+                 </div>
               </div>
             ))}
           </div>
         )}
-      </Card>
+      </Card>}
 
       {/* Visit form dialog - pre-fill patient */}
       <VisitFormDialog

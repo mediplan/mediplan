@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
+import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
@@ -388,6 +391,9 @@ function MansionarioTab() {
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 
 export default function Settings() {
+  const { user } = useAuth();
+  if (!canAccess(user, 'impostazioni')) return <AccessDenied />;
+
   return (
     <div>
       <PageHeader title="Impostazioni" description="Configurazioni e dati di riferimento" />

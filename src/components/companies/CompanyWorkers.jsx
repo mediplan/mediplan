@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
 import { Plus, Search, Users, MoreHorizontal, Pencil, Trash2, Stethoscope, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +58,10 @@ function getExpiryInfo(patient, visits) {
 export default function CompanyWorkers({ company }) {
   const companyId = String(company.id);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canSeeClinic = canAccess(user, 'dati_clinici');
+  const canWriteVisit = canAccess(user, 'visite_write');
+  const canWriteAccertamenti = canAccess(user, 'accertamenti_write');
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editPatient, setEditPatient] = useState(null);
@@ -195,14 +201,17 @@ export default function CompanyWorkers({ company }) {
                     </TableCell>
                     <TableCell><StatusBadge status={p.status} /></TableCell>
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs px-2 gap-1 text-primary border-primary/40 hover:bg-primary/10"
-                        onClick={(e) => handleVisitNow(e, p)}
-                      >
-                        <Stethoscope className="h-3 w-3" /> Visita ora
-                      </Button>
+                      {(canWriteVisit || canWriteAccertamenti) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2 gap-1 text-primary border-primary/40 hover:bg-primary/10"
+                          onClick={(e) => handleVisitNow(e, p)}
+                        >
+                          <Stethoscope className="h-3 w-3" />
+                          {canWriteVisit ? 'Visita ora' : 'Accertamenti'}
+                        </Button>
+                      )}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

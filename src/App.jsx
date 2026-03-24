@@ -14,6 +14,7 @@ import PatientDetail from '@/pages/PatientDetail';
 import Settings from '@/pages/Settings';
 import Scadenze from '@/pages/Scadenze';
 import Fatturazione from '@/pages/Fatturazione';
+import Utenti from '@/pages/Utenti';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
 
         <Route path="/scadenze" element={<Scadenze />} />
         <Route path="/fatturazione" element={<Fatturazione />} />
+        <Route path="/utenti" element={<Utenti />} />
         <Route path="/impostazioni" element={<Settings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
