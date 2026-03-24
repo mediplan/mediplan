@@ -426,6 +426,10 @@ export default function PreventiveVisitFormDialog({ open, onOpenChange, visit, o
 
             {/* ACCERTAMENTI */}
             <TabsContent value="accertamenti" className="space-y-3 mt-4">
+              <DianaIntegration
+                patient={patients.find(p => String(p.id) === String(form.patient_id))}
+                onResult={text => handleChange('other_exams', form.other_exams ? form.other_exams + '\n' + text : text)}
+              />
               <div><Label>Acuità visiva</Label><Input value={form.visual_acuity} onChange={e => handleChange('visual_acuity', e.target.value)} placeholder="es. 10/10 OD, 10/10 OS" /></div>
               <div><Label>Audiometria</Label><Textarea value={form.audiometry_result} onChange={e => handleChange('audiometry_result', e.target.value)} rows={2} /></div>
               <div><Label>Spirometria basale</Label><Textarea value={form.spirometry_result} onChange={e => handleChange('spirometry_result', e.target.value)} rows={2} /></div>
