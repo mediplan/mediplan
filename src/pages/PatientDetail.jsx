@@ -5,12 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
 import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import StatusBadge from '@/components/shared/StatusBadge';
-import VisitFormDialog from '@/components/visits/VisitFormDialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -25,8 +25,6 @@ export default function PatientDetail() {
   const canSeeClinic = canAccess(user, 'dati_clinici');
   const canWriteVisit = canAccess(user, 'visite_write');
 
-  const [visitDialogOpen, setVisitDialogOpen] = useState(false);
-  const [editingVisit, setEditingVisit] = useState(null);
   const [deletingVisit, setDeletingVisit] = useState(null);
 
   const { data: patients = [] } = useQuery({
@@ -41,17 +39,6 @@ export default function PatientDetail() {
   });
   const patientVisits = visits.filter(v => String(v.patient_id) === patientId);
 
-  const saveMutation = useMutation({
-    mutationFn: (data) => editingVisit
-      ? base44.entities.MedicalVisit.update(editingVisit.id, data)
-      : base44.entities.MedicalVisit.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['visits'] });
-      setVisitDialogOpen(false);
-      setEditingVisit(null);
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.MedicalVisit.delete(id),
     onSuccess: () => {
@@ -61,13 +48,11 @@ export default function PatientDetail() {
   });
 
   const handleNewVisit = () => {
-    setEditingVisit(null);
-    setVisitDialogOpen(true);
+    navigate(`/visita?patientId=${patientId}`);
   };
 
   const handleEditVisit = (visit) => {
-    setEditingVisit(visit);
-    setVisitDialogOpen(true);
+    navigate(`/visita?visitId=${visit.id}&patientId=${patientId}`);
   };
 
   if (!patient) {
@@ -179,14 +164,7 @@ export default function PatientDetail() {
         )}
       </Card>}
 
-      {/* Visit form dialog - pre-fill patient */}
-      <VisitFormDialog
-        open={visitDialogOpen}
-        onOpenChange={(open) => { setVisitDialogOpen(open); if (!open) setEditingVisit(null); }}
-        visit={editingVisit || { patient_id: patient.id, patient_name: `${patient.last_name} ${patient.first_name}`, company_id: patient.company_id, company_name: patient.company_name }}
-        onSave={(data) => saveMutation.mutate(data)}
-        lockPatient
-      />
+
 
       {/* Delete confirm */}
       <AlertDialog open={!!deletingVisit} onOpenChange={() => setDeletingVisit(null)}>

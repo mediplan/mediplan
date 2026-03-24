@@ -10,6 +10,7 @@ import Dashboard from '@/pages/Dashboard';
 import Companies from '@/pages/Companies';
 import CompanyDetail from '@/pages/CompanyDetail';
 import PatientDetail from '@/pages/PatientDetail';
+import VisitEdit from '@/pages/VisitEdit';
 
 import Settings from '@/pages/Settings';
 import Scadenze from '@/pages/Scadenze';
@@ -46,6 +47,7 @@ const AuthenticatedApp = () => {
         <Route path="/aziende" element={<Companies />} />
         <Route path="/aziende/:id" element={<CompanyDetail />} />
         <Route path="/pazienti/:id" element={<PatientDetail />} />
+        <Route path="/visita" element={<VisitEdit />} />
 
         <Route path="/scadenze" element={<Scadenze />} />
         <Route path="/fatturazione" element={<Fatturazione />} />
