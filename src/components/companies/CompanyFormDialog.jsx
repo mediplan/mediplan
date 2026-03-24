@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
@@ -12,12 +14,18 @@ const emptyForm = {
   name: '', vat_number: '', fiscal_code: '', address: '', city: '', province: '',
   zip_code: '', phone: '', email: '', pec: '', ateco_code: '', sector: '',
   legal_representative: '', rspp: '', rls: '', employee_count: '',
-  contract_start: '', contract_end: '', notes: '', status: 'active'
+  contract_start: '', contract_end: '', notes: '', status: 'active',
+  assigned_doctor_id: '', assigned_doctor_name: ''
 };
 
 export default function CompanyFormDialog({ open, onOpenChange, company, onSave }) {
   const [form, setForm] = useState(emptyForm);
   const isEdit = !!company;
+
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list('full_name'),
+  });
 
   useEffect(() => {
     if (company) {
@@ -28,6 +36,15 @@ export default function CompanyFormDialog({ open, onOpenChange, company, onSave 
   }, [company, open]);
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleDoctorChange = (doctorId) => {
+    const doc = doctors.find(d => d.id === doctorId);
+    setForm(prev => ({
+      ...prev,
+      assigned_doctor_id: doctorId === 'none' ? '' : doctorId,
+      assigned_doctor_name: doc ? doc.full_name : '',
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -123,6 +140,18 @@ export default function CompanyFormDialog({ open, onOpenChange, company, onSave 
                   <SelectItem value="active">Attivo</SelectItem>
                   <SelectItem value="inactive">Inattivo</SelectItem>
                   <SelectItem value="suspended">Sospeso</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2">
+              <Label>Medico Incaricato</Label>
+              <Select value={form.assigned_doctor_id || 'none'} onValueChange={handleDoctorChange}>
+                <SelectTrigger><SelectValue placeholder="Nessun medico assegnato" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Nessun medico assegnato —</SelectItem>
+                  {doctors.filter(d => d.active !== false).map(d => (
+                    <SelectItem key={d.id} value={d.id}>{d.full_name}{d.specialization ? ` — ${d.specialization}` : ''}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

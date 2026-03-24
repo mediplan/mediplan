@@ -18,7 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
@@ -388,17 +388,133 @@ function MansionarioTab() {
   );
 }
 
+// ─── Medici Incaricati ────────────────────────────────────────────────────────
+
+const emptyDoctor = { full_name: '', specialization: '', user_email: '', phone: '', notes: '', active: true };
+
+function DoctorDialog({ open, onOpenChange, doctor, onSave }) {
+  const [form, setForm] = useState(emptyDoctor);
+
+  React.useEffect(() => {
+    setForm(doctor ? { ...emptyDoctor, ...doctor } : emptyDoctor);
+  }, [doctor, open]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{doctor ? 'Modifica Medico' : 'Nuovo Medico Incaricato'}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={e => { e.preventDefault(); onSave(form); }} className="space-y-3">
+          <div>
+            <Label>Nome completo *</Label>
+            <Input value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} required />
+          </div>
+          <div>
+            <Label>Specializzazione</Label>
+            <Input value={form.specialization} onChange={e => setForm(p => ({ ...p, specialization: e.target.value }))} placeholder="es. Medicina del Lavoro" />
+          </div>
+          <div>
+            <Label>Email utente associato</Label>
+            <Input type="email" value={form.user_email} onChange={e => setForm(p => ({ ...p, user_email: e.target.value }))} placeholder="Se ha accesso al sistema" />
+          </div>
+          <div>
+            <Label>Telefono</Label>
+            <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
+          </div>
+          <div>
+            <Label>Note</Label>
+            <Textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} />
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="doc-active" checked={!!form.active} onChange={e => setForm(p => ({ ...p, active: e.target.checked }))} className="h-4 w-4 accent-primary" />
+            <Label htmlFor="doc-active" className="font-normal cursor-pointer">Medico attivo</Label>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annulla</Button>
+            <Button type="submit">{doctor ? 'Salva' : 'Crea'}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MediciTab() {
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list('full_name'),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: data => base44.entities.DoctorProfile.create(data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['doctorProfiles'] }); setDialogOpen(false); },
+  });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.DoctorProfile.update(id, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['doctorProfiles'] }); setDialogOpen(false); setEditing(null); },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: id => base44.entities.DoctorProfile.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctorProfiles'] }),
+  });
+
+  const handleSave = (form) => {
+    if (editing) updateMutation.mutate({ id: editing.id, data: form });
+    else createMutation.mutate(form);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <p className="text-sm text-muted-foreground">Elenco dei medici incaricati assegnabili alle aziende.</p>
+        <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
+          <Plus className="h-4 w-4" /> Nuovo Medico
+        </Button>
+      </div>
+      <div className="space-y-1.5">
+        {doctors.map(d => (
+          <div key={d.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border hover:bg-muted/40 transition-colors">
+            <div className="flex-1 min-w-0">
+              <span className={`text-sm font-medium ${!d.active ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{d.full_name}</span>
+              {d.specialization && <span className="text-xs text-muted-foreground ml-2">— {d.specialization}</span>}
+              {d.user_email && <span className="text-xs text-muted-foreground ml-2">({d.user_email})</span>}
+            </div>
+            {!d.active && <Badge variant="outline" className="text-xs text-muted-foreground">Inattivo</Badge>}
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(d); setDialogOpen(true); }}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteMutation.mutate(d.id)}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        ))}
+        {doctors.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">Nessun medico incaricato definito</p>}
+      </div>
+      <DoctorDialog open={dialogOpen} onOpenChange={setDialogOpen} doctor={editing} onSave={handleSave} />
+    </div>
+  );
+}
+
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 
 export default function Settings() {
   const { user } = useAuth();
   if (!canAccess(user, 'impostazioni')) return <AccessDenied />;
 
+  const isAdmin = canAccess(user, 'medici_incaricati');
+
   return (
     <div>
       <PageHeader title="Impostazioni" description="Configurazioni e dati di riferimento" />
       <Tabs defaultValue="modulistica">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap">
           <TabsTrigger value="modulistica" className="gap-2">
             <FileText className="h-4 w-4" /> Modulistica
           </TabsTrigger>
@@ -408,6 +524,11 @@ export default function Settings() {
           <TabsTrigger value="integrazioni" className="gap-2">
             <Plug className="h-4 w-4" /> Integrazioni Strumenti
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="medici" className="gap-2">
+              <UserCheck className="h-4 w-4" /> Medici Incaricati
+            </TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="modulistica">
           <ModulisticaTab />
@@ -418,6 +539,11 @@ export default function Settings() {
         <TabsContent value="integrazioni">
           <IntegrazioniTab />
         </TabsContent>
+        {isAdmin && (
+          <TabsContent value="medici">
+            <MediciTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -67,6 +67,7 @@ export default function CompanyDetail() {
           {company.rspp && <p className="text-sm">RSPP: <span className="font-medium">{company.rspp}</span></p>}
           {company.rls && <p className="text-sm">RLS: <span className="font-medium">{company.rls}</span></p>}
           {company.employee_count && <p className="text-sm">Dipendenti: <span className="font-medium">{company.employee_count}</span></p>}
+          {company.assigned_doctor_name && <p className="text-sm">Medico incaricato: <span className="font-medium">{company.assigned_doctor_name}</span></p>}
         </Card>
       </div>
 

@@ -1,45 +1,62 @@
 /**
  * Definizione ruoli e permessi dell'applicazione MEDIPLAN
  *
- * admin     → Medico/Amministratore: accesso completo
- * operatore → Operatore Sanitario: aziende, lavoratori, accertamenti integrativi
- * segreteria→ Segreteria: aziende, lavoratori (no dati anamnestici), scadenze, fatturazione
+ * amministratore → accesso completo + gestione utenti
+ * medico         → dati clinici solo per aziende di cui è medico incaricato
+ * operatore      → Operatore Sanitario: aziende, lavoratori, accertamenti integrativi
+ * segreteria     → Segreteria: aziende, lavoratori (no dati anamnestici), scadenze, fatturazione
  */
 
 export const ROLES = {
-  ADMIN: 'admin',
-  OPERATORE: 'operatore',
-  SEGRETERIA: 'segreteria',
+  AMMINISTRATORE: 'amministratore',
+  MEDICO:         'medico',
+  OPERATORE:      'operatore',
+  SEGRETERIA:     'segreteria',
 };
 
 export const ROLE_LABELS = {
-  admin: 'Medico / Amministratore',
-  operatore: 'Operatore Sanitario',
-  segreteria: 'Segreteria',
+  amministratore: 'Amministratore',
+  medico:         'Medico Incaricato',
+  operatore:      'Operatore Sanitario',
+  segreteria:     'Segreteria',
 };
 
 /**
  * Ritorna true se l'utente può accedere alla sezione indicata.
- * Usato da componenti e pagine per nascondere/bloccare contenuti.
  */
 export function canAccess(user, section) {
   const role = user?.role;
   const permissions = {
-    dashboard:    ['admin', 'operatore', 'segreteria'],
-    aziende:      ['admin', 'operatore', 'segreteria'],
-    lavoratori:   ['admin', 'operatore', 'segreteria'],
-    scadenze:     ['admin', 'operatore', 'segreteria'],
-    fatturazione: ['admin', 'segreteria'],
-    impostazioni: ['admin'],
-    utenti:       ['admin'],
+    dashboard:          ['amministratore', 'medico', 'operatore', 'segreteria'],
+    aziende:            ['amministratore', 'medico', 'operatore', 'segreteria'],
+    lavoratori:         ['amministratore', 'medico', 'operatore', 'segreteria'],
+    scadenze:           ['amministratore', 'medico', 'operatore', 'segreteria'],
+    fatturazione:       ['amministratore', 'segreteria'],
+    impostazioni:       ['amministratore', 'medico', 'operatore', 'segreteria'],
+    utenti:             ['amministratore'],
     // Dati clinici/anamnestici (visite complete, giudizi, anamnesi)
-    dati_clinici: ['admin', 'operatore'],
+    dati_clinici:       ['amministratore', 'medico', 'operatore'],
     // Accertamenti integrativi (audiometria, spirometria, ecc.)
-    accertamenti: ['admin', 'operatore'],
+    accertamenti:       ['amministratore', 'medico', 'operatore'],
     // Può modificare/aggiungere visite complete
-    visite_write: ['admin'],
+    visite_write:       ['amministratore', 'medico'],
     // Può modificare solo gli accertamenti integrativi
-    accertamenti_write: ['admin', 'operatore'],
+    accertamenti_write: ['amministratore', 'medico', 'operatore'],
+    // Può gestire utenti
+    gestione_utenti:    ['amministratore'],
+    // Può vedere tab Medici Incaricati nelle impostazioni
+    medici_incaricati:  ['amministratore'],
   };
   return (permissions[section] || []).includes(role);
+}
+
+/**
+ * Per il ruolo "medico": filtra le aziende in base al doctor_profile_id del medico.
+ * Accetta la lista delle aziende e il profilo medico (DoctorProfile).
+ * Gli altri ruoli vedono tutte le aziende.
+ */
+export function filterCompaniesByRole(user, companies, doctorProfile) {
+  if (user?.role !== 'medico') return companies;
+  if (!doctorProfile) return [];
+  return companies.filter(c => c.assigned_doctor_id === doctorProfile.id);
 }

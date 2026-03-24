@@ -17,9 +17,10 @@ import { UserPlus, Mail, Shield } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const ROLE_COLORS = {
-  admin:     'bg-primary/10 text-primary',
-  operatore: 'bg-accent/10 text-accent',
-  segreteria:'bg-secondary text-secondary-foreground',
+  amministratore: 'bg-primary/10 text-primary',
+  medico:         'bg-chart-3/10 text-chart-3',
+  operatore:      'bg-accent/10 text-accent',
+  segreteria:     'bg-secondary text-secondary-foreground',
 };
 
 export default function Utenti() {
@@ -41,7 +42,9 @@ export default function Utenti() {
     e.preventDefault();
     setLoading(true);
     try {
-      await base44.users.inviteUser(inviteForm.email, inviteForm.role);
+      // inviteUser accetta solo 'admin' o 'user' a livello piattaforma; usiamo 'user' per tutti
+      const platformRole = inviteForm.role === 'amministratore' ? 'admin' : 'user';
+      await base44.users.inviteUser(inviteForm.email, platformRole);
       toast({ title: 'Invito inviato', description: `${inviteForm.email} è stato invitato come ${ROLE_LABELS[inviteForm.role]}` });
       setInviteOpen(false);
       setInviteForm({ email: '', role: 'operatore' });
@@ -111,7 +114,8 @@ export default function Utenti() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="admin">Medico / Amministratore</SelectItem>
+                            <SelectItem value="amministratore">Amministratore</SelectItem>
+                            <SelectItem value="medico">Medico Incaricato</SelectItem>
                             <SelectItem value="operatore">Operatore Sanitario</SelectItem>
                             <SelectItem value="segreteria">Segreteria</SelectItem>
                           </SelectContent>
@@ -153,13 +157,15 @@ export default function Utenti() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Medico / Amministratore</SelectItem>
+                  <SelectItem value="amministratore">Amministratore</SelectItem>
+                  <SelectItem value="medico">Medico Incaricato</SelectItem>
                   <SelectItem value="operatore">Operatore Sanitario</SelectItem>
                   <SelectItem value="segreteria">Segreteria</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                {inviteForm.role === 'admin' && 'Accesso completo a tutte le funzionalità.'}
+                {inviteForm.role === 'amministratore' && 'Accesso completo + gestione utenti e medici incaricati.'}
+                {inviteForm.role === 'medico' && 'Dati clinici delle aziende dove è nominato medico incaricato.'}
                 {inviteForm.role === 'operatore' && 'Accesso ad aziende, lavoratori e accertamenti integrativi.'}
                 {inviteForm.role === 'segreteria' && 'Accesso ad aziende, lavoratori (no dati clinici), scadenze e fatturazione.'}
               </p>

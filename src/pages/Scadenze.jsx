@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { canAccess } from '@/lib/roles';
+import { canAccess, filterCompaniesByRole } from '@/lib/roles';
 import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -43,6 +43,16 @@ export default function Scadenze() {
   const { user } = useAuth();
   if (!canAccess(user, 'scadenze')) return <AccessDenied />;
 
+  // Carica il profilo medico dell'utente corrente (se ruolo = medico)
+  const { data: allDoctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list(),
+    enabled: user?.role === 'medico',
+  });
+  const myDoctorProfile = user?.role === 'medico'
+    ? allDoctors.find(d => d.user_email === user.email)
+    : null;
+
   const today = new Date();
   const defaultFrom = '2025-01-01';
   const defaultTo = format(new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()), 'yyyy-MM-dd');
@@ -60,10 +70,12 @@ export default function Scadenze() {
   const [showMansione, setShowMansione] = useState(false);
   const [elaborated, setElaborated] = useState(false);
 
-  const { data: companies = [] } = useQuery({
+  const { data: allCompanies = [] } = useQuery({
     queryKey: ['companies'],
     queryFn: () => base44.entities.Company.list('name'),
   });
+
+  const companies = filterCompaniesByRole(user, allCompanies, myDoctorProfile);
 
   const { data: visits = [], isFetching } = useQuery({
     queryKey: ['visits-all'],
@@ -98,6 +110,10 @@ export default function Scadenze() {
       return !isBefore(d, from) && !isAfter(d, to);
     });
 
+    // Applica filtro aziende visibili (per medico: solo sue aziende)
+    const visibleCompanyIds = new Set(companies.map(c => c.id));
+    filtered = filtered.filter(v => visibleCompanyIds.has(v.company_id));
+
     if (selectedCompany !== 'all') {
       filtered = filtered.filter(v => v.company_id === selectedCompany);
     }
@@ -124,7 +140,7 @@ export default function Scadenze() {
         patient: p,
       };
     });
-  }, [elaborated, visits, patients, fromDate, toDate, selectedCompany, inclNoVisit, inclSospesi, inclDaRivisitare]);
+  }, [elaborated, visits, patients, fromDate, toDate, selectedCompany, inclNoVisit, inclSospesi, inclDaRivisitare, companies]);
 
   const handleElabora = () => setElaborated(true);
 

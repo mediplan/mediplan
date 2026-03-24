@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { filterCompaniesByRole } from '@/lib/roles';
 import { Plus, Search, Building2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +17,7 @@ import CompanyFormDialog from '@/components/companies/CompanyFormDialog';
 import { Link } from 'react-router-dom';
 
 export default function Companies() {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editCompany, setEditCompany] = useState(null);
@@ -25,6 +28,17 @@ export default function Companies() {
     queryKey: ['companies'],
     queryFn: () => base44.entities.Company.list('-created_date'),
   });
+
+  // Per i medici: carica il proprio profilo e filtra le aziende
+  const { data: allDoctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list(),
+    enabled: user?.role === 'medico',
+  });
+  const myDoctorProfile = user?.role === 'medico'
+    ? allDoctors.find(d => d.user_email === user.email)
+    : null;
+  const visibleCompanies = filterCompaniesByRole(user, companies, myDoctorProfile);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Company.create(data),
@@ -49,7 +63,7 @@ export default function Companies() {
     }
   };
 
-  const filtered = companies.filter(c =>
+  const filtered = visibleCompanies.filter(c =>
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
     c.city?.toLowerCase().includes(search.toLowerCase()) ||
     c.vat_number?.includes(search)
