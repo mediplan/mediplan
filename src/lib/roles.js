@@ -15,6 +15,7 @@ export const ROLES = {
 };
 
 export const ROLE_LABELS = {
+  admin:          'Amministratore',
   amministratore: 'Amministratore',
   medico:         'Medico Incaricato',
   operatore:      'Operatore Sanitario',
@@ -25,7 +26,8 @@ export const ROLE_LABELS = {
  * Ritorna true se l'utente può accedere alla sezione indicata.
  */
 export function canAccess(user, section) {
-  const role = user?.role;
+  // Retrocompatibilità: il ruolo piattaforma 'admin' equivale ad 'amministratore'
+  const role = user?.role === 'admin' ? 'amministratore' : user?.role;
   const permissions = {
     dashboard:          ['amministratore', 'medico', 'operatore', 'segreteria'],
     aziende:            ['amministratore', 'medico', 'operatore', 'segreteria'],
