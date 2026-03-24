@@ -15,84 +15,98 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
 
-const DIANA_SETTINGS_KEY = 'mediplan_diana_settings';
+const STRUMENTI_SETTINGS_KEY = 'mediplan_strumenti_settings';
+
+const STRUMENTI = [
+  {
+    key: 'diana',
+    label: 'Droga Test (Diana)',
+    icon: FlaskConical,
+    color: 'text-primary',
+    border: 'border-primary/20',
+    bg: 'bg-primary/5',
+    description: 'Strumento per il test tossicologico delle droghe d\'abuso.',
+  },
+  {
+    key: 'spirometro',
+    label: 'Spirometro',
+    icon: Activity,
+    color: 'text-chart-2',
+    border: 'border-chart-2/20',
+    bg: 'bg-chart-2/5',
+    description: 'Misura la capacità polmonare e la funzionalità respiratoria.',
+  },
+  {
+    key: 'audiometro',
+    label: 'Audiometro',
+    icon: Ear,
+    color: 'text-chart-3',
+    border: 'border-chart-3/20',
+    bg: 'bg-chart-3/5',
+    description: 'Valutazione della soglia uditiva.',
+  },
+  {
+    key: 'ecg',
+    label: 'ECG',
+    icon: Heart,
+    color: 'text-destructive',
+    border: 'border-destructive/20',
+    bg: 'bg-destructive/5',
+    description: 'Elettrocardiogramma per la valutazione cardiaca.',
+  },
+];
 
 function IntegrazioniTab() {
   const [settings, setSettings] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(DIANA_SETTINGS_KEY)) || { config_path: '', hl7_path: '', pdf_path: '', exe_path: '' };
-    } catch { return { config_path: '', hl7_path: '', pdf_path: '', exe_path: '' }; }
+      return JSON.parse(localStorage.getItem(STRUMENTI_SETTINGS_KEY)) || {};
+    } catch { return {}; }
   });
   const [saved, setSaved] = useState(false);
 
   const handleSave = (e) => {
     e.preventDefault();
-    localStorage.setItem(DIANA_SETTINGS_KEY, JSON.stringify(settings));
+    localStorage.setItem(STRUMENTI_SETTINGS_KEY, JSON.stringify(settings));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex gap-3">
-        <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-        <div className="text-sm text-foreground space-y-1">
-          <p className="font-medium">Come funziona l'integrazione Diana</p>
-          <p className="text-muted-foreground">
-            Diana è uno strumento esterno Windows (<code className="font-mono bg-muted px-1 rounded text-xs">diana.exe</code>) per il droga test.
-            Configura qui i percorsi di default che verranno usati durante la visita per generare il file di configurazione e ricevere il risultato HL7.
-          </p>
-          <p className="text-muted-foreground text-xs">
-            Comando: <code className="font-mono bg-muted px-1 rounded">diana.exe --config [percorso config] --hl7 [percorso hl7] --pdf [percorso pdf]</code>
-          </p>
-        </div>
+      <div className="rounded-lg border border-muted bg-muted/30 p-4 flex gap-3">
+        <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+        <p className="text-sm text-muted-foreground">
+          Per ogni strumento è possibile indicare la cartella di output dove il software dello strumento salva automaticamente i PDF dei referti.
+          Questo è un promemoria per l'operatore: durante la visita sarà possibile caricare manualmente il PDF dalla cartella indicata.
+        </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-5">
-        <div className="space-y-1">
-          <Label>Percorso eseguibile Diana (<code className="font-mono text-xs">diana.exe</code>)</Label>
-          <Input
-            placeholder="es. C:\Programmi\Diana\diana.exe"
-            value={settings.exe_path}
-            onChange={e => setSettings(p => ({ ...p, exe_path: e.target.value }))}
-          />
-          <p className="text-xs text-muted-foreground">Percorso completo all'eseguibile diana.exe sul PC locale.</p>
-        </div>
-
-        <div className="space-y-1">
-          <Label>Percorso file di configurazione (--config)</Label>
-          <Input
-            placeholder="es. C:\Users\Utente\Documents\diana_config.xml"
-            value={settings.config_path}
-            onChange={e => setSettings(p => ({ ...p, config_path: e.target.value }))}
-          />
-          <p className="text-xs text-muted-foreground">Dove viene scritto il file XML di configurazione paziente/medico da passare a Diana.</p>
-        </div>
-
-        <div className="space-y-1">
-          <Label>Percorso output HL7 (--hl7)</Label>
-          <Input
-            placeholder="es. C:\Users\Utente\Documents\diana_result.xml"
-            value={settings.hl7_path}
-            onChange={e => setSettings(p => ({ ...p, hl7_path: e.target.value }))}
-          />
-          <p className="text-xs text-muted-foreground">Dove Diana scriverà il file XML HL7 con i risultati dell'analisi. Deve essere in Documents o AppData.</p>
-        </div>
-
-        <div className="space-y-1">
-          <Label>Percorso output PDF (--pdf)</Label>
-          <Input
-            placeholder="es. C:\Users\Utente\Documents\diana_report.pdf"
-            value={settings.pdf_path}
-            onChange={e => setSettings(p => ({ ...p, pdf_path: e.target.value }))}
-          />
-          <p className="text-xs text-muted-foreground">Dove Diana scriverà il report PDF del test.</p>
-        </div>
+      <form onSubmit={handleSave} className="space-y-4">
+        {STRUMENTI.map(({ key, label, icon: Icon, color, border, bg, description }) => (
+          <div key={key} className={`rounded-lg border ${border} ${bg} p-4 space-y-3`}>
+            <div className="flex items-center gap-2">
+              <Icon className={`h-4 w-4 ${color}`} />
+              <span className={`text-sm font-semibold ${color}`}>{label}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">{description}</p>
+            <div className="space-y-1">
+              <Label className="flex items-center gap-1.5">
+                <FolderOpen className="h-3.5 w-3.5" /> Cartella PDF di output
+              </Label>
+              <Input
+                placeholder={`es. C:\\Referti\\${label.replace(/[^a-zA-Z]/g, '')}\\`}
+                value={settings[key] || ''}
+                onChange={e => setSettings(p => ({ ...p, [key]: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">Percorso della cartella dove il software dello strumento salva i PDF.</p>
+            </div>
+          </div>
+        ))}
 
         <div className="pt-2">
           <Button type="submit" className="gap-2">
@@ -100,13 +114,6 @@ function IntegrazioniTab() {
             {saved ? 'Salvato!' : 'Salva impostazioni'}
           </Button>
         </div>
-
-        {settings.exe_path && settings.config_path && settings.hl7_path && (
-          <div className="rounded-md bg-muted p-3 text-xs font-mono text-muted-foreground break-all">
-            <p className="text-xs font-semibold text-foreground mb-1">Comando generato:</p>
-            {`"${settings.exe_path}" --config "${settings.config_path}" --hl7 "${settings.hl7_path}"${settings.pdf_path ? ` --pdf "${settings.pdf_path}"` : ''}`}
-          </div>
-        )}
       </form>
     </div>
   );

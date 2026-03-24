@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DianaIntegration from '@/components/visits/DianaIntegration';
+import PdfExamUpload from '@/components/visits/PdfExamUpload';
 
 const emptyForm = {
   patient_id: '', patient_name: '', company_id: '', company_name: '',
@@ -208,12 +209,26 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
                 patient={patients.find(p => String(p.id) === String(form.patient_id))}
                 onResult={text => handleChange('other_exams', form.other_exams ? form.other_exams + '\n' + text : text)}
               />
+              <PdfExamUpload
+                label="Audiometro"
+                color="text-chart-3"
+                borderColor="border-chart-3/20"
+                bgColor="bg-chart-3/5"
+                onResult={text => handleChange('audiometry_result', form.audiometry_result ? form.audiometry_result + '\n' + text : text)}
+              />
               <div>
-                <Label>Audiometria</Label>
+                <Label>Audiometria – note</Label>
                 <Textarea value={form.audiometry_result} onChange={e => handleChange('audiometry_result', e.target.value)} rows={2} />
               </div>
+              <PdfExamUpload
+                label="Spirometro"
+                color="text-chart-2"
+                borderColor="border-chart-2/20"
+                bgColor="bg-chart-2/5"
+                onResult={text => handleChange('spirometry_result', form.spirometry_result ? form.spirometry_result + '\n' + text : text)}
+              />
               <div>
-                <Label>Spirometria</Label>
+                <Label>Spirometria – note</Label>
                 <Textarea value={form.spirometry_result} onChange={e => handleChange('spirometry_result', e.target.value)} rows={2} />
               </div>
               <div>
@@ -224,8 +239,15 @@ export default function VisitFormDialog({ open, onOpenChange, visit, onSave, loc
                 <Label>Esame urine</Label>
                 <Textarea value={form.urine_test_result} onChange={e => handleChange('urine_test_result', e.target.value)} rows={2} />
               </div>
+              <PdfExamUpload
+                label="ECG"
+                color="text-destructive"
+                borderColor="border-destructive/20"
+                bgColor="bg-destructive/5"
+                onResult={text => handleChange('ecg_result', form.ecg_result ? form.ecg_result + '\n' + text : text)}
+              />
               <div>
-                <Label>ECG</Label>
+                <Label>ECG – note</Label>
                 <Textarea value={form.ecg_result} onChange={e => handleChange('ecg_result', e.target.value)} rows={2} />
               </div>
               <div>
