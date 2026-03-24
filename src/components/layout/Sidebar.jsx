@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2,
-  Menu, X, Settings, CalendarClock
+  Menu, X, Settings, CalendarClock, Receipt
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/aziende', label: 'Aziende', icon: Building2 },
   { path: '/scadenze', label: 'Scadenziario', icon: CalendarClock },
+  { path: '/fatturazione', label: 'Fatturazione', icon: Receipt },
 
   { path: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];
