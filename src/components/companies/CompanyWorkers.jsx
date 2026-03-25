@@ -12,8 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import StatusBadge from '@/components/shared/StatusBadge';
 import PatientFormDialog from '@/components/patients/PatientFormDialog';
-import VisitFormDialog from '@/components/visits/VisitFormDialog';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -58,6 +57,7 @@ function getExpiryInfo(patient, visits) {
 export default function CompanyWorkers({ company }) {
   const companyId = String(company.id);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const canSeeClinic = canAccess(user, 'dati_clinici');
   const canWriteVisit = canAccess(user, 'visite_write');
@@ -66,8 +66,6 @@ export default function CompanyWorkers({ company }) {
   const [formOpen, setFormOpen] = useState(false);
   const [editPatient, setEditPatient] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
-  const [visitOpen, setVisitOpen] = useState(false);
-  const [visitPatient, setVisitPatient] = useState(null);
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -100,11 +98,6 @@ export default function CompanyWorkers({ company }) {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['patients'] }); setDeleteId(null); },
   });
 
-  const createVisitMutation = useMutation({
-    mutationFn: (data) => base44.entities.MedicalVisit.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['medicalVisits'] }); setVisitOpen(false); setVisitPatient(null); },
-  });
-
   const handleSave = (data) => {
     if (editPatient) {
       updateMutation.mutate({ id: editPatient.id, data });
@@ -116,22 +109,8 @@ export default function CompanyWorkers({ company }) {
   const handleVisitNow = (e, patient) => {
     e.preventDefault();
     e.stopPropagation();
-    setVisitPatient(patient);
-    setVisitOpen(true);
+    navigate(`/visita?patientId=${patient.id}`);
   };
-
-  const handleSaveVisit = (data) => {
-    createVisitMutation.mutate(data);
-  };
-
-  // Pre-populate visit form with patient data
-  const visitPreset = visitPatient ? {
-    patient_id: visitPatient.id,
-    patient_name: `${visitPatient.last_name} ${visitPatient.first_name}`,
-    company_id: visitPatient.company_id,
-    company_name: visitPatient.company_name,
-    visit_date: new Date().toISOString().split('T')[0],
-  } : null;
 
   return (
     <Card className="p-5">
@@ -242,14 +221,6 @@ export default function CompanyWorkers({ company }) {
         patient={editPatient}
         onSave={handleSave}
         defaultCompany={company}
-      />
-
-      <VisitFormDialog
-        open={visitOpen}
-        onOpenChange={(v) => { setVisitOpen(v); if (!v) setVisitPatient(null); }}
-        visit={visitPreset}
-        onSave={handleSaveVisit}
-        lockPatient={true}
       />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
