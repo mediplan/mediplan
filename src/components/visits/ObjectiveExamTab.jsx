@@ -2,7 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Wand2 } from 'lucide-react';
 
@@ -41,6 +41,17 @@ function RadioRow({ label, field, options, form, onChange, noteField }) {
   );
 }
 
+function Section({ title, children }) {
+  return (
+    <Card>
+      <div className="px-5 py-3 border-b border-border">
+        <span className="font-semibold text-sm">{title}</span>
+      </div>
+      <div className="px-5 py-4 space-y-1">{children}</div>
+    </Card>
+  );
+}
+
 export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
   const chk = (field) => ({
     checked: !!form[field],
@@ -50,16 +61,18 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
   const setObj = (field, key, val) => onChange(field, { ...obj(field), [key]: val });
 
   return (
-    <div className="space-y-4">
-      <Card><CardContent className="pt-4 space-y-4">
-        <div className="flex justify-end">
-          <Button type="button" variant="outline" size="sm" onClick={onFillNormal} className="gap-2 text-primary border-primary/40">
-            <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
-          </Button>
-        </div>
+    <div className="space-y-3">
 
-        {/* Parametri vitali */}
-        <div className="flex flex-wrap gap-4 items-end">
+      {/* Pulsante valori normali */}
+      <div className="flex justify-end">
+        <Button type="button" variant="outline" size="sm" onClick={onFillNormal} className="gap-2 text-primary border-primary/40">
+          <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
+        </Button>
+      </div>
+
+      {/* Parametri vitali */}
+      <Section title="Parametri vitali">
+        <div className="flex flex-wrap gap-4 items-end py-1">
           <div>
             <Label className="text-xs">Altezza (cm)</Label>
             <Input type="number" value={form.height_cm || ''} onChange={e => onChange('height_cm', e.target.value)} className="w-24" />
@@ -78,21 +91,18 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             ))}
           </div>
         </div>
+      </Section>
 
-        {/* ---- SEZIONE: Ispezione generale ---- */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Ispezione generale</p>
-
+      {/* Ispezione generale */}
+      <Section title="Ispezione generale">
         <RadioRow label="Linfonodi" field="obj_lymphnodes" form={form} onChange={onChange}
           options={[{value:'normali',label:'normali'},{value:'patologici',label:'patologici'}]}
           noteField="obj_lymphnodes_notes"
         />
-
         <RadioRow label="Cavo orale" field="obj_oral" form={form} onChange={onChange}
           options={[{value:'normale',label:'normale'},{value:'patologico',label:'patologico'}]}
           noteField="obj_oral_notes"
         />
-
-        {/* Cute */}
         <div className="py-1 border-b border-border/50 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">Cute:</span>
@@ -120,18 +130,14 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="descrizione..." value={form.obj_skin_altro_notes||''} onChange={e => onChange('obj_skin_altro_notes', e.target.value)} className="h-7 text-xs w-40" />
           </div>
         </div>
-
         <RadioRow label="Annessi cutanei" field="obj_skin_appendages" form={form} onChange={onChange}
           options={[{value:'normali',label:'normali'},{value:'patologici',label:'patologici'}]}
           noteField="obj_skin_appendages_notes"
         />
-
         <RadioRow label="Capo/collo" field="obj_head_neck" form={form} onChange={onChange}
           options={[{value:'normale',label:'normale'},{value:'patologico',label:'patologico'}]}
           noteField="obj_head_neck_notes"
         />
-
-        {/* Pupille */}
         <div className="flex flex-wrap items-center gap-3 py-1 border-b border-border/50">
           <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">Pupille:</span>
           {['isocoriche','isocicliche','normoreagenti','altro'].map(v => (
@@ -139,10 +145,10 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
           ))}
           <Input placeholder="note..." value={form.obj_pupils_notes||''} onChange={e => onChange('obj_pupils_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
         </div>
+      </Section>
 
-        {/* ---- SEZIONE: Torace ---- */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Torace</p>
-
+      {/* Torace */}
+      <Section title="Torace">
         <div className="py-1 border-b border-border/50 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">ispezione:</span>
@@ -164,7 +170,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note..." value={form.obj_thorax_symmetry_notes||''} onChange={e => onChange('obj_thorax_symmetry_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         </div>
-
         <RadioRow label="fremito vocale tattile" field="obj_fremito" form={form} onChange={onChange}
           options={[{value:'normale',label:'normale'},{value:'ridotto',label:'ridotto'},{value:'aumentato',label:'aumentato'}]}
           noteField="obj_fremito_notes"
@@ -177,8 +182,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
           options={[{value:'normale',label:'normale'},{value:'aspro',label:'aspro'},{value:'ridotto',label:'ridotto'}]}
           noteField="obj_murmur_notes"
         />
-
-        {/* Rumori aggiunti */}
         <div className="py-1 border-b border-border/50 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">rumori aggiunti:</span>
@@ -193,10 +196,10 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note..." value={form.obj_added_sounds_notes||''} onChange={e => onChange('obj_added_sounds_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         </div>
+      </Section>
 
-        {/* ---- SEZIONE: Apparato cardiovascolare ---- */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Apparato cardiovascolare</p>
-
+      {/* Apparato cardiovascolare */}
+      <Section title="Apparato cardiovascolare">
         <div className="flex flex-wrap gap-4 items-center py-1 border-b border-border/50">
           <span className="font-semibold text-sm">PA:</span>
           <Input type="number" value={form.blood_pressure_systolic||''} onChange={e => onChange('blood_pressure_systolic', e.target.value)} className="h-7 w-16 text-sm" />
@@ -213,14 +216,11 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
           <Input type="number" value={form.heart_rate||''} onChange={e => onChange('heart_rate', e.target.value)} className="h-7 w-16 text-sm" />
           <span className="text-sm">battiti/min</span>
         </div>
-
         <RadioRow label="toni cardiaci" field="obj_heart_tones" form={form} onChange={onChange}
           options={[{value:'normali',label:'normali'},{value:'patologici',label:'patologici'}]}
           noteField="obj_heart_tones_notes"
         />
-
-        {/* Pause */}
-        <div className="py-1 border-b border-border/50 space-y-1">
+        <div className="py-1 border-b border-border/50">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">pause:</span>
             {['libere','presenza di soffi'].map(v => (
@@ -232,8 +232,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note..." value={form.obj_cardiac_pauses_notes||''} onChange={e => onChange('obj_cardiac_pauses_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         </div>
-
-        {/* Vasi */}
         <div className="py-1 border-b border-border/50">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">vasi:</span>
@@ -244,18 +242,16 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note vasi..." value={form.obj_vessels_notes||''} onChange={e => onChange('obj_vessels_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         </div>
-
-        <div className="py-1 border-b border-border/50">
+        <div className="py-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">altro cardiovascolare:</span>
             <Input placeholder="note..." value={form.obj_cardiovascular_other||''} onChange={e => onChange('obj_cardiovascular_other', e.target.value)} className="h-7 text-xs flex-1" />
           </div>
         </div>
+      </Section>
 
-        {/* ---- SEZIONE: Addome ---- */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Addome</p>
-
-        {/* Addome ispezione */}
+      {/* Addome */}
+      <Section title="Addome">
         <div className="py-1 border-b border-border/50">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">Addome:</span>
@@ -265,8 +261,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note..." value={form.obj_abdomen_notes||''} onChange={e => onChange('obj_abdomen_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         </div>
-
-        {/* Fegato */}
         <div className="py-1 border-b border-border/50 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">fegato:</span>
@@ -300,22 +294,18 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             ))}
           </div>
         </div>
-
-        {/* Milza */}
         <RadioRow label="milza" field="obj_spleen" form={form} onChange={onChange}
           options={[{value:'non_palpabile',label:'non palpabile'},{value:'palpabile',label:'palpabile'}]}
           noteField="obj_spleen_notes"
         />
-
         <RadioRow label="manovra di Giordano" field="obj_giordano" form={form} onChange={onChange}
           options={[{value:'negativa',label:'negativa'},{value:'positiva_dx',label:'positiva dx'},{value:'positiva_sx',label:'positiva sx'}]}
           noteField="obj_giordano_notes"
         />
+      </Section>
 
-        {/* ---- SEZIONE: Sistema osteoarticolare ---- */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Sistema osteoarticolare</p>
-
-        {/* Segni ortopedici */}
+      {/* Sistema osteoarticolare */}
+      <Section title="Sistema osteoarticolare">
         {[
           { label: 'Lasègue', field: 'obj_lasegue' },
           { label: 'Wasserman', field: 'obj_wasserman' },
@@ -334,8 +324,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note..." value={form[`${field}_notes`]||''} onChange={e => onChange(`${field}_notes`, e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         ))}
-
-        {/* Rachide */}
         <div className="py-1 border-b border-border/50 space-y-1">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">rachide — palpazione:</span>
@@ -353,7 +341,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             <Input placeholder="note..." value={form.obj_spine_masse_notes||''} onChange={e => onChange('obj_spine_masse_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
           </div>
         </div>
-
         <div className="flex flex-wrap items-center gap-3 py-1 border-b border-border/50">
           <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">rachide — motilità:</span>
           {['normale','alterata'].map(v => (
@@ -364,7 +351,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
           ))}
           <Input placeholder="note..." value={form.obj_spine_mobility_notes||''} onChange={e => onChange('obj_spine_mobility_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
         </div>
-
         <div className="flex flex-wrap items-center gap-3 py-1 border-b border-border/50">
           <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">osservazione ritmo lombo-pelvico:</span>
           {['normale','alterato'].map(v => (
@@ -375,20 +361,18 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
           ))}
           <Input placeholder="note..." value={form.obj_lombopelvico_notes||''} onChange={e => onChange('obj_lombopelvico_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
         </div>
-
         <div className="py-1 border-b border-border/50">
           <Label className="text-sm font-semibold underline underline-offset-2">arti superiori:</Label>
           <Textarea value={form.obj_upper_limbs||''} onChange={e => onChange('obj_upper_limbs', e.target.value)} rows={2} className="mt-1" />
         </div>
-
-        <div className="py-1 border-b border-border/50">
+        <div className="py-1">
           <Label className="text-sm font-semibold underline underline-offset-2">arti inferiori:</Label>
           <Textarea value={form.obj_lower_limbs||''} onChange={e => onChange('obj_lower_limbs', e.target.value)} rows={2} className="mt-1" />
         </div>
+      </Section>
 
-        {/* ---- SEZIONE: Sistema nervoso ---- */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Sistema nervoso</p>
-
+      {/* Sistema nervoso */}
+      <Section title="Sistema nervoso">
         {[
           { label: 'sensibilità', field: 'obj_nervous_sensitivity' },
           { label: 'forza', field: 'obj_nervous_strength' },
@@ -399,7 +383,6 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
             noteField={`${field}_notes`}
           />
         ))}
-
         <div className="flex flex-wrap items-center gap-3 py-1 border-b border-border/50">
           <span className="font-semibold text-sm underline underline-offset-2 min-w-[160px]">tremori:</span>
           {['assenti','intenzionali','a_riposo'].map(v => (
@@ -410,23 +393,21 @@ export default function ObjectiveExamTab({ form, onChange, onFillNormal }) {
           ))}
           <Input placeholder="note..." value={form.obj_tremors_notes||''} onChange={e => onChange('obj_tremors_notes', e.target.value)} className="h-7 text-xs flex-1 min-w-[100px]" />
         </div>
-
         <RadioRow label="Romberg" field="obj_romberg" form={form} onChange={onChange}
           options={[{value:'negativo',label:'negativo'},{value:'positivo',label:'positivo'}]}
           noteField="obj_romberg_notes"
         />
-
         <RadioRow label="riflessi osteotendinei" field="obj_reflexes" form={form} onChange={onChange}
           options={[{value:'validi',label:'validi'},{value:'alterati',label:'alterati'}]}
           noteField="obj_reflexes_notes"
         />
+      </Section>
 
-        {/* Altro/Note */}
-        <div>
-          <Label className="text-sm font-semibold">Altro / Note</Label>
-          <Textarea value={form.obj_notes||''} onChange={e => onChange('obj_notes', e.target.value)} rows={2} className="mt-1" />
-        </div>
-      </CardContent></Card>
+      {/* Altro / Note */}
+      <Section title="Altro / Note">
+        <Textarea value={form.obj_notes||''} onChange={e => onChange('obj_notes', e.target.value)} rows={3} />
+      </Section>
+
     </div>
   );
 }
