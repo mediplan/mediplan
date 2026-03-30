@@ -15,6 +15,7 @@ import DianaIntegration from '@/components/visits/DianaIntegration';
 import FamilyAnamnesisForm from '@/components/visits/FamilyAnamnesisForm';
 import PhysiologicalAnamnesisForm from '@/components/visits/PhysiologicalAnamnesisForm';
 import LifestyleForm from '@/components/visits/LifestyleForm';
+import PathologicalAnamnesisTab from '@/components/visits/PathologicalAnamnesisTab';
 import PdfExamUpload from '@/components/visits/PdfExamUpload';
 import { addMonths, format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -352,7 +353,6 @@ export default function VisitEdit() {
             <TabsTrigger value="lavorativa">Anamn. Lavorativa</TabsTrigger>
             <TabsTrigger value="fisiologica">Anamn. Fisiologica</TabsTrigger>
             <TabsTrigger value="patologica">Anamn. Patologica</TabsTrigger>
-            <TabsTrigger value="apparati">Per Apparati</TabsTrigger>
             <TabsTrigger value="obiettivo">Esame Obiettivo</TabsTrigger>
             <TabsTrigger value="accertamenti" className="relative">
               Accertamenti
@@ -410,63 +410,13 @@ export default function VisitEdit() {
             </CardContent></Card>
           </TabsContent>
 
-          {/* ANAMNESI PATOLOGICA */}
-          <TabsContent value="patologica" className="space-y-4 mt-2">
-            <Card><CardContent className="pt-4 space-y-4">
-              <div>
-                <Label>Anamnesi patologica remota</Label>
-                <Textarea value={form.anamnesis_pathological || ''} onChange={e => handleChange('anamnesis_pathological', e.target.value)} rows={5} />
-              </div>
-              <div className="flex items-center gap-3">
-                <input type="checkbox" id="injuries" checked={!!form.anamnesis_injuries} onChange={e => handleChange('anamnesis_injuries', e.target.checked)} className="h-4 w-4" />
-                <Label htmlFor="injuries">Infortuni</Label>
-                {form.anamnesis_injuries && (
-                  <Input placeholder="Dettagli..." value={form.anamnesis_injuries_details || ''} onChange={e => handleChange('anamnesis_injuries_details', e.target.value)} className="flex-1" />
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                <input type="checkbox" id="occ_disease" checked={!!form.anamnesis_occupational_disease} onChange={e => handleChange('anamnesis_occupational_disease', e.target.checked)} className="h-4 w-4" />
-                <Label htmlFor="occ_disease">Malattie professionali</Label>
-                {form.anamnesis_occupational_disease && (
-                  <Input placeholder="Data, tipo, % invalidità..." value={form.anamnesis_occupational_disease_details || ''} onChange={e => handleChange('anamnesis_occupational_disease_details', e.target.value)} className="flex-1" />
-                )}
-              </div>
-              <div>
-                <Label>Sintomatologia attuale</Label>
-                <Textarea value={form.current_symptoms || ''} onChange={e => handleChange('current_symptoms', e.target.value)} rows={2} />
-              </div>
-            </CardContent></Card>
-          </TabsContent>
-
-          {/* PER APPARATI */}
-          <TabsContent value="apparati" className="mt-2">
-            <Card><CardContent className="pt-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-muted-foreground">Seleziona lo stato per apparato.</p>
-                <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('apparati')} className="gap-2 text-primary border-primary/40">
-                  <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
-                </Button>
-              </div>
-              <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground mb-1 px-1">
-                <span>Apparato</span><span>Stato</span><span>Dettagli</span>
-              </div>
-              <SystemRow label="Respiratorio" field="systems_respiratory" form={form} onChange={handleChange} />
-              <SystemRow label="Cardiovascolare" field="systems_cardiovascular" form={form} onChange={handleChange} />
-              <SystemRow label="Gastrointestinale" field="systems_gastrointestinal" form={form} onChange={handleChange} />
-              <SystemRow label="Urogenitale" field="systems_urogenital" form={form} onChange={handleChange} />
-              <SystemRow label="Osteoarticolare" field="systems_musculoskeletal" form={form} onChange={handleChange} />
-              <SystemRow label="Uditivo" field="systems_hearing" form={form} onChange={handleChange} />
-              {['vestibular','skin','nervous','psych'].map(app => (
-                <div key={app} className="grid grid-cols-1 md:grid-cols-3 gap-2 items-start py-2 border-b border-border last:border-0">
-                  <Label className="font-medium text-sm pt-2 capitalize">{app === 'vestibular' ? 'Vestibolare' : app === 'skin' ? 'Cute' : app === 'nervous' ? 'Sistema nervoso' : 'Psiche'}</Label>
-                  <Select value={form[`systems_${app}`] || ''} onValueChange={v => handleChange(`systems_${app}`, v)}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>{systemsOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <div />
-                </div>
-              ))}
-            </CardContent></Card>
+          {/* ANAMNESI PATOLOGICA + PER APPARATI */}
+          <TabsContent value="patologica" className="mt-2">
+            <PathologicalAnamnesisTab
+              form={form}
+              onChange={handleChange}
+              onFillNormal={() => fillNormal('apparati')}
+            />
           </TabsContent>
 
           {/* ESAME OBIETTIVO */}

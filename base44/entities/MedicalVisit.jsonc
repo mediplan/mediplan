@@ -50,30 +50,7 @@
     },
     "anamnesis_family_structured": {
       "type": "object",
-      "description": "Anamnesi familiare strutturata",
-      "properties": {
-        "padre": {
-          "type": "object"
-        },
-        "madre": {
-          "type": "object"
-        },
-        "coniuge": {
-          "type": "object"
-        },
-        "figli_n": {
-          "type": "number"
-        },
-        "collaterali_n": {
-          "type": "number"
-        },
-        "collaterali_malattie_flag": {
-          "type": "boolean"
-        },
-        "collaterali_malattie": {
-          "type": "string"
-        }
-      }
+      "description": "Anamnesi familiare strutturata"
     },
     "anamnesis_physiological": {
       "type": "string"
@@ -84,7 +61,7 @@
     },
     "lifestyle_structured": {
       "type": "object",
-      "description": "Abitudini di vita strutturate (fumo, alcol, caff\u00e8, sport, donatore)"
+      "description": "Abitudini di vita strutturate"
     },
     "lifestyle_smoker": {
       "type": "string",
@@ -133,6 +110,15 @@
     "anamnesis_occupational_disease_details": {
       "type": "string"
     },
+    "anamnesis_disability": {
+      "type": "boolean",
+      "default": false,
+      "description": "Invalidit\u00e0 riconosciute"
+    },
+    "anamnesis_disability_details": {
+      "type": "string",
+      "description": "Dettagli invalidit\u00e0"
+    },
     "systems_respiratory": {
       "type": "string",
       "enum": [
@@ -144,6 +130,10 @@
     },
     "systems_respiratory_details": {
       "type": "string"
+    },
+    "systems_respiratory_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici respiratorio (tosse, dispnea, ecc.)"
     },
     "systems_cardiovascular": {
       "type": "string",
@@ -157,6 +147,10 @@
     "systems_cardiovascular_details": {
       "type": "string"
     },
+    "systems_cardiovascular_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici cardiovascolare"
+    },
     "systems_gastrointestinal": {
       "type": "string",
       "enum": [
@@ -168,6 +162,10 @@
     },
     "systems_gastrointestinal_details": {
       "type": "string"
+    },
+    "systems_gastrointestinal_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici gastrointestinale"
     },
     "systems_urogenital": {
       "type": "string",
@@ -181,6 +179,10 @@
     "systems_urogenital_details": {
       "type": "string"
     },
+    "systems_urogenital_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici urogenitale"
+    },
     "systems_musculoskeletal": {
       "type": "string",
       "enum": [
@@ -192,6 +194,14 @@
     },
     "systems_musculoskeletal_details": {
       "type": "string"
+    },
+    "systems_musculoskeletal_rachialgie": {
+      "type": "object",
+      "description": "Rachialgie (cervicali, dorsali, lombosacrali)"
+    },
+    "systems_musculoskeletal_algie": {
+      "type": "object",
+      "description": "Algie articolari specifiche"
     },
     "systems_hearing": {
       "type": "string",
@@ -205,6 +215,10 @@
     "systems_hearing_details": {
       "type": "string"
     },
+    "systems_hearing_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici uditivo (otodinia, acufeni, ipoacusia)"
+    },
     "systems_vestibular": {
       "type": "string",
       "enum": [
@@ -213,6 +227,13 @@
         "sintomi_meno_1a"
       ],
       "default": "non_sintomi"
+    },
+    "systems_vestibular_details": {
+      "type": "string"
+    },
+    "systems_vestibular_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici vestibolare"
     },
     "systems_skin": {
       "type": "string",
@@ -223,6 +244,13 @@
       ],
       "default": "non_sintomi"
     },
+    "systems_skin_details": {
+      "type": "string"
+    },
+    "systems_skin_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici cute"
+    },
     "systems_nervous": {
       "type": "string",
       "enum": [
@@ -232,6 +260,13 @@
       ],
       "default": "non_sintomi"
     },
+    "systems_nervous_details": {
+      "type": "string"
+    },
+    "systems_nervous_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici sistema nervoso"
+    },
     "systems_psych": {
       "type": "string",
       "enum": [
@@ -240,6 +275,13 @@
         "sintomi_meno_1a"
       ],
       "default": "non_sintomi"
+    },
+    "systems_psych_details": {
+      "type": "string"
+    },
+    "systems_psych_symptoms": {
+      "type": "object",
+      "description": "Sintomi specifici psiche"
     },
     "current_symptoms": {
       "type": "string"
