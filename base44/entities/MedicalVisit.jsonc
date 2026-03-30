@@ -29,6 +29,14 @@
         "cessazione"
       ]
     },
+    "visit_status": {
+      "type": "string",
+      "enum": [
+        "in_corso",
+        "conclusa"
+      ],
+      "default": "in_corso"
+    },
     "anamnesis_work": {
       "type": "string"
     },

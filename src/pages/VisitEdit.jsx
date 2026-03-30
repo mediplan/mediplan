@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Wand2, CheckCircle2, Calendar, Printer } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
+import { ArrowLeft, Save, CheckCircle2, Calendar, Printer, CheckCheck } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import VisitPrintView from '@/components/visits/VisitPrintView';
 import { openPrintWindow } from '@/lib/printVisit';
 import { Button } from '@/components/ui/button';
@@ -243,9 +250,12 @@ export default function VisitEdit() {
   const patientId = urlParams.get('patientId');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canConclude = canAccess(user, 'visite_write');
 
   const [form, setForm] = useState({});
   const [loaded, setLoaded] = useState(false);
+  const [showConcludiDialog, setShowConcludiDialog] = useState(false);
 
   const { data: patients = [] } = useQuery({ queryKey: ['patients'], queryFn: () => base44.entities.Patient.list() });
   const { data: visits = [] } = useQuery({ queryKey: ['visits'], queryFn: () => base44.entities.MedicalVisit.list() });
@@ -295,13 +305,19 @@ export default function VisitEdit() {
     }
   }, [visit, patients, visits, visitId, patientId, loaded]);
 
+  const companyId = form.company_id;
+
   const saveMutation = useMutation({
     mutationFn: (data) => visitId
       ? base44.entities.MedicalVisit.update(visitId, data)
       : base44.entities.MedicalVisit.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
-      navigate(-1);
+      if (companyId) {
+        navigate(`/aziende/${companyId}`);
+      } else {
+        navigate(-1);
+      }
     },
   });
 
@@ -352,19 +368,26 @@ export default function VisitEdit() {
     setForm(prev => ({ ...prev, ...Object.fromEntries(keys.map(k => [k, normalValues[k]])) }));
   };
 
+  const buildData = (extraFields = {}) => ({
+    ...form,
+    ...extraFields,
+    patient_id: String(form.patient_id),
+    company_id: String(form.company_id),
+    height_cm: form.height_cm ? Number(form.height_cm) : undefined,
+    weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
+    blood_pressure_systolic: form.blood_pressure_systolic ? Number(form.blood_pressure_systolic) : undefined,
+    blood_pressure_diastolic: form.blood_pressure_diastolic ? Number(form.blood_pressure_diastolic) : undefined,
+    heart_rate: form.heart_rate ? Number(form.heart_rate) : undefined,
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const data = {
-      ...form,
-      patient_id: String(form.patient_id),
-      company_id: String(form.company_id),
-      height_cm: form.height_cm ? Number(form.height_cm) : undefined,
-      weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
-      blood_pressure_systolic: form.blood_pressure_systolic ? Number(form.blood_pressure_systolic) : undefined,
-      blood_pressure_diastolic: form.blood_pressure_diastolic ? Number(form.blood_pressure_diastolic) : undefined,
-      heart_rate: form.heart_rate ? Number(form.heart_rate) : undefined,
-    };
-    saveMutation.mutate(data);
+    saveMutation.mutate(buildData());
+  };
+
+  const handleConcludiConfirm = () => {
+    setShowConcludiDialog(false);
+    saveMutation.mutate(buildData({ visit_status: 'conclusa' }));
   };
 
   const isNew = !visitId;
@@ -404,14 +427,24 @@ export default function VisitEdit() {
             <p className="text-sm text-muted-foreground">{form.patient_name} · {form.company_name}</p>
           )}
         </div>
+        {form.visit_status === 'conclusa' && (
+          <Badge className="bg-accent/10 text-accent border border-accent/30 gap-1">
+            <CheckCheck className="h-3 w-3" /> Visita conclusa
+          </Badge>
+        )}
         {!isNew && (
           <Button type="button" variant="outline" onClick={handlePrint} className="gap-2">
             <Printer className="h-4 w-4" /> Stampa / PDF
           </Button>
         )}
+        {canConclude && form.visit_status !== 'conclusa' && (
+          <Button type="button" variant="outline" onClick={() => setShowConcludiDialog(true)} disabled={saveMutation.isPending} className="gap-2 border-accent text-accent hover:bg-accent hover:text-white">
+            <CheckCheck className="h-4 w-4" /> Concludi Visita
+          </Button>
+        )}
         <Button onClick={handleSubmit} disabled={saveMutation.isPending} className="gap-2">
           <Save className="h-4 w-4" />
-          {saveMutation.isPending ? 'Salvataggio...' : 'Salva visita'}
+          {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
         </Button>
       </div>
 
@@ -609,10 +642,27 @@ export default function VisitEdit() {
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>Annulla</Button>
           <Button type="submit" disabled={saveMutation.isPending} className="gap-2">
             <Save className="h-4 w-4" />
-            {saveMutation.isPending ? 'Salvataggio...' : 'Salva visita'}
+            {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
           </Button>
         </div>
       </form>
+
+      <AlertDialog open={showConcludiDialog} onOpenChange={setShowConcludiDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Concludi Visita</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cliccando su OK si confermano le informazioni e gli allegati e verrà conclusa la Visita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConcludiConfirm} className="bg-accent hover:bg-accent/90">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
