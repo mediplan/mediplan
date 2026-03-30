@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Wand2, CheckCircle2, Calendar } from 'lucide-react';
+import { ArrowLeft, Save, Wand2, CheckCircle2, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -172,6 +172,27 @@ function ObjSelect({ label, field, options, form, onChange }) {
         </SelectContent>
       </Select>
     </div>
+  );
+}
+
+function FisiologicaSection({ title, children, defaultOpen = false }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+  return (
+    <Card>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-muted/40 transition-colors rounded-xl"
+      >
+        <span className="font-semibold text-sm">{title}</span>
+        {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="px-5 pb-4 border-t border-border">
+          <div className="pt-4">{children}</div>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -385,30 +406,25 @@ export default function VisitEdit() {
           </TabsContent>
 
           {/* ANAMNESI FISIOLOGICA */}
-          <TabsContent value="fisiologica" className="space-y-4 mt-2">
-            <Card><CardContent className="pt-4 space-y-4">
-              <div>
-                <Label className="mb-2 block">Anamnesi familiare</Label>
-                <FamilyAnamnesisForm
-                  value={form.anamnesis_family_structured}
-                  onChange={val => handleChange('anamnesis_family_structured', val)}
-                />
-              </div>
-              <div>
-                <Label className="mb-2 block">Anamnesi fisiologica</Label>
-                <PhysiologicalAnamnesisForm
-                  value={form.anamnesis_physiological_structured}
-                  onChange={val => handleChange('anamnesis_physiological_structured', val)}
-                />
-              </div>
-              <div>
-                <Label className="mb-2 block font-semibold">Abitudini di vita</Label>
-                <LifestyleForm
-                  value={form.lifestyle_structured}
-                  onChange={val => handleChange('lifestyle_structured', val)}
-                />
-              </div>
-            </CardContent></Card>
+          <TabsContent value="fisiologica" className="space-y-3 mt-2">
+            <FisiologicaSection title="Anamnesi familiare" defaultOpen>
+              <FamilyAnamnesisForm
+                value={form.anamnesis_family_structured}
+                onChange={val => handleChange('anamnesis_family_structured', val)}
+              />
+            </FisiologicaSection>
+            <FisiologicaSection title="Anamnesi fisiologica">
+              <PhysiologicalAnamnesisForm
+                value={form.anamnesis_physiological_structured}
+                onChange={val => handleChange('anamnesis_physiological_structured', val)}
+              />
+            </FisiologicaSection>
+            <FisiologicaSection title="Abitudini di vita">
+              <LifestyleForm
+                value={form.lifestyle_structured}
+                onChange={val => handleChange('lifestyle_structured', val)}
+              />
+            </FisiologicaSection>
           </TabsContent>
 
           {/* ANAMNESI PATOLOGICA + PER APPARATI */}
