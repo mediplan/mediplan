@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, parseISO, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isWithinInterval, parseISO, addMonths, subMonths } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Clock, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,10 +46,15 @@ export default function AppointmentCalendar() {
   });
 
   // Build calendar grid
+  const today = new Date();
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+  // Current week boundaries
+  const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const currentWeekEnd = endOfWeek(today, { weekStartsOn: 1 });
 
   const days = [];
   let d = calStart;
@@ -57,6 +62,9 @@ export default function AppointmentCalendar() {
     days.push(d);
     d = addDays(d, 1);
   }
+
+  const isCurrentWeekDay = (day) =>
+    isWithinInterval(day, { start: currentWeekStart, end: currentWeekEnd });
 
   const getAppointmentsForDay = (day) =>
     appointments.filter(a => a.date && isSameDay(parseISO(a.date), day));
@@ -117,16 +125,19 @@ export default function AppointmentCalendar() {
         <div className="grid grid-cols-7">
           {days.map((day, idx) => {
             const dayAppts = getAppointmentsForDay(day);
-            const isToday = isSameDay(day, new Date());
+            const isToday = isSameDay(day, today);
             const isSelected = selectedDay && isSameDay(day, selectedDay);
             const inMonth = isSameMonth(day, currentMonth);
+            const inCurrentWeek = isCurrentWeekDay(day);
 
             return (
               <div
                 key={idx}
                 onClick={() => setSelectedDay(isSelected ? null : day)}
                 className={cn(
-                  'min-h-[80px] p-1 border-b border-r cursor-pointer transition-colors',
+                  'p-1.5 border-b border-r cursor-pointer transition-colors',
+                  inCurrentWeek ? 'min-h-[120px]' : 'min-h-[72px]',
+                  inCurrentWeek && !isSelected && 'bg-primary/[0.03]',
                   !inMonth && 'bg-muted/30',
                   isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/30',
                   'hover:bg-muted/50'
@@ -134,10 +145,12 @@ export default function AppointmentCalendar() {
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className={cn(
-                    'text-xs w-6 h-6 flex items-center justify-center rounded-full font-medium',
+                    'flex items-center justify-center rounded-full font-medium',
+                    inCurrentWeek ? 'text-sm w-7 h-7' : 'text-xs w-6 h-6',
                     !inMonth && 'text-muted-foreground',
                     isToday && 'bg-primary text-white',
-                    !isToday && inMonth && 'text-foreground',
+                    !isToday && inMonth && inCurrentWeek && 'text-foreground font-semibold',
+                    !isToday && inMonth && !inCurrentWeek && 'text-foreground',
                   )}>
                     {format(day, 'd')}
                   </span>
@@ -151,18 +164,18 @@ export default function AppointmentCalendar() {
                   )}
                 </div>
                 <div className="space-y-0.5">
-                  {dayAppts.slice(0, 3).map(a => (
+                  {dayAppts.slice(0, inCurrentWeek ? 4 : 2).map(a => (
                     <div
                       key={a.id}
-                      className={cn('text-[10px] px-1 rounded truncate', STATUS_COLORS[a.status] || 'bg-primary/80 text-white')}
+                      className={cn('px-1 rounded truncate', inCurrentWeek ? 'text-[11px] py-0.5' : 'text-[10px]', STATUS_COLORS[a.status] || 'bg-primary/80 text-white')}
                       title={a.title}
                     >
                       {a.time && <span className="opacity-80 mr-1">{a.time}</span>}
                       {a.title}
                     </div>
                   ))}
-                  {dayAppts.length > 3 && (
-                    <div className="text-[10px] text-muted-foreground px-1">+{dayAppts.length - 3} altri</div>
+                  {dayAppts.length > (inCurrentWeek ? 4 : 2) && (
+                    <div className="text-[10px] text-muted-foreground px-1">+{dayAppts.length - (inCurrentWeek ? 4 : 2)} altri</div>
                   )}
                 </div>
               </div>
