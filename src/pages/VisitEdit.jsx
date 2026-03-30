@@ -305,21 +305,23 @@ export default function VisitEdit() {
     }
   }, [visit, patients, visits, visitId, patientId, loaded]);
 
-  const companyId = form.company_id;
-
   const saveMutation = useMutation({
     mutationFn: (data) => visitId
       ? base44.entities.MedicalVisit.update(visitId, data)
       : base44.entities.MedicalVisit.create(data),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
-      if (form.patient_id) {
-        navigate(`/pazienti/${form.patient_id}`);
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      const targetCompanyId = form.company_id || companyId || result?.company_id;
+      if (targetCompanyId) {
+        navigate(`/aziende/${targetCompanyId}`);
       } else {
         navigate(-1);
       }
     },
   });
+
+  const companyId = form.company_id;
 
   const handleChange = (field, value) => {
     setForm(prev => {
