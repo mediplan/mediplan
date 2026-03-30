@@ -3,25 +3,20 @@
   "type": "object",
   "properties": {
     "patient_id": {
-      "type": "string",
-      "description": "ID paziente"
+      "type": "string"
     },
     "patient_name": {
-      "type": "string",
-      "description": "Nome completo paziente"
+      "type": "string"
     },
     "company_id": {
-      "type": "string",
-      "description": "ID azienda"
+      "type": "string"
     },
     "company_name": {
-      "type": "string",
-      "description": "Nome azienda"
+      "type": "string"
     },
     "visit_date": {
       "type": "string",
-      "format": "date",
-      "description": "Data della visita"
+      "format": "date"
     },
     "visit_type": {
       "type": "string",
@@ -32,8 +27,7 @@
         "cambio_mansione",
         "rientro_malattia",
         "cessazione"
-      ],
-      "description": "Tipologia di visita"
+      ]
     },
     "anamnesis_work": {
       "type": "string"
@@ -45,53 +39,14 @@
     "anamnesis_work_concurrent_details": {
       "type": "string"
     },
-    "anamnesis_family": {
-      "type": "string"
-    },
     "anamnesis_family_structured": {
-      "type": "object",
-      "description": "Anamnesi familiare strutturata"
-    },
-    "anamnesis_physiological": {
-      "type": "string"
+      "type": "object"
     },
     "anamnesis_physiological_structured": {
-      "type": "object",
-      "description": "Anamnesi fisiologica strutturata"
+      "type": "object"
     },
     "lifestyle_structured": {
-      "type": "object",
-      "description": "Abitudini di vita strutturate"
-    },
-    "lifestyle_smoker": {
-      "type": "string",
-      "enum": [
-        "non_fumatore",
-        "fumatore",
-        "ex_fumatore"
-      ],
-      "default": "non_fumatore"
-    },
-    "lifestyle_smoker_qty": {
-      "type": "string"
-    },
-    "lifestyle_alcohol": {
-      "type": "string",
-      "enum": [
-        "astemio",
-        "occasionale",
-        "meno_mezzo_litro",
-        "mezzo_un_litro",
-        "oltre_un_litro"
-      ],
-      "default": "astemio"
-    },
-    "lifestyle_sport": {
-      "type": "boolean",
-      "default": false
-    },
-    "lifestyle_sport_details": {
-      "type": "string"
+      "type": "object"
     },
     "anamnesis_pathological": {
       "type": "string"
@@ -112,12 +67,10 @@
     },
     "anamnesis_disability": {
       "type": "boolean",
-      "default": false,
-      "description": "Invalidit\u00e0 riconosciute"
+      "default": false
     },
     "anamnesis_disability_details": {
-      "type": "string",
-      "description": "Dettagli invalidit\u00e0"
+      "type": "string"
     },
     "systems_respiratory": {
       "type": "string",
@@ -132,8 +85,7 @@
       "type": "string"
     },
     "systems_respiratory_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici respiratorio (tosse, dispnea, ecc.)"
+      "type": "object"
     },
     "systems_cardiovascular": {
       "type": "string",
@@ -148,8 +100,7 @@
       "type": "string"
     },
     "systems_cardiovascular_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici cardiovascolare"
+      "type": "object"
     },
     "systems_gastrointestinal": {
       "type": "string",
@@ -164,8 +115,7 @@
       "type": "string"
     },
     "systems_gastrointestinal_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici gastrointestinale"
+      "type": "object"
     },
     "systems_urogenital": {
       "type": "string",
@@ -180,8 +130,7 @@
       "type": "string"
     },
     "systems_urogenital_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici urogenitale"
+      "type": "object"
     },
     "systems_musculoskeletal": {
       "type": "string",
@@ -196,12 +145,10 @@
       "type": "string"
     },
     "systems_musculoskeletal_rachialgie": {
-      "type": "object",
-      "description": "Rachialgie (cervicali, dorsali, lombosacrali)"
+      "type": "object"
     },
     "systems_musculoskeletal_algie": {
-      "type": "object",
-      "description": "Algie articolari specifiche"
+      "type": "object"
     },
     "systems_hearing": {
       "type": "string",
@@ -216,8 +163,7 @@
       "type": "string"
     },
     "systems_hearing_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici uditivo (otodinia, acufeni, ipoacusia)"
+      "type": "object"
     },
     "systems_vestibular": {
       "type": "string",
@@ -232,8 +178,7 @@
       "type": "string"
     },
     "systems_vestibular_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici vestibolare"
+      "type": "object"
     },
     "systems_skin": {
       "type": "string",
@@ -248,8 +193,7 @@
       "type": "string"
     },
     "systems_skin_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici cute"
+      "type": "object"
     },
     "systems_nervous": {
       "type": "string",
@@ -264,8 +208,7 @@
       "type": "string"
     },
     "systems_nervous_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici sistema nervoso"
+      "type": "object"
     },
     "systems_psych": {
       "type": "string",
@@ -280,8 +223,7 @@
       "type": "string"
     },
     "systems_psych_symptoms": {
-      "type": "object",
-      "description": "Sintomi specifici psiche"
+      "type": "object"
     },
     "current_symptoms": {
       "type": "string"
@@ -292,11 +234,26 @@
     "weight_kg": {
       "type": "number"
     },
+    "obj_biotipo": {
+      "type": "string",
+      "enum": [
+        "normolineo",
+        "brevilineo",
+        "longilineo"
+      ]
+    },
     "blood_pressure_systolic": {
       "type": "number"
     },
     "blood_pressure_diastolic": {
       "type": "number"
+    },
+    "obj_pa_position": {
+      "type": "string",
+      "enum": [
+        "clinostatismo",
+        "ortostatismo"
+      ]
     },
     "heart_rate": {
       "type": "number"
@@ -309,6 +266,9 @@
       ],
       "default": "normali"
     },
+    "obj_lymphnodes_notes": {
+      "type": "string"
+    },
     "obj_oral": {
       "type": "string",
       "enum": [
@@ -316,6 +276,9 @@
         "patologico"
       ],
       "default": "normale"
+    },
+    "obj_oral_notes": {
+      "type": "string"
     },
     "obj_skin_color": {
       "type": "string",
@@ -335,6 +298,21 @@
       ],
       "default": "normale"
     },
+    "obj_skin_trophism_notes": {
+      "type": "string"
+    },
+    "obj_skin_nevi": {
+      "type": "boolean"
+    },
+    "obj_skin_nevi_notes": {
+      "type": "string"
+    },
+    "obj_skin_altro": {
+      "type": "boolean"
+    },
+    "obj_skin_altro_notes": {
+      "type": "string"
+    },
     "obj_skin_appendages": {
       "type": "string",
       "enum": [
@@ -342,6 +320,9 @@
         "patologici"
       ],
       "default": "normali"
+    },
+    "obj_skin_appendages_notes": {
+      "type": "string"
     },
     "obj_head_neck": {
       "type": "string",
@@ -351,13 +332,15 @@
       ],
       "default": "normale"
     },
-    "obj_pupils": {
-      "type": "string",
-      "enum": [
-        "isocoriche_isocicliche_normoreagenti",
-        "altro"
-      ],
-      "default": "isocoriche_isocicliche_normoreagenti"
+    "obj_head_neck_notes": {
+      "type": "string"
+    },
+    "obj_pupils_structured": {
+      "type": "object",
+      "description": "isocoriche, isocicliche, normoreagenti, altro"
+    },
+    "obj_pupils_notes": {
+      "type": "string"
     },
     "obj_thorax": {
       "type": "string",
@@ -368,6 +351,41 @@
       ],
       "default": "normoespansibile"
     },
+    "obj_thorax_notes": {
+      "type": "string"
+    },
+    "obj_thorax_symmetry": {
+      "type": "string",
+      "enum": [
+        "simmetrico",
+        "asimmetrico"
+      ]
+    },
+    "obj_thorax_symmetry_notes": {
+      "type": "string"
+    },
+    "obj_fremito": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "ridotto",
+        "aumentato"
+      ]
+    },
+    "obj_fremito_notes": {
+      "type": "string"
+    },
+    "obj_fonesi": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "iperfonesi",
+        "ipofonesi"
+      ]
+    },
+    "obj_fonesi_notes": {
+      "type": "string"
+    },
     "obj_murmur": {
       "type": "string",
       "enum": [
@@ -377,9 +395,15 @@
       ],
       "default": "normale"
     },
-    "obj_added_sounds": {
-      "type": "string",
-      "default": "assenti"
+    "obj_murmur_notes": {
+      "type": "string"
+    },
+    "obj_added_sounds_structured": {
+      "type": "object",
+      "description": "ronchi, rantoli, sibili, fischi, gemiti, espirio prolungato, crepitii, sfregamenti"
+    },
+    "obj_added_sounds_notes": {
+      "type": "string"
     },
     "obj_heart_tones": {
       "type": "string",
@@ -389,9 +413,35 @@
       ],
       "default": "normali"
     },
-    "obj_abdomen": {
+    "obj_heart_tones_notes": {
+      "type": "string"
+    },
+    "obj_cardiac_pauses": {
       "type": "string",
-      "default": "piano, trattabile, non dolente"
+      "enum": [
+        "libere",
+        "presenza di soffi"
+      ]
+    },
+    "obj_cardiac_pauses_notes": {
+      "type": "string"
+    },
+    "obj_vessels": {
+      "type": "object",
+      "description": "varici dx/sin, turgore giugulari, altro"
+    },
+    "obj_vessels_notes": {
+      "type": "string"
+    },
+    "obj_cardiovascular_other": {
+      "type": "string"
+    },
+    "obj_abdomen_structured": {
+      "type": "object",
+      "description": "piano, globoso, trattabile, non dolente, dolente"
+    },
+    "obj_abdomen_notes": {
+      "type": "string"
     },
     "obj_liver": {
       "type": "string",
@@ -400,6 +450,40 @@
         "debordante"
       ],
       "default": "margine_arco"
+    },
+    "obj_liver_cm": {
+      "type": "number"
+    },
+    "obj_liver_edge": {
+      "type": "string",
+      "enum": [
+        "arrotondato",
+        "tagliente"
+      ]
+    },
+    "obj_liver_consistency": {
+      "type": "string",
+      "enum": [
+        "parenchimatosa",
+        "dura"
+      ]
+    },
+    "obj_liver_pain": {
+      "type": "string",
+      "enum": [
+        "non dolente",
+        "dolente"
+      ]
+    },
+    "obj_spleen": {
+      "type": "string",
+      "enum": [
+        "non_palpabile",
+        "palpabile"
+      ]
+    },
+    "obj_spleen_notes": {
+      "type": "string"
     },
     "obj_giordano": {
       "type": "string",
@@ -410,6 +494,9 @@
       ],
       "default": "negativa"
     },
+    "obj_giordano_notes": {
+      "type": "string"
+    },
     "obj_lasegue": {
       "type": "string",
       "enum": [
@@ -419,6 +506,53 @@
       ],
       "default": "negativo"
     },
+    "obj_lasegue_notes": {
+      "type": "string"
+    },
+    "obj_wasserman": {
+      "type": "string",
+      "enum": [
+        "negativo",
+        "positivo_dx",
+        "positivo_sx"
+      ]
+    },
+    "obj_wasserman_notes": {
+      "type": "string"
+    },
+    "obj_tinel": {
+      "type": "string",
+      "enum": [
+        "negativo",
+        "positivo_dx",
+        "positivo_sx"
+      ]
+    },
+    "obj_tinel_notes": {
+      "type": "string"
+    },
+    "obj_phalen": {
+      "type": "string",
+      "enum": [
+        "negativo",
+        "positivo_dx",
+        "positivo_sx"
+      ]
+    },
+    "obj_phalen_notes": {
+      "type": "string"
+    },
+    "obj_finkelstein": {
+      "type": "string",
+      "enum": [
+        "negativo",
+        "positivo_dx",
+        "positivo_sx"
+      ]
+    },
+    "obj_finkelstein_notes": {
+      "type": "string"
+    },
     "obj_spine_palpation": {
       "type": "string",
       "enum": [
@@ -426,6 +560,18 @@
         "dolente"
       ],
       "default": "non_dolente"
+    },
+    "obj_spine_apofisi": {
+      "type": "boolean"
+    },
+    "obj_spine_palpation_notes": {
+      "type": "string"
+    },
+    "obj_spine_masse": {
+      "type": "boolean"
+    },
+    "obj_spine_masse_notes": {
+      "type": "string"
     },
     "obj_spine_mobility": {
       "type": "string",
@@ -435,6 +581,25 @@
       ],
       "default": "normale"
     },
+    "obj_spine_mobility_notes": {
+      "type": "string"
+    },
+    "obj_lombopelvico": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "alterato"
+      ]
+    },
+    "obj_lombopelvico_notes": {
+      "type": "string"
+    },
+    "obj_upper_limbs": {
+      "type": "string"
+    },
+    "obj_lower_limbs": {
+      "type": "string"
+    },
     "obj_nervous_sensitivity": {
       "type": "string",
       "enum": [
@@ -442,6 +607,9 @@
         "alterata"
       ],
       "default": "normale"
+    },
+    "obj_nervous_sensitivity_notes": {
+      "type": "string"
     },
     "obj_nervous_strength": {
       "type": "string",
@@ -451,6 +619,9 @@
       ],
       "default": "normale"
     },
+    "obj_nervous_strength_notes": {
+      "type": "string"
+    },
     "obj_nervous_coordination": {
       "type": "string",
       "enum": [
@@ -458,6 +629,9 @@
         "alterata"
       ],
       "default": "normale"
+    },
+    "obj_nervous_coordination_notes": {
+      "type": "string"
     },
     "obj_tremors": {
       "type": "string",
@@ -468,6 +642,9 @@
       ],
       "default": "assenti"
     },
+    "obj_tremors_notes": {
+      "type": "string"
+    },
     "obj_romberg": {
       "type": "string",
       "enum": [
@@ -475,6 +652,9 @@
         "positivo"
       ],
       "default": "negativo"
+    },
+    "obj_romberg_notes": {
+      "type": "string"
     },
     "obj_reflexes": {
       "type": "string",
@@ -484,10 +664,10 @@
       ],
       "default": "validi"
     },
-    "obj_notes": {
+    "obj_reflexes_notes": {
       "type": "string"
     },
-    "physical_exam": {
+    "obj_notes": {
       "type": "string"
     },
     "visual_acuity": {

@@ -16,6 +16,7 @@ import FamilyAnamnesisForm from '@/components/visits/FamilyAnamnesisForm';
 import PhysiologicalAnamnesisForm from '@/components/visits/PhysiologicalAnamnesisForm';
 import LifestyleForm from '@/components/visits/LifestyleForm';
 import PathologicalAnamnesisTab from '@/components/visits/PathologicalAnamnesisTab';
+import ObjectiveExamTab from '@/components/visits/ObjectiveExamTab';
 import PdfExamUpload from '@/components/visits/PdfExamUpload';
 import { addMonths, format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -421,58 +422,11 @@ export default function VisitEdit() {
 
           {/* ESAME OBIETTIVO */}
           <TabsContent value="obiettivo" className="mt-2">
-            <Card><CardContent className="pt-4 space-y-4">
-              <div className="flex justify-end">
-                <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('obiettivo')} className="gap-2 text-primary border-primary/40">
-                  <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <div><Label className="text-xs">Altezza (cm)</Label><Input type="number" value={form.height_cm || ''} onChange={e => handleChange('height_cm', e.target.value)} /></div>
-                <div><Label className="text-xs">Peso (kg)</Label><Input type="number" value={form.weight_kg || ''} onChange={e => handleChange('weight_kg', e.target.value)} /></div>
-                <div><Label className="text-xs">PA sist.</Label><Input type="number" value={form.blood_pressure_systolic || ''} onChange={e => handleChange('blood_pressure_systolic', e.target.value)} /></div>
-                <div><Label className="text-xs">PA diast.</Label><Input type="number" value={form.blood_pressure_diastolic || ''} onChange={e => handleChange('blood_pressure_diastolic', e.target.value)} /></div>
-                <div><Label className="text-xs">FC (bpm)</Label><Input type="number" value={form.heart_rate || ''} onChange={e => handleChange('heart_rate', e.target.value)} /></div>
-              </div>
-              <>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ispezione generale</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <ObjSelect label="Linfonodi" field="obj_lymphnodes" form={form} onChange={handleChange} options={[{value:'normali',label:'Normali'},{value:'patologici',label:'Patologici'}]} />
-                    <ObjSelect label="Cavo orale" field="obj_oral" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'patologico',label:'Patologico'}]} />
-                    <ObjSelect label="Colorito cute" field="obj_skin_color" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'pallore',label:'Pallore'},{value:'ittero',label:'Ittero'},{value:'cianosi',label:'Cianosi'}]} />
-                    <ObjSelect label="Trofismo cute" field="obj_skin_trophism" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'alterato',label:'Alterato'}]} />
-                    <ObjSelect label="Annessi cutanei" field="obj_skin_appendages" form={form} onChange={handleChange} options={[{value:'normali',label:'Normali'},{value:'patologici',label:'Patologici'}]} />
-                    <ObjSelect label="Capo/collo" field="obj_head_neck" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'patologico',label:'Patologico'}]} />
-                    <ObjSelect label="Pupille" field="obj_pupils" form={form} onChange={handleChange} options={[{value:'isocoriche_isocicliche_normoreagenti',label:'Isocoriche, normoreagenti'},{value:'altro',label:'Altro'}]} />
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Torace e cardiovascolare</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <ObjSelect label="Torace" field="obj_thorax" form={form} onChange={handleChange} options={[{value:'normoespansibile',label:'Normoespansibile'},{value:'ipoespansibile',label:'Ipoespansibile'},{value:'iperespanso',label:'Iperespanso'}]} />
-                    <ObjSelect label="Murmure vescicolare" field="obj_murmur" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'aspro',label:'Aspro'},{value:'ridotto',label:'Ridotto'}]} />
-                    <div><Label className="text-xs text-muted-foreground">Rumori aggiunti</Label><Input value={form.obj_added_sounds || ''} onChange={e => handleChange('obj_added_sounds', e.target.value)} className="h-8 text-sm" /></div>
-                    <ObjSelect label="Toni cardiaci" field="obj_heart_tones" form={form} onChange={handleChange} options={[{value:'normali',label:'Normali'},{value:'patologici',label:'Patologici'}]} />
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Addome</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <div><Label className="text-xs text-muted-foreground">Addome</Label><Input value={form.obj_abdomen || ''} onChange={e => handleChange('obj_abdomen', e.target.value)} className="h-8 text-sm" /></div>
-                    <ObjSelect label="Fegato" field="obj_liver" form={form} onChange={handleChange} options={[{value:'margine_arco',label:'Margine arco'},{value:'debordante',label:'Debordante'}]} />
-                    <ObjSelect label="Manovra di Giordano" field="obj_giordano" form={form} onChange={handleChange} options={[{value:'negativa',label:'Negativa'},{value:'positiva_dx',label:'Positiva dx'},{value:'positiva_sx',label:'Positiva sx'}]} />
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Osteoarticolare e nervoso</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <ObjSelect label="Lasègue" field="obj_lasegue" form={form} onChange={handleChange} options={[{value:'negativo',label:'Negativo'},{value:'positivo_dx',label:'Positivo dx'},{value:'positivo_sx',label:'Positivo sx'}]} />
-                    <ObjSelect label="Rachide - palpazione" field="obj_spine_palpation" form={form} onChange={handleChange} options={[{value:'non_dolente',label:'Non dolente'},{value:'dolente',label:'Dolente'}]} />
-                    <ObjSelect label="Rachide - motilità" field="obj_spine_mobility" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'alterata',label:'Alterata'}]} />
-                    <ObjSelect label="Sensibilità" field="obj_nervous_sensitivity" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'alterata',label:'Alterata'}]} />
-                    <ObjSelect label="Forza" field="obj_nervous_strength" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'alterata',label:'Alterata'}]} />
-                    <ObjSelect label="Coordinazione" field="obj_nervous_coordination" form={form} onChange={handleChange} options={[{value:'normale',label:'Normale'},{value:'alterata',label:'Alterata'}]} />
-                    <ObjSelect label="Tremori" field="obj_tremors" form={form} onChange={handleChange} options={[{value:'assenti',label:'Assenti'},{value:'intenzionali',label:'Intenzionali'},{value:'a_riposo',label:'A riposo'}]} />
-                    <ObjSelect label="Romberg" field="obj_romberg" form={form} onChange={handleChange} options={[{value:'negativo',label:'Negativo'},{value:'positivo',label:'Positivo'}]} />
-                    <ObjSelect label="Riflessi osteotendinei" field="obj_reflexes" form={form} onChange={handleChange} options={[{value:'validi',label:'Validi'},{value:'alterati',label:'Alterati'}]} />
-                  </div>
-                  <div><Label>Note esame obiettivo</Label><Textarea value={form.obj_notes || ''} onChange={e => handleChange('obj_notes', e.target.value)} rows={2} /></div>
-              </>
-            </CardContent></Card>
+            <ObjectiveExamTab
+              form={form}
+              onChange={handleChange}
+              onFillNormal={() => fillNormal('obiettivo')}
+            />
           </TabsContent>
 
           {/* ACCERTAMENTI */}
