@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Wand2, CheckCircle2, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Save, Wand2, CheckCircle2, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -175,23 +175,13 @@ function ObjSelect({ label, field, options, form, onChange }) {
   );
 }
 
-function FisiologicaSection({ title, children, defaultOpen = false }) {
-  const [open, setOpen] = React.useState(defaultOpen);
+function FisiologicaSection({ title, children }) {
   return (
     <Card>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-muted/40 transition-colors rounded-xl"
-      >
+      <div className="px-5 py-3 border-b border-border">
         <span className="font-semibold text-sm">{title}</span>
-        {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-      </button>
-      {open && (
-        <div className="px-5 pb-4 border-t border-border">
-          <div className="pt-4">{children}</div>
-        </div>
-      )}
+      </div>
+      <div className="px-5 py-4">{children}</div>
     </Card>
   );
 }
@@ -407,7 +397,7 @@ export default function VisitEdit() {
 
           {/* ANAMNESI FISIOLOGICA */}
           <TabsContent value="fisiologica" className="space-y-3 mt-2">
-            <FisiologicaSection title="Anamnesi familiare" defaultOpen>
+            <FisiologicaSection title="Anamnesi familiare">
               <FamilyAnamnesisForm
                 value={form.anamnesis_family_structured}
                 onChange={val => handleChange('anamnesis_family_structured', val)}
