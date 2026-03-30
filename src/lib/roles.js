@@ -44,6 +44,8 @@ export function canAccess(user, section) {
     visite_write:       ['amministratore', 'medico'],
     // Può modificare solo gli accertamenti integrativi
     accertamenti_write: ['amministratore', 'medico', 'operatore'],
+    // Può vedere gli allegati PDF degli accertamenti nelle visite
+    allegati_accertamenti: ['amministratore', 'medico', 'operatore'],
     // Può gestire utenti
     gestione_utenti:    ['amministratore'],
     // Può vedere tab Medici Incaricati nelle impostazioni

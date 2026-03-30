@@ -581,8 +581,8 @@ export default function VisitEdit() {
               />
             ))}
 
-            {/* Archivio tutti gli allegati della visita */}
-            {Array.isArray(form.attachments) && form.attachments.length > 0 && (
+            {/* Archivio tutti gli allegati della visita - visibili a tutti tranne segreteria */}
+            {canAccess(user, 'allegati_accertamenti') && Array.isArray(form.attachments) && form.attachments.length > 0 && (
               <Card className="border-primary/20 bg-primary/5">
                 <CardHeader className="pb-2 pt-3 px-4">
                   <div className="flex items-center gap-2">

@@ -26,6 +26,7 @@ export default function PatientDetail() {
   const { user } = useAuth();
   const canSeeClinic = canAccess(user, 'dati_clinici');
   const canWriteVisit = canAccess(user, 'visite_write');
+  const canSeeAttachments = canAccess(user, 'allegati_accertamenti');
 
   const [deletingVisit, setDeletingVisit] = useState(null);
 
@@ -177,8 +178,8 @@ export default function PatientDetail() {
                     </>}
                   </div>
                 </div>
-                {/* Allegati della visita */}
-                {Array.isArray(v.attachments) && v.attachments.length > 0 && (
+                {/* Allegati della visita - visibili a tutti tranne segreteria */}
+                {canSeeAttachments && Array.isArray(v.attachments) && v.attachments.length > 0 && (
                   <div className="pt-1.5 border-t border-border/50">
                     <div className="flex items-center gap-1 mb-1">
                       <Paperclip className="h-3 w-3 text-muted-foreground" />
