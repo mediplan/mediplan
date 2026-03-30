@@ -306,12 +306,17 @@ export default function VisitEdit() {
   }, [visit, patients, visits, visitId, patientId, loaded]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) => visitId
-      ? base44.entities.MedicalVisit.update(visitId, data)
+    mutationFn: (data) => currentVisitId
+      ? base44.entities.MedicalVisit.update(currentVisitId, data)
       : base44.entities.MedicalVisit.create(data),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      // Se è una nuova visita, aggiorna l'ID locale
+      if (!visitId && result?.id) {
+        // Salva l'ID della visita appena creata in sessionStorage
+        sessionStorage.setItem('lastCreatedVisitId', result.id);
+      }
       if (form.company_id) {
         navigate(`/aziende/${form.company_id}`);
       } else {
@@ -319,6 +324,9 @@ export default function VisitEdit() {
       }
     },
   });
+
+  // Se è una nuova visita, usa l'ID salvato in sessionStorage
+  const currentVisitId = visitId || sessionStorage.getItem('lastCreatedVisitId');
 
   const handleChange = (field, value) => {
     setForm(prev => {
