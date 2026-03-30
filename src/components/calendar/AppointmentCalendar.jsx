@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, startOfWeek, endOfWeek, addDays, addWeeks, isSameDay, isWithinInterval, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { Plus, Pencil, Trash2, Clock, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,8 @@ export default function AppointmentCalendar() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAppt, setEditingAppt] = useState(null);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const calendarRef = React.useRef(null);
   const queryClient = useQueryClient();
 
   const { data: appointments = [] } = useQuery({
@@ -46,13 +48,26 @@ export default function AppointmentCalendar() {
   });
 
   const today = new Date();
-  const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const baseWeekStart = startOfWeek(today, { weekStartsOn: 1 });
 
-  // 3 weeks: current + 2 following
-  const weeks = [0, 1, 2].map(offset => {
-    const wStart = addWeeks(currentWeekStart, offset);
+  // scroll del mouse sul calendario
+  useEffect(() => {
+    const el = calendarRef.current;
+    if (!el) return;
+    const handleWheel = (e) => {
+      e.preventDefault();
+      setWeekOffset(o => o + (e.deltaY > 0 ? 1 : -1));
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  // 3 settimane centrate sull'offset corrente
+  const weeks = [-1, 0, 1].map(rel => {
+    const wStart = addWeeks(baseWeekStart, weekOffset + rel);
     const days = Array.from({ length: 7 }, (_, i) => addDays(wStart, i));
-    return { wStart, days, isCurrent: offset === 0 };
+    const isCurrentReal = weekOffset + rel === 0;
+    return { wStart, days, isCurrent: isCurrentReal };
   });
 
   const getAppointmentsForDay = (day) =>
@@ -79,16 +94,29 @@ export default function AppointmentCalendar() {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base capitalize">
-            Agenda — {format(today, "MMMM yyyy", { locale: it })}
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setWeekOffset(o => o - 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle className="text-base capitalize">
+              Agenda — {format(addWeeks(baseWeekStart, weekOffset), "MMMM yyyy", { locale: it })}
+            </CardTitle>
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setWeekOffset(o => o + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            {weekOffset !== 0 && (
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setWeekOffset(0)}>
+                Oggi
+              </Button>
+            )}
+          </div>
           <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay || today)}>
             <Plus className="h-3.5 w-3.5" /> Nuovo
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="p-0">
+      <CardContent className="p-0" ref={calendarRef}>
         {/* Weekday headers */}
         <div className="grid grid-cols-7 border-b">
           {WEEKDAYS.map(wd => (
