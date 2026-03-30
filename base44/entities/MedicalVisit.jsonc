@@ -1,0 +1,617 @@
+{
+  "name": "MedicalVisit",
+  "type": "object",
+  "properties": {
+    "patient_id": {
+      "type": "string",
+      "description": "ID paziente"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Nome completo paziente"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda"
+    },
+    "visit_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data della visita"
+    },
+    "visit_type": {
+      "type": "string",
+      "enum": [
+        "preventiva",
+        "periodica",
+        "su_richiesta",
+        "cambio_mansione",
+        "rientro_malattia",
+        "cessazione"
+      ],
+      "description": "Tipologia di visita"
+    },
+    "anamnesis_work": {
+      "type": "string"
+    },
+    "anamnesis_work_concurrent": {
+      "type": "boolean",
+      "default": false
+    },
+    "anamnesis_work_concurrent_details": {
+      "type": "string"
+    },
+    "anamnesis_family": {
+      "type": "string"
+    },
+    "anamnesis_family_structured": {
+      "type": "object",
+      "description": "Anamnesi familiare strutturata",
+      "properties": {
+        "padre": {
+          "type": "object",
+          "properties": {
+            "vivente": {
+              "type": "boolean"
+            },
+            "deceduto": {
+              "type": "boolean"
+            },
+            "deceduto_per": {
+              "type": "string"
+            },
+            "malattie_flag": {
+              "type": "boolean"
+            },
+            "malattie": {
+              "type": "string"
+            }
+          }
+        },
+        "madre": {
+          "type": "object",
+          "properties": {
+            "vivente": {
+              "type": "boolean"
+            },
+            "deceduto": {
+              "type": "boolean"
+            },
+            "deceduto_per": {
+              "type": "string"
+            },
+            "malattie_flag": {
+              "type": "boolean"
+            },
+            "malattie": {
+              "type": "string"
+            }
+          }
+        },
+        "coniuge": {
+          "type": "object",
+          "properties": {
+            "vivente": {
+              "type": "boolean"
+            },
+            "deceduto": {
+              "type": "boolean"
+            },
+            "deceduto_per": {
+              "type": "string"
+            },
+            "malattie_flag": {
+              "type": "boolean"
+            },
+            "malattie": {
+              "type": "string"
+            }
+          }
+        },
+        "figli_n": {
+          "type": "number"
+        },
+        "collaterali_n": {
+          "type": "number"
+        },
+        "collaterali_malattie_flag": {
+          "type": "boolean"
+        },
+        "collaterali_malattie": {
+          "type": "string"
+        }
+      }
+    },
+    "anamnesis_physiological": {
+      "type": "string"
+    },
+    "lifestyle_smoker": {
+      "type": "string",
+      "enum": [
+        "non_fumatore",
+        "fumatore",
+        "ex_fumatore"
+      ],
+      "default": "non_fumatore"
+    },
+    "lifestyle_smoker_qty": {
+      "type": "string"
+    },
+    "lifestyle_alcohol": {
+      "type": "string",
+      "enum": [
+        "astemio",
+        "occasionale",
+        "meno_mezzo_litro",
+        "mezzo_un_litro",
+        "oltre_un_litro"
+      ],
+      "default": "astemio"
+    },
+    "lifestyle_sport": {
+      "type": "boolean",
+      "default": false
+    },
+    "lifestyle_sport_details": {
+      "type": "string"
+    },
+    "anamnesis_pathological": {
+      "type": "string"
+    },
+    "anamnesis_injuries": {
+      "type": "boolean",
+      "default": false
+    },
+    "anamnesis_injuries_details": {
+      "type": "string"
+    },
+    "anamnesis_occupational_disease": {
+      "type": "boolean",
+      "default": false
+    },
+    "anamnesis_occupational_disease_details": {
+      "type": "string"
+    },
+    "systems_respiratory": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_respiratory_details": {
+      "type": "string"
+    },
+    "systems_cardiovascular": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_cardiovascular_details": {
+      "type": "string"
+    },
+    "systems_gastrointestinal": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_gastrointestinal_details": {
+      "type": "string"
+    },
+    "systems_urogenital": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_urogenital_details": {
+      "type": "string"
+    },
+    "systems_musculoskeletal": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_musculoskeletal_details": {
+      "type": "string"
+    },
+    "systems_hearing": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_hearing_details": {
+      "type": "string"
+    },
+    "systems_vestibular": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_skin": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_nervous": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "systems_psych": {
+      "type": "string",
+      "enum": [
+        "non_sintomi",
+        "sintomi_oltre_1a",
+        "sintomi_meno_1a"
+      ],
+      "default": "non_sintomi"
+    },
+    "current_symptoms": {
+      "type": "string"
+    },
+    "height_cm": {
+      "type": "number"
+    },
+    "weight_kg": {
+      "type": "number"
+    },
+    "blood_pressure_systolic": {
+      "type": "number"
+    },
+    "blood_pressure_diastolic": {
+      "type": "number"
+    },
+    "heart_rate": {
+      "type": "number"
+    },
+    "obj_lymphnodes": {
+      "type": "string",
+      "enum": [
+        "normali",
+        "patologici"
+      ],
+      "default": "normali"
+    },
+    "obj_oral": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "patologico"
+      ],
+      "default": "normale"
+    },
+    "obj_skin_color": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "pallore",
+        "ittero",
+        "cianosi"
+      ],
+      "default": "normale"
+    },
+    "obj_skin_trophism": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "alterato"
+      ],
+      "default": "normale"
+    },
+    "obj_skin_appendages": {
+      "type": "string",
+      "enum": [
+        "normali",
+        "patologici"
+      ],
+      "default": "normali"
+    },
+    "obj_head_neck": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "patologico"
+      ],
+      "default": "normale"
+    },
+    "obj_pupils": {
+      "type": "string",
+      "enum": [
+        "isocoriche_isocicliche_normoreagenti",
+        "altro"
+      ],
+      "default": "isocoriche_isocicliche_normoreagenti"
+    },
+    "obj_thorax": {
+      "type": "string",
+      "enum": [
+        "normoespansibile",
+        "ipoespansibile",
+        "iperespanso"
+      ],
+      "default": "normoespansibile"
+    },
+    "obj_murmur": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "aspro",
+        "ridotto"
+      ],
+      "default": "normale"
+    },
+    "obj_added_sounds": {
+      "type": "string",
+      "default": "assenti"
+    },
+    "obj_heart_tones": {
+      "type": "string",
+      "enum": [
+        "normali",
+        "patologici"
+      ],
+      "default": "normali"
+    },
+    "obj_abdomen": {
+      "type": "string",
+      "default": "piano, trattabile, non dolente"
+    },
+    "obj_liver": {
+      "type": "string",
+      "enum": [
+        "margine_arco",
+        "debordante"
+      ],
+      "default": "margine_arco"
+    },
+    "obj_giordano": {
+      "type": "string",
+      "enum": [
+        "negativa",
+        "positiva_dx",
+        "positiva_sx"
+      ],
+      "default": "negativa"
+    },
+    "obj_lasegue": {
+      "type": "string",
+      "enum": [
+        "negativo",
+        "positivo_dx",
+        "positivo_sx"
+      ],
+      "default": "negativo"
+    },
+    "obj_spine_palpation": {
+      "type": "string",
+      "enum": [
+        "non_dolente",
+        "dolente"
+      ],
+      "default": "non_dolente"
+    },
+    "obj_spine_mobility": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "alterata"
+      ],
+      "default": "normale"
+    },
+    "obj_nervous_sensitivity": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "alterata"
+      ],
+      "default": "normale"
+    },
+    "obj_nervous_strength": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "alterata"
+      ],
+      "default": "normale"
+    },
+    "obj_nervous_coordination": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "alterata"
+      ],
+      "default": "normale"
+    },
+    "obj_tremors": {
+      "type": "string",
+      "enum": [
+        "assenti",
+        "intenzionali",
+        "a_riposo"
+      ],
+      "default": "assenti"
+    },
+    "obj_romberg": {
+      "type": "string",
+      "enum": [
+        "negativo",
+        "positivo"
+      ],
+      "default": "negativo"
+    },
+    "obj_reflexes": {
+      "type": "string",
+      "enum": [
+        "validi",
+        "alterati"
+      ],
+      "default": "validi"
+    },
+    "obj_notes": {
+      "type": "string"
+    },
+    "physical_exam": {
+      "type": "string"
+    },
+    "visual_acuity": {
+      "type": "string"
+    },
+    "visual_acuity_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "visual_acuity_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "audiometry_result": {
+      "type": "string"
+    },
+    "audiometry_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "audiometry_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "spirometry_result": {
+      "type": "string"
+    },
+    "spirometry_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "spirometry_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "ecg_result": {
+      "type": "string"
+    },
+    "ecg_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "ecg_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "blood_tests_result": {
+      "type": "string"
+    },
+    "blood_tests_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "blood_tests_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "urine_test_result": {
+      "type": "string"
+    },
+    "urine_test_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "urine_test_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "drug_test_result": {
+      "type": "string"
+    },
+    "drug_test_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "drug_test_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "other_exams": {
+      "type": "string"
+    },
+    "other_exams_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "other_exams_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "diagnosis": {
+      "type": "string"
+    },
+    "judgment": {
+      "type": "string",
+      "enum": [
+        "idoneo",
+        "idoneo_con_prescrizioni",
+        "idoneo_con_limitazioni",
+        "temporaneamente_non_idoneo",
+        "non_idoneo"
+      ]
+    },
+    "judgment_details": {
+      "type": "string"
+    },
+    "next_visit_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "patient_id",
+    "visit_date",
+    "visit_type"
+  ]
+}

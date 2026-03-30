@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import DianaIntegration from '@/components/visits/DianaIntegration';
+import FamilyAnamnesisForm from '@/components/visits/FamilyAnamnesisForm';
 import PdfExamUpload from '@/components/visits/PdfExamUpload';
 import { addMonths, format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -379,8 +380,11 @@ export default function VisitEdit() {
             <TabsContent value="fisiologica" className="space-y-4 mt-2">
               <Card><CardContent className="pt-4 space-y-4">
                 <div>
-                  <Label>Anamnesi familiare</Label>
-                  <Textarea value={form.anamnesis_family || ''} onChange={e => handleChange('anamnesis_family', e.target.value)} rows={3} />
+                  <Label className="mb-2 block">Anamnesi familiare</Label>
+                  <FamilyAnamnesisForm
+                    value={form.anamnesis_family_structured}
+                    onChange={val => handleChange('anamnesis_family_structured', val)}
+                  />
                 </div>
                 <div>
                   <Label>Anamnesi fisiologica</Label>
@@ -456,7 +460,13 @@ export default function VisitEdit() {
           {!isPreventiva && (
             <TabsContent value="anamnesi" className="space-y-3 mt-2">
               <Card><CardContent className="pt-4 space-y-3">
-                <div><Label>Anamnesi familiare</Label><Textarea value={form.anamnesis_family || ''} onChange={e => handleChange('anamnesis_family', e.target.value)} rows={2} /></div>
+                <div>
+                  <Label className="mb-2 block">Anamnesi familiare</Label>
+                  <FamilyAnamnesisForm
+                    value={form.anamnesis_family_structured}
+                    onChange={val => handleChange('anamnesis_family_structured', val)}
+                  />
+                </div>
                 <div><Label>Anamnesi fisiologica</Label><Textarea value={form.anamnesis_physiological || ''} onChange={e => handleChange('anamnesis_physiological', e.target.value)} rows={2} /></div>
                 <div><Label>Anamnesi patologica remota</Label><Textarea value={form.anamnesis_pathological || ''} onChange={e => handleChange('anamnesis_pathological', e.target.value)} rows={2} /></div>
                 <div><Label>Anamnesi lavorativa</Label><Textarea value={form.anamnesis_work || ''} onChange={e => handleChange('anamnesis_work', e.target.value)} rows={2} /></div>
