@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import DianaIntegration from '@/components/visits/DianaIntegration';
 import FamilyAnamnesisForm from '@/components/visits/FamilyAnamnesisForm';
 import PhysiologicalAnamnesisForm from '@/components/visits/PhysiologicalAnamnesisForm';
+import LifestyleForm from '@/components/visits/LifestyleForm';
 import PdfExamUpload from '@/components/visits/PdfExamUpload';
 import { addMonths, format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -394,41 +395,12 @@ export default function VisitEdit() {
                     onChange={val => handleChange('anamnesis_physiological_structured', val)}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Abitudine al fumo</Label>
-                    <Select value={form.lifestyle_smoker || ''} onValueChange={v => handleChange('lifestyle_smoker', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="non_fumatore">Non fumatore</SelectItem>
-                        <SelectItem value="fumatore">Fumatore</SelectItem>
-                        <SelectItem value="ex_fumatore">Ex fumatore</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {form.lifestyle_smoker !== 'non_fumatore' && form.lifestyle_smoker && (
-                      <Input className="mt-2" placeholder="N° sigarette/die, dal..." value={form.lifestyle_smoker_qty || ''} onChange={e => handleChange('lifestyle_smoker_qty', e.target.value)} />
-                    )}
-                  </div>
-                  <div>
-                    <Label>Consumo alcolici</Label>
-                    <Select value={form.lifestyle_alcohol || ''} onValueChange={v => handleChange('lifestyle_alcohol', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="astemio">Astemio</SelectItem>
-                        <SelectItem value="occasionale">Bevitore occasionale</SelectItem>
-                        <SelectItem value="meno_mezzo_litro">{'< ½ L/die'}</SelectItem>
-                        <SelectItem value="mezzo_un_litro">½ - 1 L/die</SelectItem>
-                        <SelectItem value="oltre_un_litro">{'> 1 L/die'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input type="checkbox" id="sport" checked={!!form.lifestyle_sport} onChange={e => handleChange('lifestyle_sport', e.target.checked)} className="h-4 w-4" />
-                  <Label htmlFor="sport">Attività sportiva regolare</Label>
-                  {form.lifestyle_sport && (
-                    <Input placeholder="Tipo/frequenza..." value={form.lifestyle_sport_details || ''} onChange={e => handleChange('lifestyle_sport_details', e.target.value)} className="flex-1" />
-                  )}
+                <div>
+                  <Label className="mb-2 block font-semibold">Abitudini di vita</Label>
+                  <LifestyleForm
+                    value={form.lifestyle_structured}
+                    onChange={val => handleChange('lifestyle_structured', val)}
+                  />
                 </div>
               </CardContent></Card>
             </TabsContent>

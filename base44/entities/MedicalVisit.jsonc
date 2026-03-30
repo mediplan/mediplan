@@ -82,6 +82,10 @@
       "type": "object",
       "description": "Anamnesi fisiologica strutturata"
     },
+    "lifestyle_structured": {
+      "type": "object",
+      "description": "Abitudini di vita strutturate (fumo, alcol, caff\u00e8, sport, donatore)"
+    },
     "lifestyle_smoker": {
       "type": "string",
       "enum": [
