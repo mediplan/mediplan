@@ -190,6 +190,14 @@ export default function VisitEdit() {
   const patient = patients.find(p => String(p.id) === String(patientId || form.patient_id));
   const visit = visits.find(v => String(v.id) === visitId);
 
+  // Campi anamnestici da ereditare dalla visita preventiva
+  const ANAMNESIS_FIELDS = [
+    'anamnesis_work', 'anamnesis_work_concurrent', 'anamnesis_work_concurrent_details',
+    'anamnesis_family_structured', 'anamnesis_physiological_structured', 'lifestyle_structured',
+    'anamnesis_pathological', 'anamnesis_injuries', 'anamnesis_injuries_details',
+    'anamnesis_occupational_disease', 'anamnesis_occupational_disease_details',
+  ];
+
   useEffect(() => {
     if (loaded) return;
     if (visitId) {
@@ -200,6 +208,15 @@ export default function VisitEdit() {
     } else if (patientId) {
       const p = patients.find(pt => String(pt.id) === patientId);
       if (p) {
+        // Cerca l'ultima visita preventiva del paziente
+        const lastPreventiva = visits
+          .filter(v => String(v.patient_id) === String(patientId) && v.visit_type === 'preventiva')
+          .sort((a, b) => new Date(b.visit_date) - new Date(a.visit_date))[0];
+
+        const inheritedData = lastPreventiva
+          ? Object.fromEntries(ANAMNESIS_FIELDS.map(f => [f, lastPreventiva[f]]).filter(([, v]) => v !== undefined))
+          : {};
+
         setForm({
           patient_id: p.id,
           patient_name: `${p.last_name} ${p.first_name}`,
@@ -207,11 +224,12 @@ export default function VisitEdit() {
           company_name: p.company_name,
           visit_date: format(new Date(), 'yyyy-MM-dd'),
           visit_type: '',
+          ...inheritedData,
         });
         setLoaded(true);
       }
     }
-  }, [visit, patients, visitId, patientId, loaded]);
+  }, [visit, patients, visits, visitId, patientId, loaded]);
 
   const saveMutation = useMutation({
     mutationFn: (data) => visitId
@@ -266,7 +284,6 @@ export default function VisitEdit() {
     saveMutation.mutate(data);
   };
 
-  const isPreventiva = form.visit_type === 'preventiva';
   const isNew = !visitId;
 
   // Numero accertamenti eseguiti
@@ -330,22 +347,13 @@ export default function VisitEdit() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue={isPreventiva ? 'lavorativa' : 'anamnesi'} className="mt-2">
+        <Tabs defaultValue="lavorativa" className="mt-2">
           <TabsList className="flex flex-wrap h-auto gap-1 mb-2">
-            {isPreventiva ? (
-              <>
-                <TabsTrigger value="lavorativa">Anamn. Lavorativa</TabsTrigger>
-                <TabsTrigger value="fisiologica">Anamn. Fisiologica</TabsTrigger>
-                <TabsTrigger value="patologica">Anamn. Patologica</TabsTrigger>
-                <TabsTrigger value="apparati">Per Apparati</TabsTrigger>
-                <TabsTrigger value="obiettivo">Esame Obiettivo</TabsTrigger>
-              </>
-            ) : (
-              <>
-                <TabsTrigger value="anamnesi">Anamnesi</TabsTrigger>
-                <TabsTrigger value="esame">Esame obiettivo</TabsTrigger>
-              </>
-            )}
+            <TabsTrigger value="lavorativa">Anamn. Lavorativa</TabsTrigger>
+            <TabsTrigger value="fisiologica">Anamn. Fisiologica</TabsTrigger>
+            <TabsTrigger value="patologica">Anamn. Patologica</TabsTrigger>
+            <TabsTrigger value="apparati">Per Apparati</TabsTrigger>
+            <TabsTrigger value="obiettivo">Esame Obiettivo</TabsTrigger>
             <TabsTrigger value="accertamenti" className="relative">
               Accertamenti
               {doneCount > 0 && (
@@ -355,158 +363,120 @@ export default function VisitEdit() {
             <TabsTrigger value="giudizio">Giudizio</TabsTrigger>
           </TabsList>
 
-          {/* ANAMNESI LAVORATIVA (preventiva) */}
-          {isPreventiva && (
-            <TabsContent value="lavorativa" className="space-y-4 mt-2">
-              <Card><CardContent className="pt-4 space-y-4">
-                <div>
-                  <Label>Anamnesi lavorativa</Label>
-                  <Textarea value={form.anamnesis_work || ''} onChange={e => handleChange('anamnesis_work', e.target.value)} rows={6} placeholder="Mansioni svolte, esposizioni pregresse..." />
-                </div>
-                <div className="flex items-center gap-3">
-                  <input type="checkbox" id="concurrent" checked={!!form.anamnesis_work_concurrent} onChange={e => handleChange('anamnesis_work_concurrent', e.target.checked)} className="h-4 w-4" />
-                  <Label htmlFor="concurrent">Contemporanea esposizione presso altri datori di lavoro</Label>
-                </div>
-                {form.anamnesis_work_concurrent && (
-                  <div>
-                    <Label>Dettagli</Label>
-                    <Textarea value={form.anamnesis_work_concurrent_details || ''} onChange={e => handleChange('anamnesis_work_concurrent_details', e.target.value)} rows={2} />
-                  </div>
-                )}
-              </CardContent></Card>
-            </TabsContent>
-          )}
-
-          {/* ANAMNESI FISIOLOGICA (preventiva) */}
-          {isPreventiva && (
-            <TabsContent value="fisiologica" className="space-y-4 mt-2">
-              <Card><CardContent className="pt-4 space-y-4">
-                <div>
-                  <Label className="mb-2 block">Anamnesi familiare</Label>
-                  <FamilyAnamnesisForm
-                    value={form.anamnesis_family_structured}
-                    onChange={val => handleChange('anamnesis_family_structured', val)}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-2 block">Anamnesi fisiologica</Label>
-                  <PhysiologicalAnamnesisForm
-                    value={form.anamnesis_physiological_structured}
-                    onChange={val => handleChange('anamnesis_physiological_structured', val)}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-2 block font-semibold">Abitudini di vita</Label>
-                  <LifestyleForm
-                    value={form.lifestyle_structured}
-                    onChange={val => handleChange('lifestyle_structured', val)}
-                  />
-                </div>
-              </CardContent></Card>
-            </TabsContent>
-          )}
-
-          {/* ANAMNESI PATOLOGICA (preventiva) */}
-          {isPreventiva && (
-            <TabsContent value="patologica" className="space-y-4 mt-2">
-              <Card><CardContent className="pt-4 space-y-4">
-                <div>
-                  <Label>Anamnesi patologica remota</Label>
-                  <Textarea value={form.anamnesis_pathological || ''} onChange={e => handleChange('anamnesis_pathological', e.target.value)} rows={5} />
-                </div>
-                <div className="flex items-center gap-3">
-                  <input type="checkbox" id="injuries" checked={!!form.anamnesis_injuries} onChange={e => handleChange('anamnesis_injuries', e.target.checked)} className="h-4 w-4" />
-                  <Label htmlFor="injuries">Infortuni</Label>
-                  {form.anamnesis_injuries && (
-                    <Input placeholder="Dettagli..." value={form.anamnesis_injuries_details || ''} onChange={e => handleChange('anamnesis_injuries_details', e.target.value)} className="flex-1" />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <input type="checkbox" id="occ_disease" checked={!!form.anamnesis_occupational_disease} onChange={e => handleChange('anamnesis_occupational_disease', e.target.checked)} className="h-4 w-4" />
-                  <Label htmlFor="occ_disease">Malattie professionali</Label>
-                  {form.anamnesis_occupational_disease && (
-                    <Input placeholder="Data, tipo, % invalidità..." value={form.anamnesis_occupational_disease_details || ''} onChange={e => handleChange('anamnesis_occupational_disease_details', e.target.value)} className="flex-1" />
-                  )}
-                </div>
-              </CardContent></Card>
-            </TabsContent>
-          )}
-
-          {/* ANAMNESI SEMPLICE (non preventiva) */}
-          {!isPreventiva && (
-            <TabsContent value="anamnesi" className="space-y-3 mt-2">
-              <Card><CardContent className="pt-4 space-y-3">
-                <div>
-                  <Label className="mb-2 block">Anamnesi familiare</Label>
-                  <FamilyAnamnesisForm
-                    value={form.anamnesis_family_structured}
-                    onChange={val => handleChange('anamnesis_family_structured', val)}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-2 block">Anamnesi fisiologica</Label>
-                  <PhysiologicalAnamnesisForm
-                    value={form.anamnesis_physiological_structured}
-                    onChange={val => handleChange('anamnesis_physiological_structured', val)}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-2 block font-semibold">Abitudini di vita</Label>
-                  <LifestyleForm
-                    value={form.lifestyle_structured}
-                    onChange={val => handleChange('lifestyle_structured', val)}
-                  />
-                </div>
-                <div><Label>Anamnesi patologica remota</Label><Textarea value={form.anamnesis_pathological || ''} onChange={e => handleChange('anamnesis_pathological', e.target.value)} rows={2} /></div>
-                <div><Label>Anamnesi lavorativa</Label><Textarea value={form.anamnesis_work || ''} onChange={e => handleChange('anamnesis_work', e.target.value)} rows={2} /></div>
-                <div><Label>Sintomatologia attuale</Label><Textarea value={form.current_symptoms || ''} onChange={e => handleChange('current_symptoms', e.target.value)} rows={2} /></div>
-              </CardContent></Card>
-            </TabsContent>
-          )}
-
-          {/* PER APPARATI (preventiva) */}
-          {isPreventiva && (
-            <TabsContent value="apparati" className="mt-2">
-              <Card><CardContent className="pt-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-muted-foreground">Seleziona lo stato per apparato.</p>
-                  <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('apparati')} className="gap-2 text-primary border-primary/40">
-                    <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
-                  </Button>
-                </div>
-                <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground mb-1 px-1">
-                  <span>Apparato</span><span>Stato</span><span>Dettagli</span>
-                </div>
-                <SystemRow label="Respiratorio" field="systems_respiratory" form={form} onChange={handleChange} />
-                <SystemRow label="Cardiovascolare" field="systems_cardiovascular" form={form} onChange={handleChange} />
-                <SystemRow label="Gastrointestinale" field="systems_gastrointestinal" form={form} onChange={handleChange} />
-                <SystemRow label="Urogenitale" field="systems_urogenital" form={form} onChange={handleChange} />
-                <SystemRow label="Osteoarticolare" field="systems_musculoskeletal" form={form} onChange={handleChange} />
-                <SystemRow label="Uditivo" field="systems_hearing" form={form} onChange={handleChange} />
-                {['vestibular','skin','nervous','psych'].map(app => (
-                  <div key={app} className="grid grid-cols-1 md:grid-cols-3 gap-2 items-start py-2 border-b border-border last:border-0">
-                    <Label className="font-medium text-sm pt-2 capitalize">{app === 'vestibular' ? 'Vestibolare' : app === 'skin' ? 'Cute' : app === 'nervous' ? 'Sistema nervoso' : 'Psiche'}</Label>
-                    <Select value={form[`systems_${app}`] || ''} onValueChange={v => handleChange(`systems_${app}`, v)}>
-                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>{systemsOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <div />
-                  </div>
-                ))}
-              </CardContent></Card>
-            </TabsContent>
-          )}
-
-          {/* ESAME OBIETTIVO */}
-          <TabsContent value={isPreventiva ? 'obiettivo' : 'esame'} className="mt-2">
+          {/* ANAMNESI LAVORATIVA */}
+          <TabsContent value="lavorativa" className="space-y-4 mt-2">
             <Card><CardContent className="pt-4 space-y-4">
-              {isPreventiva && (
-                <div className="flex justify-end">
-                  <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('obiettivo')} className="gap-2 text-primary border-primary/40">
-                    <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
-                  </Button>
+              <div>
+                <Label>Anamnesi lavorativa</Label>
+                <Textarea value={form.anamnesis_work || ''} onChange={e => handleChange('anamnesis_work', e.target.value)} rows={6} placeholder="Mansioni svolte, esposizioni pregresse..." />
+              </div>
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="concurrent" checked={!!form.anamnesis_work_concurrent} onChange={e => handleChange('anamnesis_work_concurrent', e.target.checked)} className="h-4 w-4" />
+                <Label htmlFor="concurrent">Contemporanea esposizione presso altri datori di lavoro</Label>
+              </div>
+              {form.anamnesis_work_concurrent && (
+                <div>
+                  <Label>Dettagli</Label>
+                  <Textarea value={form.anamnesis_work_concurrent_details || ''} onChange={e => handleChange('anamnesis_work_concurrent_details', e.target.value)} rows={2} />
                 </div>
               )}
+            </CardContent></Card>
+          </TabsContent>
+
+          {/* ANAMNESI FISIOLOGICA */}
+          <TabsContent value="fisiologica" className="space-y-4 mt-2">
+            <Card><CardContent className="pt-4 space-y-4">
+              <div>
+                <Label className="mb-2 block">Anamnesi familiare</Label>
+                <FamilyAnamnesisForm
+                  value={form.anamnesis_family_structured}
+                  onChange={val => handleChange('anamnesis_family_structured', val)}
+                />
+              </div>
+              <div>
+                <Label className="mb-2 block">Anamnesi fisiologica</Label>
+                <PhysiologicalAnamnesisForm
+                  value={form.anamnesis_physiological_structured}
+                  onChange={val => handleChange('anamnesis_physiological_structured', val)}
+                />
+              </div>
+              <div>
+                <Label className="mb-2 block font-semibold">Abitudini di vita</Label>
+                <LifestyleForm
+                  value={form.lifestyle_structured}
+                  onChange={val => handleChange('lifestyle_structured', val)}
+                />
+              </div>
+            </CardContent></Card>
+          </TabsContent>
+
+          {/* ANAMNESI PATOLOGICA */}
+          <TabsContent value="patologica" className="space-y-4 mt-2">
+            <Card><CardContent className="pt-4 space-y-4">
+              <div>
+                <Label>Anamnesi patologica remota</Label>
+                <Textarea value={form.anamnesis_pathological || ''} onChange={e => handleChange('anamnesis_pathological', e.target.value)} rows={5} />
+              </div>
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="injuries" checked={!!form.anamnesis_injuries} onChange={e => handleChange('anamnesis_injuries', e.target.checked)} className="h-4 w-4" />
+                <Label htmlFor="injuries">Infortuni</Label>
+                {form.anamnesis_injuries && (
+                  <Input placeholder="Dettagli..." value={form.anamnesis_injuries_details || ''} onChange={e => handleChange('anamnesis_injuries_details', e.target.value)} className="flex-1" />
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="occ_disease" checked={!!form.anamnesis_occupational_disease} onChange={e => handleChange('anamnesis_occupational_disease', e.target.checked)} className="h-4 w-4" />
+                <Label htmlFor="occ_disease">Malattie professionali</Label>
+                {form.anamnesis_occupational_disease && (
+                  <Input placeholder="Data, tipo, % invalidità..." value={form.anamnesis_occupational_disease_details || ''} onChange={e => handleChange('anamnesis_occupational_disease_details', e.target.value)} className="flex-1" />
+                )}
+              </div>
+              <div>
+                <Label>Sintomatologia attuale</Label>
+                <Textarea value={form.current_symptoms || ''} onChange={e => handleChange('current_symptoms', e.target.value)} rows={2} />
+              </div>
+            </CardContent></Card>
+          </TabsContent>
+
+          {/* PER APPARATI */}
+          <TabsContent value="apparati" className="mt-2">
+            <Card><CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-muted-foreground">Seleziona lo stato per apparato.</p>
+                <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('apparati')} className="gap-2 text-primary border-primary/40">
+                  <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
+                </Button>
+              </div>
+              <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground mb-1 px-1">
+                <span>Apparato</span><span>Stato</span><span>Dettagli</span>
+              </div>
+              <SystemRow label="Respiratorio" field="systems_respiratory" form={form} onChange={handleChange} />
+              <SystemRow label="Cardiovascolare" field="systems_cardiovascular" form={form} onChange={handleChange} />
+              <SystemRow label="Gastrointestinale" field="systems_gastrointestinal" form={form} onChange={handleChange} />
+              <SystemRow label="Urogenitale" field="systems_urogenital" form={form} onChange={handleChange} />
+              <SystemRow label="Osteoarticolare" field="systems_musculoskeletal" form={form} onChange={handleChange} />
+              <SystemRow label="Uditivo" field="systems_hearing" form={form} onChange={handleChange} />
+              {['vestibular','skin','nervous','psych'].map(app => (
+                <div key={app} className="grid grid-cols-1 md:grid-cols-3 gap-2 items-start py-2 border-b border-border last:border-0">
+                  <Label className="font-medium text-sm pt-2 capitalize">{app === 'vestibular' ? 'Vestibolare' : app === 'skin' ? 'Cute' : app === 'nervous' ? 'Sistema nervoso' : 'Psiche'}</Label>
+                  <Select value={form[`systems_${app}`] || ''} onValueChange={v => handleChange(`systems_${app}`, v)}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>{systemsOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <div />
+                </div>
+              ))}
+            </CardContent></Card>
+          </TabsContent>
+
+          {/* ESAME OBIETTIVO */}
+          <TabsContent value="obiettivo" className="mt-2">
+            <Card><CardContent className="pt-4 space-y-4">
+              <div className="flex justify-end">
+                <Button type="button" variant="outline" size="sm" onClick={() => fillNormal('obiettivo')} className="gap-2 text-primary border-primary/40">
+                  <Wand2 className="h-3.5 w-3.5" /> Compila valori normali
+                </Button>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div><Label className="text-xs">Altezza (cm)</Label><Input type="number" value={form.height_cm || ''} onChange={e => handleChange('height_cm', e.target.value)} /></div>
                 <div><Label className="text-xs">Peso (kg)</Label><Input type="number" value={form.weight_kg || ''} onChange={e => handleChange('weight_kg', e.target.value)} /></div>
@@ -514,13 +484,7 @@ export default function VisitEdit() {
                 <div><Label className="text-xs">PA diast.</Label><Input type="number" value={form.blood_pressure_diastolic || ''} onChange={e => handleChange('blood_pressure_diastolic', e.target.value)} /></div>
                 <div><Label className="text-xs">FC (bpm)</Label><Input type="number" value={form.heart_rate || ''} onChange={e => handleChange('heart_rate', e.target.value)} /></div>
               </div>
-              {!isPreventiva ? (
-                <div>
-                  <Label>Esame obiettivo</Label>
-                  <Textarea value={form.physical_exam || ''} onChange={e => handleChange('physical_exam', e.target.value)} rows={4} />
-                </div>
-              ) : (
-                <>
+              <>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ispezione generale</p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <ObjSelect label="Linfonodi" field="obj_lymphnodes" form={form} onChange={handleChange} options={[{value:'normali',label:'Normali'},{value:'patologici',label:'Patologici'}]} />
@@ -557,8 +521,7 @@ export default function VisitEdit() {
                     <ObjSelect label="Riflessi osteotendinei" field="obj_reflexes" form={form} onChange={handleChange} options={[{value:'validi',label:'Validi'},{value:'alterati',label:'Alterati'}]} />
                   </div>
                   <div><Label>Note esame obiettivo</Label><Textarea value={form.obj_notes || ''} onChange={e => handleChange('obj_notes', e.target.value)} rows={2} /></div>
-                </>
-              )}
+              </>
             </CardContent></Card>
           </TabsContent>
 
@@ -585,12 +548,10 @@ export default function VisitEdit() {
           {/* GIUDIZIO */}
           <TabsContent value="giudizio" className="mt-2">
             <Card><CardContent className="pt-4 space-y-4">
-              {isPreventiva && (
-                <div>
-                  <Label>Diagnosi</Label>
-                  <Textarea value={form.diagnosis || ''} onChange={e => handleChange('diagnosis', e.target.value)} rows={3} />
-                </div>
-              )}
+              <div>
+                <Label>Diagnosi</Label>
+                <Textarea value={form.diagnosis || ''} onChange={e => handleChange('diagnosis', e.target.value)} rows={3} />
+              </div>
               <div>
                 <Label>Giudizio di idoneità</Label>
                 <Select value={form.judgment || ''} onValueChange={v => handleChange('judgment', v)}>
