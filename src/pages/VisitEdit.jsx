@@ -256,6 +256,7 @@ export default function VisitEdit() {
   const [form, setForm] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [showConcludiDialog, setShowConcludiDialog] = useState(false);
+  const [currentVisitId, setCurrentVisitId] = useState(visitId);
 
   const { data: patients = [] } = useQuery({ queryKey: ['patients'], queryFn: () => base44.entities.Patient.list() });
   const { data: visits = [] } = useQuery({ queryKey: ['visits'], queryFn: () => base44.entities.MedicalVisit.list() });
@@ -305,6 +306,19 @@ export default function VisitEdit() {
     }
   }, [visit, patients, visits, visitId, patientId, loaded]);
 
+  // Naviga via quando chiudi la visita conclusa
+  useEffect(() => {
+    if (form.visit_status === 'conclusa' && !showConcludiDialog) {
+      setTimeout(() => {
+        if (form.company_id) {
+          navigate(`/aziende/${form.company_id}`);
+        } else {
+          navigate(-1);
+        }
+      }, 500);
+    }
+  }, [form.visit_status, showConcludiDialog, form.company_id, navigate]);
+
   const saveMutation = useMutation({
     mutationFn: (data) => currentVisitId
       ? base44.entities.MedicalVisit.update(currentVisitId, data)
@@ -312,21 +326,19 @@ export default function VisitEdit() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      // Se è una nuova visita, aggiorna l'ID locale
-      if (!visitId && result?.id) {
-        // Salva l'ID della visita appena creata in sessionStorage
-        sessionStorage.setItem('lastCreatedVisitId', result.id);
-      }
-      if (form.company_id) {
-        navigate(`/aziende/${form.company_id}`);
+      // Se è una nuova visita, salva l'ID e NON navigare ancora
+      if (!currentVisitId && result?.id) {
+        setCurrentVisitId(result.id);
       } else {
-        navigate(-1);
+        // Se è un aggiornamento di una visita esistente, naviga
+        if (form.company_id) {
+          navigate(`/aziende/${form.company_id}`);
+        } else {
+          navigate(-1);
+        }
       }
     },
   });
-
-  // Se è una nuova visita, usa l'ID salvato in sessionStorage
-  const currentVisitId = visitId || sessionStorage.getItem('lastCreatedVisitId');
 
   const handleChange = (field, value) => {
     setForm(prev => {
@@ -397,7 +409,7 @@ export default function VisitEdit() {
     saveMutation.mutate(buildData({ visit_status: 'conclusa' }));
   };
 
-  const isNew = !visitId;
+  const isNew = !currentVisitId;
 
   const handlePrint = async () => {
     const patientData = patients.find(p => String(p.id) === String(form.patient_id));
