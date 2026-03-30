@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer } from 'lucide-react';
+import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip } from 'lucide-react';
+import VisitAttachments from '@/components/visits/VisitAttachments';
 import { openPrintWindow } from '@/lib/printVisit';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -150,30 +151,44 @@ export default function PatientDetail() {
         ) : (
           <div className="space-y-3">
             {patientVisits.map(v => (
-              <div key={v.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium">{v.visit_date ? format(new Date(v.visit_date), 'dd MMMM yyyy', { locale: it }) : ''}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{v.visit_type?.replace(/_/g, ' ')}</p>
-                  {v.next_visit_date && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Prossima visita: {format(new Date(v.next_visit_date), 'dd/MM/yyyy')}
-                    </p>
-                  )}
+              <div key={v.id} className="p-3 rounded-lg border border-border space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{v.visit_date ? format(new Date(v.visit_date), 'dd MMMM yyyy', { locale: it }) : ''}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{v.visit_type?.replace(/_/g, ' ')}</p>
+                    {v.next_visit_date && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Prossima visita: {format(new Date(v.next_visit_date), 'dd/MM/yyyy')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={v.judgment} />
+                    <Button variant="ghost" size="icon" title="Stampa / PDF" onClick={() => handlePrintVisit(v)}>
+                      <Printer className="h-3.5 w-3.5" />
+                    </Button>
+                    {canWriteVisit && <>
+                      <Button variant="ghost" size="icon" onClick={() => handleEditVisit(v)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingVisit(v)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                   <StatusBadge status={v.judgment} />
-                   <Button variant="ghost" size="icon" title="Stampa / PDF" onClick={() => handlePrintVisit(v)}>
-                     <Printer className="h-3.5 w-3.5" />
-                   </Button>
-                   {canWriteVisit && <>
-                     <Button variant="ghost" size="icon" onClick={() => handleEditVisit(v)}>
-                       <Pencil className="h-3.5 w-3.5" />
-                     </Button>
-                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingVisit(v)}>
-                       <Trash2 className="h-3.5 w-3.5" />
-                     </Button>
-                   </>}
-                 </div>
+                {/* Allegati della visita */}
+                {Array.isArray(v.attachments) && v.attachments.length > 0 && (
+                  <div className="pt-1.5 border-t border-border/50">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Paperclip className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                        Allegati ({v.attachments.length})
+                      </span>
+                    </div>
+                    <VisitAttachments attachments={v.attachments} compact />
+                  </div>
+                )}
               </div>
             ))}
           </div>

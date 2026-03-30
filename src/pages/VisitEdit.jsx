@@ -20,7 +20,9 @@ import LifestyleForm from '@/components/visits/LifestyleForm';
 import PathologicalAnamnesisTab from '@/components/visits/PathologicalAnamnesisTab';
 import ObjectiveExamTab from '@/components/visits/ObjectiveExamTab';
 import PdfExamUpload from '@/components/visits/PdfExamUpload';
+import VisitAttachments from '@/components/visits/VisitAttachments';
 import { addMonths, format } from 'date-fns';
+import { Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const visitTypes = [
@@ -79,7 +81,7 @@ const ACCERTAMENTI = [
   { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', type: 'textarea' },
 ];
 
-function ExamRow({ exam, form, onChange, extraContent }) {
+function ExamRow({ exam, form, onChange, extraContent, onAttachment, attachmentsForExam = [] }) {
   const doneKey = `${exam.key}_done`;
   const dateKey = `${exam.key}_date`;
   const outcomeKey = `${exam.key}_outcome`;
@@ -166,6 +168,8 @@ function ExamRow({ exam, form, onChange, extraContent }) {
               borderColor={exam.pdfBorder}
               bgColor={exam.pdfBg}
               onResult={text => onChange(exam.key, form[exam.key] ? form[exam.key] + '\n' + text : text)}
+              onAttachment={onAttachment}
+              attachments={attachmentsForExam}
             />
           )}
           {exam.type === 'input' ? (
@@ -321,6 +325,25 @@ export default function VisitEdit() {
       }
 
       return { ...prev, ...updates };
+    });
+  };
+
+  // Aggiunge un allegato all'archivio della visita
+  const handleAttachment = (url, label) => {
+    setForm(prev => {
+      const existing = Array.isArray(prev.attachments) ? prev.attachments : [];
+      // Evita duplicati per URL
+      if (existing.some(a => (typeof a === 'object' ? a.url : a) === url)) return prev;
+      return { ...prev, attachments: [...existing, { url, label }] };
+    });
+  };
+
+  // Restituisce gli allegati filtrati per un dato exam_key (basato sul label)
+  const getAttachmentsForExam = (examLabel) => {
+    const all = Array.isArray(form.attachments) ? form.attachments : [];
+    return all.filter(a => {
+      const lbl = typeof a === 'object' ? (a.label || '') : '';
+      return lbl.startsWith(examLabel);
     });
   };
 
@@ -514,6 +537,8 @@ export default function VisitEdit() {
                 exam={exam}
                 form={form}
                 onChange={handleChange}
+                onAttachment={handleAttachment}
+                attachmentsForExam={getAttachmentsForExam(exam.label)}
                 extraContent={exam.key === 'drug_test_result' ? (
                   <DianaIntegration
                     patient={patients.find(p => String(p.id) === String(form.patient_id))}
@@ -522,6 +547,21 @@ export default function VisitEdit() {
                 ) : undefined}
               />
             ))}
+
+            {/* Archivio tutti gli allegati della visita */}
+            {Array.isArray(form.attachments) && form.attachments.length > 0 && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <div className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Archivio allegati ({form.attachments.length})</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-3">
+                  <VisitAttachments attachments={form.attachments} />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* GIUDIZIO */}

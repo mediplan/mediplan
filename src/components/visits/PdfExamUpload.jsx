@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, CheckCircle, XCircle, FileText, Loader2, FolderOpen } from 'lucide-react';
+import { Upload, CheckCircle, XCircle, FileText, Loader2, FolderOpen, ExternalLink } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const STRUMENTI_SETTINGS_KEY = 'mediplan_strumenti_settings';
@@ -29,6 +29,8 @@ export default function PdfExamUpload({
   borderColor = 'border-primary/20',
   bgColor = 'bg-primary/5',
   onResult,
+  onAttachment,   // callback(url, label) - per salvare il file nell'archivio allegati
+  attachments = [], // allegati già caricati per questo accertamento
 }) {
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState('');
@@ -46,6 +48,9 @@ export default function PdfExamUpload({
 
     // 1. Carica il file
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+    // Salva nell'archivio allegati subito dopo l'upload
+    if (onAttachment) onAttachment(file_url, `${label} — ${file.name}`);
 
     // 2. Estrai testo dal PDF
     setStatus('analyzing');
@@ -135,8 +140,27 @@ ${testoGrezzo || '(contenuto non estraibile automaticamente)'}`,
 
       {status === 'done' && (
         <p className="text-xs text-accent flex items-center gap-1">
-          <CheckCircle className="h-3.5 w-3.5" /> Referto analizzato e risultato inserito nel campo visita.
+          <CheckCircle className="h-3.5 w-3.5" /> Referto analizzato e salvato nell'archivio allegati.
         </p>
+      )}
+
+      {/* Allegati già caricati per questo accertamento */}
+      {attachments.length > 0 && (
+        <div className="space-y-1 pt-1 border-t border-border/40">
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Referti caricati</p>
+          {attachments.map((att, i) => (
+            <a
+              key={i}
+              href={att.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3 shrink-0" />
+              <span className="truncate">{att.label || att.url}</span>
+            </a>
+          ))}
+        </div>
       )}
     </div>
   );
