@@ -313,8 +313,8 @@ export default function VisitEdit() {
       : base44.entities.MedicalVisit.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
-      if (companyId) {
-        navigate(`/aziende/${companyId}`);
+      if (form.patient_id) {
+        navigate(`/pazienti/${form.patient_id}`);
       } else {
         navigate(-1);
       }
