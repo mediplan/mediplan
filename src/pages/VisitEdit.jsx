@@ -387,17 +387,28 @@ export default function VisitEdit() {
     setForm(prev => ({ ...prev, ...Object.fromEntries(keys.map(k => [k, normalValues[k]])) }));
   };
 
-  const buildData = (extraFields = {}) => ({
-    ...form,
-    ...extraFields,
-    patient_id: String(form.patient_id),
-    company_id: String(form.company_id),
-    height_cm: form.height_cm ? Number(form.height_cm) : undefined,
-    weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
-    blood_pressure_systolic: form.blood_pressure_systolic ? Number(form.blood_pressure_systolic) : undefined,
-    blood_pressure_diastolic: form.blood_pressure_diastolic ? Number(form.blood_pressure_diastolic) : undefined,
-    heart_rate: form.heart_rate ? Number(form.heart_rate) : undefined,
-  });
+  const buildData = (extraFields = {}) => {
+    const data = {
+      ...form,
+      ...extraFields,
+      patient_id: String(form.patient_id),
+      company_id: String(form.company_id),
+      height_cm: form.height_cm ? Number(form.height_cm) : undefined,
+      weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
+      blood_pressure_systolic: form.blood_pressure_systolic ? Number(form.blood_pressure_systolic) : undefined,
+      blood_pressure_diastolic: form.blood_pressure_diastolic ? Number(form.blood_pressure_diastolic) : undefined,
+      heart_rate: form.heart_rate ? Number(form.heart_rate) : undefined,
+    };
+    
+    // Normalizza gli allegati: se sono oggetti, trasformali in modo che siano salvabili
+    if (Array.isArray(data.attachments)) {
+      data.attachments = data.attachments.map(a => 
+        typeof a === 'object' ? { url: a.url, label: a.label } : a
+      );
+    }
+    
+    return data;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
