@@ -677,6 +677,13 @@
       "type": "string",
       "format": "date"
     },
+    "audiometry_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
+    },
     "spirometry_result": {
       "type": "string"
     },
@@ -687,6 +694,13 @@
     "spirometry_result_date": {
       "type": "string",
       "format": "date"
+    },
+    "spirometry_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
     },
     "ecg_result": {
       "type": "string"
@@ -699,6 +713,13 @@
       "type": "string",
       "format": "date"
     },
+    "ecg_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
+    },
     "visiotest_result": {
       "type": "string"
     },
@@ -709,6 +730,13 @@
     "visiotest_result_date": {
       "type": "string",
       "format": "date"
+    },
+    "visiotest_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
     },
     "upper_limbs_eval_result": {
       "type": "string"
@@ -721,6 +749,13 @@
       "type": "string",
       "format": "date"
     },
+    "upper_limbs_eval_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
+    },
     "drug_test_result": {
       "type": "string"
     },
@@ -731,6 +766,13 @@
     "drug_test_result_date": {
       "type": "string",
       "format": "date"
+    },
+    "drug_test_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
     },
     "alcohol_test_result": {
       "type": "string"
@@ -743,6 +785,13 @@
       "type": "string",
       "format": "date"
     },
+    "alcohol_test_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
+    },
     "audit_c_result": {
       "type": "string"
     },
@@ -753,6 +802,13 @@
     "audit_c_result_date": {
       "type": "string",
       "format": "date"
+    },
+    "audit_c_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
     },
     "blood_tests_result": {
       "type": "string"
@@ -765,6 +821,13 @@
       "type": "string",
       "format": "date"
     },
+    "blood_tests_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
+    },
     "other_exams": {
       "type": "string"
     },
@@ -776,6 +839,13 @@
       "type": "string",
       "format": "date"
     },
+    "other_exams_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
+    },
     "specialist_visits_result": {
       "type": "string"
     },
@@ -786,6 +856,13 @@
     "specialist_visits_result_date": {
       "type": "string",
       "format": "date"
+    },
+    "specialist_visits_result_outcome": {
+      "type": "string",
+      "enum": [
+        "normale",
+        "irregolare"
+      ]
     },
     "diagnosis": {
       "type": "string"

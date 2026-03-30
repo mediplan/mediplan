@@ -77,13 +77,20 @@ const ACCERTAMENTI = [
   { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', type: 'textarea' },
 ];
 
-function ExamRow({ exam, form, onChange }) {
+function ExamRow({ exam, form, onChange, extraContent }) {
   const doneKey = `${exam.key}_done`;
   const dateKey = `${exam.key}_date`;
+  const outcomeKey = `${exam.key}_outcome`;
   const isDone = !!form[doneKey];
+  const outcome = form[outcomeKey] || '';
 
   return (
-    <Card className={cn('transition-all', isDone && 'border-accent/40 bg-accent/5')}>
+    <Card className={cn(
+      'transition-all',
+      isDone && outcome === 'normale' && 'border-accent/40 bg-accent/5',
+      isDone && outcome === 'irregolare' && 'border-destructive/40 bg-destructive/5',
+      isDone && !outcome && 'border-accent/40 bg-accent/5',
+    )}>
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
@@ -94,26 +101,61 @@ function ExamRow({ exam, form, onChange }) {
               onChange={e => onChange(doneKey, e.target.checked)}
               className="h-4 w-4 cursor-pointer accent-teal-500"
             />
-            <label htmlFor={doneKey} className={cn('text-sm font-semibold cursor-pointer', isDone && 'text-accent')}>
+            <label htmlFor={doneKey} className={cn(
+              'text-sm font-semibold cursor-pointer',
+              isDone && outcome === 'irregolare' ? 'text-destructive' : isDone && 'text-accent'
+            )}>
               {exam.label}
             </label>
-            {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0" />}
+            {isDone && outcome === 'normale' && <CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0" />}
+            {isDone && outcome === 'irregolare' && <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">IRREGOLARE</span>}
           </div>
           {isDone && (
-            <div className="flex items-center gap-2">
-              <Label className="text-xs text-muted-foreground whitespace-nowrap">Data esecuzione:</Label>
-              <Input
-                type="date"
-                value={form[dateKey] || ''}
-                onChange={e => onChange(dateKey, e.target.value)}
-                className="h-7 text-xs w-36"
-              />
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Esito */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onChange(outcomeKey, 'normale')}
+                  className={cn(
+                    'px-2.5 py-1 rounded-l-md text-xs border font-medium transition-colors',
+                    outcome === 'normale'
+                      ? 'bg-accent text-white border-accent'
+                      : 'bg-background text-muted-foreground border-input hover:bg-muted'
+                  )}
+                >
+                  Nella norma
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChange(outcomeKey, 'irregolare')}
+                  className={cn(
+                    'px-2.5 py-1 rounded-r-md text-xs border-t border-b border-r font-medium transition-colors',
+                    outcome === 'irregolare'
+                      ? 'bg-destructive text-white border-destructive'
+                      : 'bg-background text-muted-foreground border-input hover:bg-muted'
+                  )}
+                >
+                  Irregolare
+                </button>
+              </div>
+              {/* Data */}
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">Data:</Label>
+                <Input
+                  type="date"
+                  value={form[dateKey] || ''}
+                  onChange={e => onChange(dateKey, e.target.value)}
+                  className="h-7 text-xs w-36"
+                />
+              </div>
             </div>
           )}
         </div>
       </CardHeader>
       {isDone && (
         <CardContent className="px-4 pb-3 space-y-2">
+          {extraContent}
           {exam.pdfKey && (
             <PdfExamUpload
               label={exam.label}
@@ -449,12 +491,19 @@ export default function VisitEdit() {
                 {doneCount} / {ACCERTAMENTI.length} eseguiti
               </Badge>
             </div>
-            <DianaIntegration
-              patient={patients.find(p => String(p.id) === String(form.patient_id))}
-              onResult={text => handleChange('drug_test_result', form.drug_test_result ? form.drug_test_result + '\n' + text : text)}
-            />
             {ACCERTAMENTI.map(exam => (
-              <ExamRow key={exam.key} exam={exam} form={form} onChange={handleChange} />
+              <ExamRow
+                key={exam.key}
+                exam={exam}
+                form={form}
+                onChange={handleChange}
+                extraContent={exam.key === 'drug_test_result' ? (
+                  <DianaIntegration
+                    patient={patients.find(p => String(p.id) === String(form.patient_id))}
+                    onResult={text => handleChange('drug_test_result', form.drug_test_result ? form.drug_test_result + '\n' + text : text)}
+                  />
+                ) : undefined}
+              />
             ))}
           </TabsContent>
 
