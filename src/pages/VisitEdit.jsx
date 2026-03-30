@@ -64,14 +64,17 @@ const normalValues = {
 
 // Accertamenti con flag eseguito + data esecuzione + note
 const ACCERTAMENTI = [
-  { key: 'visual_acuity', label: 'Acuità visiva', type: 'input', placeholder: 'es. 10/10 OD, 10/10 OS' },
   { key: 'audiometry_result', label: 'Audiometria', type: 'textarea', pdfKey: 'audiometro', pdfColor: 'text-chart-3', pdfBorder: 'border-chart-3/20', pdfBg: 'bg-chart-3/5' },
   { key: 'spirometry_result', label: 'Spirometria', type: 'textarea', pdfKey: 'spirometro', pdfColor: 'text-chart-2', pdfBorder: 'border-chart-2/20', pdfBg: 'bg-chart-2/5' },
   { key: 'ecg_result', label: 'ECG', type: 'textarea', pdfKey: 'ecg', pdfColor: 'text-destructive', pdfBorder: 'border-destructive/20', pdfBg: 'bg-destructive/5' },
+  { key: 'visiotest_result', label: 'Visiotest', type: 'textarea' },
+  { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori', type: 'textarea' },
+  { key: 'drug_test_result', label: 'Drug Test', type: 'textarea' },
+  { key: 'alcohol_test_result', label: 'Alcol Test', type: 'textarea' },
+  { key: 'audit_c_result', label: 'Questionario AUDIT-C', type: 'textarea' },
   { key: 'blood_tests_result', label: 'Esami ematochimici', type: 'textarea', placeholder: 'Emocromo, glicemia, creatinina, AST, ALT, GGT...' },
-  { key: 'urine_test_result', label: 'Esame urine', type: 'textarea' },
-  { key: 'drug_test_result', label: 'Drug test', type: 'textarea' },
-  { key: 'other_exams', label: 'Altri accertamenti', type: 'textarea' },
+  { key: 'other_exams', label: 'Esami strumentali aggiuntivi', type: 'textarea' },
+  { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', type: 'textarea' },
 ];
 
 function ExamRow({ exam, form, onChange }) {

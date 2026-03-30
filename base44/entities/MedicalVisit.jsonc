@@ -336,8 +336,7 @@
       "type": "string"
     },
     "obj_pupils_structured": {
-      "type": "object",
-      "description": "isocoriche, isocicliche, normoreagenti, altro"
+      "type": "object"
     },
     "obj_pupils_notes": {
       "type": "string"
@@ -399,8 +398,7 @@
       "type": "string"
     },
     "obj_added_sounds_structured": {
-      "type": "object",
-      "description": "ronchi, rantoli, sibili, fischi, gemiti, espirio prolungato, crepitii, sfregamenti"
+      "type": "object"
     },
     "obj_added_sounds_notes": {
       "type": "string"
@@ -427,8 +425,7 @@
       "type": "string"
     },
     "obj_vessels": {
-      "type": "object",
-      "description": "varici dx/sin, turgore giugulari, altro"
+      "type": "object"
     },
     "obj_vessels_notes": {
       "type": "string"
@@ -437,8 +434,7 @@
       "type": "string"
     },
     "obj_abdomen_structured": {
-      "type": "object",
-      "description": "piano, globoso, trattabile, non dolente, dolente"
+      "type": "object"
     },
     "obj_abdomen_notes": {
       "type": "string"
@@ -670,17 +666,6 @@
     "obj_notes": {
       "type": "string"
     },
-    "visual_acuity": {
-      "type": "string"
-    },
-    "visual_acuity_done": {
-      "type": "boolean",
-      "default": false
-    },
-    "visual_acuity_date": {
-      "type": "string",
-      "format": "date"
-    },
     "audiometry_result": {
       "type": "string"
     },
@@ -714,25 +699,25 @@
       "type": "string",
       "format": "date"
     },
-    "blood_tests_result": {
+    "visiotest_result": {
       "type": "string"
     },
-    "blood_tests_result_done": {
+    "visiotest_result_done": {
       "type": "boolean",
       "default": false
     },
-    "blood_tests_result_date": {
+    "visiotest_result_date": {
       "type": "string",
       "format": "date"
     },
-    "urine_test_result": {
+    "upper_limbs_eval_result": {
       "type": "string"
     },
-    "urine_test_result_done": {
+    "upper_limbs_eval_result_done": {
       "type": "boolean",
       "default": false
     },
-    "urine_test_result_date": {
+    "upper_limbs_eval_result_date": {
       "type": "string",
       "format": "date"
     },
@@ -747,6 +732,39 @@
       "type": "string",
       "format": "date"
     },
+    "alcohol_test_result": {
+      "type": "string"
+    },
+    "alcohol_test_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "alcohol_test_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "audit_c_result": {
+      "type": "string"
+    },
+    "audit_c_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "audit_c_result_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "blood_tests_result": {
+      "type": "string"
+    },
+    "blood_tests_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "blood_tests_result_date": {
+      "type": "string",
+      "format": "date"
+    },
     "other_exams": {
       "type": "string"
     },
@@ -755,6 +773,17 @@
       "default": false
     },
     "other_exams_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "specialist_visits_result": {
+      "type": "string"
+    },
+    "specialist_visits_result_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "specialist_visits_result_date": {
       "type": "string",
       "format": "date"
     },
