@@ -400,12 +400,10 @@ export default function VisitEdit() {
       heart_rate: form.heart_rate ? Number(form.heart_rate) : undefined,
     };
     
-    // Normalizza gli allegati: se sono oggetti, trasformali in modo che siano salvabili
-    if (Array.isArray(data.attachments)) {
-      data.attachments = data.attachments.map(a => 
-        typeof a === 'object' ? { url: a.url, label: a.label } : a
-      );
-    }
+    // Normalizza gli allegati: estrai URL dagli oggetti, filtra e valida
+    data.attachments = (data.attachments || [])
+      .map(a => typeof a === 'object' ? a.url : a)
+      .filter(url => typeof url === 'string' && url.trim() !== '');
     
     return data;
   };
