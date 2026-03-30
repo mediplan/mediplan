@@ -306,13 +306,16 @@ export default function VisitEdit() {
   }, [visit, patients, visits, visitId, patientId, loaded]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) => visitId
-      ? base44.entities.MedicalVisit.update(visitId, data)
-      : base44.entities.MedicalVisit.create(data),
-    onSuccess: (result) => {
+    mutationFn: (data) => {
+      window.lastSavedCompanyId = data.company_id;
+      return visitId
+        ? base44.entities.MedicalVisit.update(visitId, data)
+        : base44.entities.MedicalVisit.create(data);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      const targetCompanyId = form.company_id || companyId || result?.company_id;
+      const targetCompanyId = window.lastSavedCompanyId;
       if (targetCompanyId) {
         navigate(`/aziende/${targetCompanyId}`);
       } else {
@@ -320,8 +323,6 @@ export default function VisitEdit() {
       }
     },
   });
-
-  const companyId = form.company_id;
 
   const handleChange = (field, value) => {
     setForm(prev => {
