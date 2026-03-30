@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isWithinInterval, parseISO, addMonths, subMonths } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, addWeeks, isSameDay, isWithinInterval, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Clock, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Clock, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,12 +16,12 @@ const STATUS_COLORS = {
   annullato: 'bg-muted text-muted-foreground line-through',
 };
 
+const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+
 export default function AppointmentCalendar() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAppt, setEditingAppt] = useState(null);
-
   const queryClient = useQueryClient();
 
   const { data: appointments = [] } = useQuery({
@@ -45,26 +45,15 @@ export default function AppointmentCalendar() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['appointments'] }),
   });
 
-  // Build calendar grid
   const today = new Date();
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(monthStart);
-  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-  const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
-  // Current week boundaries
   const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const currentWeekEnd = endOfWeek(today, { weekStartsOn: 1 });
 
-  const days = [];
-  let d = calStart;
-  while (d <= calEnd) {
-    days.push(d);
-    d = addDays(d, 1);
-  }
-
-  const isCurrentWeekDay = (day) =>
-    isWithinInterval(day, { start: currentWeekStart, end: currentWeekEnd });
+  // 3 weeks: current + 2 following
+  const weeks = [0, 1, 2].map(offset => {
+    const wStart = addWeeks(currentWeekStart, offset);
+    const days = Array.from({ length: 7 }, (_, i) => addDays(wStart, i));
+    return { wStart, days, isCurrent: offset === 0 };
+  });
 
   const getAppointmentsForDay = (day) =>
     appointments.filter(a => a.date && isSameDay(parseISO(a.date), day));
@@ -86,31 +75,19 @@ export default function AppointmentCalendar() {
     if (confirm('Eliminare questo appuntamento?')) deleteMutation.mutate(id);
   };
 
-  const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base capitalize">
-            {format(currentMonth, 'MMMM yyyy', { locale: it })}
+            Agenda — {format(today, "MMMM yyyy", { locale: it })}
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setCurrentMonth(new Date())}>
-              Oggi
-            </Button>
-            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button size="sm" className="h-7 gap-1 text-xs ml-2" onClick={() => handleNewAppt(selectedDay || new Date())}>
-              <Plus className="h-3.5 w-3.5" /> Nuovo
-            </Button>
-          </div>
+          <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay || today)}>
+            <Plus className="h-3.5 w-3.5" /> Nuovo
+          </Button>
         </div>
       </CardHeader>
+
       <CardContent className="p-0">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 border-b">
@@ -121,67 +98,86 @@ export default function AppointmentCalendar() {
           ))}
         </div>
 
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7">
-          {days.map((day, idx) => {
-            const dayAppts = getAppointmentsForDay(day);
-            const isToday = isSameDay(day, today);
-            const isSelected = selectedDay && isSameDay(day, selectedDay);
-            const inMonth = isSameMonth(day, currentMonth);
-            const inCurrentWeek = isCurrentWeekDay(day);
+        {/* Weeks */}
+        {weeks.map(({ wStart, days, isCurrent }) => (
+          <div key={wStart.toISOString()}>
+            {/* Week label */}
+            <div className={cn(
+              'px-3 py-1 text-xs font-medium border-b',
+              isCurrent ? 'bg-primary/10 text-primary' : 'bg-muted/40 text-muted-foreground'
+            )}>
+              {isCurrent
+                ? `Settimana corrente — ${format(wStart, "d MMM", { locale: it })} › ${format(addDays(wStart, 6), "d MMM", { locale: it })}`
+                : `${format(wStart, "d MMM", { locale: it })} › ${format(addDays(wStart, 6), "d MMM", { locale: it })}`
+              }
+            </div>
 
-            return (
-              <div
-                key={idx}
-                onClick={() => setSelectedDay(isSelected ? null : day)}
-                className={cn(
-                  'p-1.5 border-b border-r cursor-pointer transition-colors',
-                  inCurrentWeek ? 'min-h-[120px]' : 'min-h-[72px]',
-                  inCurrentWeek && !isSelected && 'bg-primary/[0.03]',
-                  !inMonth && 'bg-muted/30',
-                  isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/30',
-                  'hover:bg-muted/50'
-                )}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className={cn(
-                    'flex items-center justify-center rounded-full font-medium',
-                    inCurrentWeek ? 'text-sm w-7 h-7' : 'text-xs w-6 h-6',
-                    !inMonth && 'text-muted-foreground',
-                    isToday && 'bg-primary text-white',
-                    !isToday && inMonth && inCurrentWeek && 'text-foreground font-semibold',
-                    !isToday && inMonth && !inCurrentWeek && 'text-foreground',
-                  )}>
-                    {format(day, 'd')}
-                  </span>
-                  {isSelected && (
-                    <button
-                      onClick={e => { e.stopPropagation(); handleNewAppt(day); }}
-                      className="text-primary hover:text-primary/70"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-0.5">
-                  {dayAppts.slice(0, inCurrentWeek ? 4 : 2).map(a => (
-                    <div
-                      key={a.id}
-                      className={cn('px-1 rounded truncate', inCurrentWeek ? 'text-[11px] py-0.5' : 'text-[10px]', STATUS_COLORS[a.status] || 'bg-primary/80 text-white')}
-                      title={a.title}
-                    >
-                      {a.time && <span className="opacity-80 mr-1">{a.time}</span>}
-                      {a.title}
+            {/* Days row */}
+            <div className="grid grid-cols-7">
+              {days.map((day, idx) => {
+                const dayAppts = getAppointmentsForDay(day);
+                const isToday = isSameDay(day, today);
+                const isSelected = selectedDay && isSameDay(day, selectedDay);
+                const maxVisible = isCurrent ? 4 : 2;
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => setSelectedDay(isSelected ? null : day)}
+                    className={cn(
+                      'p-1.5 border-b border-r cursor-pointer transition-colors',
+                      isCurrent ? 'min-h-[110px]' : 'min-h-[64px]',
+                      isCurrent && !isSelected && 'bg-primary/[0.02]',
+                      isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/30',
+                      'hover:bg-muted/50'
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn(
+                        'flex items-center justify-center rounded-full font-medium',
+                        isCurrent ? 'text-sm w-7 h-7' : 'text-xs w-5 h-5',
+                        isToday && 'bg-primary text-white',
+                        !isToday && 'text-foreground',
+                        isCurrent && !isToday && 'font-semibold',
+                      )}>
+                        {format(day, 'd')}
+                      </span>
+                      {isSelected && (
+                        <button
+                          onClick={e => { e.stopPropagation(); handleNewAppt(day); }}
+                          className="text-primary hover:text-primary/70"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
-                  ))}
-                  {dayAppts.length > (inCurrentWeek ? 4 : 2) && (
-                    <div className="text-[10px] text-muted-foreground px-1">+{dayAppts.length - (inCurrentWeek ? 4 : 2)} altri</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    <div className="space-y-0.5">
+                      {dayAppts.slice(0, maxVisible).map(a => (
+                        <div
+                          key={a.id}
+                          className={cn(
+                            'px-1 rounded truncate',
+                            isCurrent ? 'text-[11px] py-0.5' : 'text-[10px]',
+                            STATUS_COLORS[a.status] || 'bg-primary/80 text-white'
+                          )}
+                          title={a.title}
+                        >
+                          {a.time && <span className="opacity-80 mr-1">{a.time}</span>}
+                          {a.title}
+                        </div>
+                      ))}
+                      {dayAppts.length > maxVisible && (
+                        <div className="text-[10px] text-muted-foreground px-1">
+                          +{dayAppts.length - maxVisible} altri
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
         {/* Selected day panel */}
         {selectedDay && (
@@ -212,11 +208,7 @@ export default function AppointmentCalendar() {
                             <Clock className="h-3 w-3" />{a.time}
                           </span>
                         )}
-                        <Badge
-                          className={cn('text-xs', STATUS_COLORS[a.status])}
-                        >
-                          {a.status}
-                        </Badge>
+                        <Badge className={cn('text-xs', STATUS_COLORS[a.status])}>{a.status}</Badge>
                         {a.visit_type && <Badge variant="outline" className="text-xs">{a.visit_type}</Badge>}
                       </div>
                       <p className="text-sm font-medium mt-1">{a.title}</p>
