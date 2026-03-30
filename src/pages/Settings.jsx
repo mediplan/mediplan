@@ -305,9 +305,9 @@ function MansionarioTab() {
     else createMutation.mutate(data);
   };
 
-  const filtered = jobRoles.filter(r =>
-    r.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = jobRoles
+    .filter(r => r.name?.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'it'));
 
   return (
     <div>
