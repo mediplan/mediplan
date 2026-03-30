@@ -53,64 +53,13 @@
       "description": "Anamnesi familiare strutturata",
       "properties": {
         "padre": {
-          "type": "object",
-          "properties": {
-            "vivente": {
-              "type": "boolean"
-            },
-            "deceduto": {
-              "type": "boolean"
-            },
-            "deceduto_per": {
-              "type": "string"
-            },
-            "malattie_flag": {
-              "type": "boolean"
-            },
-            "malattie": {
-              "type": "string"
-            }
-          }
+          "type": "object"
         },
         "madre": {
-          "type": "object",
-          "properties": {
-            "vivente": {
-              "type": "boolean"
-            },
-            "deceduto": {
-              "type": "boolean"
-            },
-            "deceduto_per": {
-              "type": "string"
-            },
-            "malattie_flag": {
-              "type": "boolean"
-            },
-            "malattie": {
-              "type": "string"
-            }
-          }
+          "type": "object"
         },
         "coniuge": {
-          "type": "object",
-          "properties": {
-            "vivente": {
-              "type": "boolean"
-            },
-            "deceduto": {
-              "type": "boolean"
-            },
-            "deceduto_per": {
-              "type": "string"
-            },
-            "malattie_flag": {
-              "type": "boolean"
-            },
-            "malattie": {
-              "type": "string"
-            }
-          }
+          "type": "object"
         },
         "figli_n": {
           "type": "number"
@@ -128,6 +77,10 @@
     },
     "anamnesis_physiological": {
       "type": "string"
+    },
+    "anamnesis_physiological_structured": {
+      "type": "object",
+      "description": "Anamnesi fisiologica strutturata"
     },
     "lifestyle_smoker": {
       "type": "string",
