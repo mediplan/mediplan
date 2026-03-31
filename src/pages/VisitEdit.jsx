@@ -400,10 +400,10 @@ export default function VisitEdit() {
       heart_rate: form.heart_rate ? Number(form.heart_rate) : undefined,
     };
     
-    // Normalizza gli allegati: estrai URL dagli oggetti, filtra e valida
+    // Normalizza gli allegati: mantieni oggetti { url, label } oppure converti stringhe
     data.attachments = (data.attachments || [])
-      .map(a => typeof a === 'object' ? a.url : a)
-      .filter(url => typeof url === 'string' && url.trim() !== '');
+      .map(a => typeof a === 'object' && a.url ? { url: a.url, label: a.label || 'Allegato' } : (typeof a === 'string' ? { url: a, label: 'Allegato' } : null))
+      .filter(a => a && typeof a.url === 'string' && a.url.trim() !== '');
     
     return data;
   };

@@ -182,21 +182,33 @@ export default function PatientDetail() {
                 {/* Archivio allegati PDF della visita */}
                 {canSeeAttachments && Array.isArray(v.attachments) && v.attachments.length > 0 && (
                   <div className="pt-1.5 border-t border-border/50">
-                    <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
-                      <input
-                        type="checkbox"
-                        checked={!!openAttachments[v.id]}
-                        onChange={e => setOpenAttachments(prev => ({ ...prev, [v.id]: e.target.checked }))}
-                        className="h-3.5 w-3.5 accent-primary cursor-pointer"
-                      />
-                      <Paperclip className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground font-medium">
-                        Archivio documenti PDF ({v.attachments.length})
-                      </span>
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setOpenAttachments(prev => ({ ...prev, [v.id]: !prev[v.id] }))}
+                      className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+                    >
+                      <Paperclip className="h-3 w-3 shrink-0" />
+                      <span className="font-medium">Archivio documenti PDF ({v.attachments.length})</span>
+                      <span className="ml-auto">{openAttachments[v.id] ? '▲' : '▼'}</span>
+                    </button>
                     {openAttachments[v.id] && (
-                      <div className="mt-2 pl-5">
-                        <VisitAttachments attachments={v.attachments} compact />
+                      <div className="mt-2 space-y-1">
+                        {v.attachments.map((a, i) => {
+                          const url = typeof a === 'object' ? a.url : a;
+                          const label = typeof a === 'object' ? (a.label || `Allegato ${i + 1}`) : `Allegato ${i + 1}`;
+                          return (
+                            <a
+                              key={i}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-muted/40 hover:bg-muted/70 transition-colors text-xs font-medium text-primary"
+                            >
+                              <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
+                              {label}
+                            </a>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
