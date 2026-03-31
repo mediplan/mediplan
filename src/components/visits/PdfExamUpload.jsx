@@ -25,6 +25,7 @@ function getStrumentoPath(key) {
 export default function PdfExamUpload({
   label,
   settingsKey,
+  examDate = '',   // data di esecuzione dell'accertamento (yyyy-MM-dd)
   color = 'text-primary',
   borderColor = 'border-primary/20',
   bgColor = 'bg-primary/5',
@@ -50,7 +51,8 @@ export default function PdfExamUpload({
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
     // Salva nell'archivio allegati subito dopo l'upload
-    if (onAttachment) onAttachment(file_url, `${label} — ${file.name}`);
+    const dateStr = examDate ? ` (${examDate.split('-').reverse().join('/')})` : '';
+    if (onAttachment) onAttachment(file_url, `${label}${dateStr}`);
 
     // 2. Estrai testo dal PDF
     setStatus('analyzing');

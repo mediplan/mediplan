@@ -171,6 +171,7 @@ function ExamRow({ exam, form, onChange, extraContent, onAttachment, attachments
             <PdfExamUpload
               label={exam.label}
               settingsKey={exam.pdfKey}
+              examDate={form[`${exam.key}_date`] || ''}
               color={exam.pdfColor}
               borderColor={exam.pdfBorder}
               bgColor={exam.pdfBg}
