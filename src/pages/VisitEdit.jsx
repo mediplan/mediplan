@@ -327,16 +327,11 @@ export default function VisitEdit() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      // Se è una nuova visita, salva l'ID e NON navigare ancora
-      if (!currentVisitId && result?.id) {
-        setCurrentVisitId(result.id);
+      const companyId = form.company_id || result?.company_id;
+      if (companyId) {
+        navigate(`/aziende/${companyId}`);
       } else {
-        // Se è un aggiornamento di una visita esistente, naviga
-        if (form.company_id) {
-          navigate(`/aziende/${form.company_id}`);
-        } else {
-          navigate(-1);
-        }
+        navigate(-1);
       }
     },
   });
