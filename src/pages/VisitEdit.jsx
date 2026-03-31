@@ -465,11 +465,7 @@ export default function VisitEdit() {
             <Printer className="h-4 w-4" /> Stampa / PDF
           </Button>
         )}
-        {canConclude && form.visit_status !== 'conclusa' && (
-          <Button type="button" variant="outline" onClick={() => setShowConcludiDialog(true)} disabled={saveMutation.isPending} className="gap-2 border-accent text-accent hover:bg-accent hover:text-white">
-            <CheckCheck className="h-4 w-4" /> Concludi Visita
-          </Button>
-        )}
+
         <Button onClick={handleSubmit} disabled={saveMutation.isPending} className="gap-2">
           <Save className="h-4 w-4" />
           {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
