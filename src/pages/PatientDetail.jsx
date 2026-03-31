@@ -29,6 +29,7 @@ export default function PatientDetail() {
   const canSeeAttachments = canAccess(user, 'allegati_accertamenti');
 
   const [deletingVisit, setDeletingVisit] = useState(null);
+  const [openAttachments, setOpenAttachments] = useState({});
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -178,16 +179,26 @@ export default function PatientDetail() {
                     </>}
                   </div>
                 </div>
-                {/* Allegati della visita - visibili a tutti tranne segreteria */}
+                {/* Archivio allegati PDF della visita */}
                 {canSeeAttachments && Array.isArray(v.attachments) && v.attachments.length > 0 && (
                   <div className="pt-1.5 border-t border-border/50">
-                    <div className="flex items-center gap-1 mb-1">
+                    <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+                      <input
+                        type="checkbox"
+                        checked={!!openAttachments[v.id]}
+                        onChange={e => setOpenAttachments(prev => ({ ...prev, [v.id]: e.target.checked }))}
+                        className="h-3.5 w-3.5 accent-primary cursor-pointer"
+                      />
                       <Paperclip className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        Allegati ({v.attachments.length})
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Archivio documenti PDF ({v.attachments.length})
                       </span>
-                    </div>
-                    <VisitAttachments attachments={v.attachments} compact />
+                    </label>
+                    {openAttachments[v.id] && (
+                      <div className="mt-2 pl-5">
+                        <VisitAttachments attachments={v.attachments} compact />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
