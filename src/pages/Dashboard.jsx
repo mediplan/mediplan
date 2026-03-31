@@ -31,26 +31,39 @@ export default function Dashboard() {
   const activeCompanies = companies.filter(c => c.status === 'active').length;
   const activePatients = patients.filter(p => p.status === 'active').length;
 
-  // Per ogni azienda attiva, troviamo la next_visit_date minima tra i suoi lavoratori
+  // Per ogni azienda attiva, troviamo la next_visit_date più urgente considerando
+  // solo l'ULTIMA visita per ogni paziente (quella con visit_date più recente)
   const companyAlerts = useMemo(() => {
     const activeCompanyList = companies.filter(c => c.status === 'active');
 
+    // Per ogni paziente, troviamo la sua ultima visita (con next_visit_date)
+    const latestVisitPerPatient = {};
+    for (const v of visits) {
+      if (!v.next_visit_date || !v.patient_id) continue;
+      const existing = latestVisitPerPatient[v.patient_id];
+      if (!existing || v.visit_date > existing.visit_date) {
+        latestVisitPerPatient[v.patient_id] = v;
+      }
+    }
+
     return activeCompanyList.map(company => {
-      // Visite passate di questa azienda con next_visit_date
-      const companyVisits = visits.filter(v => v.company_id === company.id && v.next_visit_date);
+      // Prendi solo le ultime visite dei pazienti di questa azienda
+      const companyLatestVisits = Object.values(latestVisitPerPatient)
+        .filter(v => v.company_id === company.id);
 
       // Troviamo la scadenza più urgente per questa azienda
       let earliestExpiry = null;
-      for (const v of companyVisits) {
+      for (const v of companyLatestVisits) {
         const d = parseISO(v.next_visit_date);
         if (!earliestExpiry || isBefore(d, earliestExpiry)) {
           earliestExpiry = d;
         }
       }
 
-      // Anche i lavoratori con first_visit_expiry
+      // Anche i lavoratori con first_visit_expiry (solo se non hanno visite)
       const companyPatients = patients.filter(p => p.company_id === company.id && p.first_visit_expiry);
       for (const p of companyPatients) {
+        if (latestVisitPerPatient[p.id]) continue; // già coperto dalla visita
         const d = parseISO(p.first_visit_expiry);
         if (!earliestExpiry || isBefore(d, earliestExpiry)) {
           earliestExpiry = d;
