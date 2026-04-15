@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip } from 'lucide-react';
-import VisitAttachments from '@/components/visits/VisitAttachments';
+import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
 import { openPrintWindow } from '@/lib/printVisit';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import StatusBadge from '@/components/shared/StatusBadge';
@@ -18,6 +17,160 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
+const ACCERTAMENTI = [
+  { key: 'audiometry_result', label: 'Audiometria', doneKey: 'audiometry_result_done', dateKey: 'audiometry_result_date', outcomeKey: 'audiometry_result_outcome' },
+  { key: 'spirometry_result', label: 'Spirometria', doneKey: 'spirometry_result_done', dateKey: 'spirometry_result_date', outcomeKey: 'spirometry_result_outcome' },
+  { key: 'ecg_result', label: 'ECG', doneKey: 'ecg_result_done', dateKey: 'ecg_result_date', outcomeKey: 'ecg_result_outcome' },
+  { key: 'visiotest_result', label: 'Visiotest', doneKey: 'visiotest_result_done', dateKey: 'visiotest_result_date', outcomeKey: 'visiotest_result_outcome' },
+  { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori', doneKey: 'upper_limbs_eval_result_done', dateKey: 'upper_limbs_eval_result_date', outcomeKey: 'upper_limbs_eval_result_outcome' },
+  { key: 'drug_test_result', label: 'Drug Test', doneKey: 'drug_test_result_done', dateKey: 'drug_test_result_date', outcomeKey: 'drug_test_result_outcome' },
+  { key: 'alcohol_test_result', label: 'Alcol Test', doneKey: 'alcohol_test_result_done', dateKey: 'alcohol_test_result_date', outcomeKey: 'alcohol_test_result_outcome' },
+  { key: 'audit_c_result', label: 'AUDIT-C', doneKey: 'audit_c_result_done', dateKey: 'audit_c_result_date', outcomeKey: 'audit_c_result_outcome' },
+  { key: 'blood_tests_result', label: 'Esami ematochimici', doneKey: 'blood_tests_result_done', dateKey: 'blood_tests_result_date', outcomeKey: 'blood_tests_result_outcome' },
+  { key: 'other_exams', label: 'Esami strumentali aggiuntivi', doneKey: 'other_exams_done', dateKey: 'other_exams_date', outcomeKey: 'other_exams_outcome' },
+  { key: 'specialist_visits_result', label: 'Visite specialistiche', doneKey: 'specialist_visits_result_done', dateKey: 'specialist_visits_result_date', outcomeKey: 'specialist_visits_result_outcome' },
+];
+
+const JUDGMENT_LABELS = {
+  idoneo: { label: 'Idoneo', color: 'bg-accent/10 text-accent border-accent/30' },
+  idoneo_con_prescrizioni: { label: 'Idoneo con prescrizioni', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+  idoneo_con_limitazioni: { label: 'Idoneo con limitazioni', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+  temporaneamente_non_idoneo: { label: 'Temp. non idoneo', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+  non_idoneo: { label: 'Non idoneo', color: 'bg-destructive/10 text-destructive border-destructive/30' },
+};
+
+const VISIT_TYPE_LABELS = {
+  preventiva: 'Preventiva',
+  periodica: 'Periodica',
+  su_richiesta: 'Su richiesta',
+  cambio_mansione: 'Cambio mansione',
+  rientro_malattia: 'Rientro malattia',
+  cessazione: 'Cessazione',
+};
+
+function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, onPrint }) {
+  const [open, setOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+
+  const doneExams = ACCERTAMENTI.filter(a => visit[a.doneKey]);
+  const attachments = Array.isArray(visit.attachments) ? visit.attachments : [];
+  const judgment = JUDGMENT_LABELS[visit.judgment];
+
+  return (
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
+      {/* Header visita */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3 bg-muted/30">
+        <div className="flex items-center gap-3 min-w-0">
+          <Calendar className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">
+              {visit.visit_date ? format(new Date(visit.visit_date), 'dd MMMM yyyy', { locale: it }) : '—'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {VISIT_TYPE_LABELS[visit.visit_type] || visit.visit_type}
+              {visit.next_visit_date && ` · Prossima: ${format(new Date(visit.next_visit_date), 'dd/MM/yyyy')}`}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          {judgment && (
+            <Badge className={`text-xs border ${judgment.color}`}>{judgment.label}</Badge>
+          )}
+          {doneExams.length > 0 && (
+            <button
+              onClick={() => setOpen(o => !o)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
+              <span>{doneExams.length} accertamenti</span>
+              {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            </button>
+          )}
+          <Button variant="ghost" size="icon" title="Stampa / PDF" onClick={() => onPrint(visit)}>
+            <Printer className="h-3.5 w-3.5" />
+          </Button>
+          {canWriteVisit && (
+            <>
+              <Button variant="ghost" size="icon" onClick={() => onEdit(visit)}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(visit)}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Diagnosi */}
+      {visit.diagnosis && (
+        <div className="px-4 py-2 border-t border-border/50">
+          <p className="text-xs text-muted-foreground">Diagnosi: <span className="text-foreground">{visit.diagnosis}</span></p>
+        </div>
+      )}
+
+      {/* Accertamenti eseguiti */}
+      {open && doneExams.length > 0 && (
+        <div className="px-4 py-3 border-t border-border/50 bg-muted/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Accertamenti integrativi</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {doneExams.map(a => (
+              <div key={a.key} className="flex items-start gap-2 p-2 rounded-md bg-background border border-border text-xs">
+                <CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="font-medium">{a.label}</p>
+                  {visit[a.dateKey] && (
+                    <p className="text-muted-foreground">{format(new Date(visit[a.dateKey]), 'dd/MM/yyyy')}</p>
+                  )}
+                  {visit[a.outcomeKey] && (
+                    <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      visit[a.outcomeKey] === 'normale' ? 'bg-accent/10 text-accent' : 'bg-destructive/10 text-destructive'
+                    }`}>
+                      {visit[a.outcomeKey] === 'normale' ? 'Nella norma' : 'Irregolare'}
+                    </span>
+                  )}
+                  {visit[a.key] && (
+                    <p className="text-muted-foreground mt-0.5 line-clamp-2">{visit[a.key]}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Allegati PDF */}
+      {canSeeAttachments && attachments.length > 0 && (
+        <div className="px-4 py-2 border-t border-border/50">
+          <button
+            onClick={() => setAttachOpen(o => !o)}
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+          >
+            <Paperclip className="h-3 w-3" />
+            <span className="font-medium">Allegati PDF ({attachments.length})</span>
+            {attachOpen ? <ChevronDown className="h-3 w-3 ml-auto" /> : <ChevronRight className="h-3 w-3 ml-auto" />}
+          </button>
+          {attachOpen && (
+            <div className="mt-2 space-y-1">
+              {attachments.map((a, i) => {
+                const url = typeof a === 'object' ? a.url : a;
+                const label = typeof a === 'object' ? (a.label || `Allegato ${i + 1}`) : `Allegato ${i + 1}`;
+                return (
+                  <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-muted/40 hover:bg-muted/70 transition-colors text-xs font-medium text-primary">
+                    <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    {label}
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function PatientDetail() {
   const patientId = window.location.pathname.split('/').pop();
@@ -29,7 +182,6 @@ export default function PatientDetail() {
   const canSeeAttachments = canAccess(user, 'allegati_accertamenti');
 
   const [deletingVisit, setDeletingVisit] = useState(null);
-  const [openAttachments, setOpenAttachments] = useState({});
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -143,86 +295,38 @@ export default function PatientDetail() {
       </div>
 
       {/* Visit history - solo admin e operatori */}
-      {canSeeClinic && <Card className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <FileHeart className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold">Storico visite ({patientVisits.length})</h2>
+      {canSeeClinic && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileHeart className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold">Storico visite ({patientVisits.length})</h2>
+            </div>
+            {canWriteVisit && (
+              <Button size="sm" onClick={handleNewVisit}>
+                <Plus className="h-4 w-4 mr-1" /> Nuova visita
+              </Button>
+            )}
           </div>
-          {canWriteVisit && <Button size="sm" onClick={handleNewVisit}>
-            <Plus className="h-4 w-4 mr-1" /> Nuova visita
-          </Button>}
-        </div>
-        {patientVisits.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nessuna visita registrata</p>
-        ) : (
-          <div className="space-y-3">
-            {patientVisits.map(v => (
-              <div key={v.id} className="p-3 rounded-lg border border-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">{v.visit_date ? format(new Date(v.visit_date), 'dd MMMM yyyy', { locale: it }) : ''}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{v.visit_type?.replace(/_/g, ' ')}</p>
-                    {v.next_visit_date && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Prossima visita: {format(new Date(v.next_visit_date), 'dd/MM/yyyy')}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={v.judgment} />
-                    <Button variant="ghost" size="icon" title="Stampa / PDF" onClick={() => handlePrintVisit(v)}>
-                      <Printer className="h-3.5 w-3.5" />
-                    </Button>
-                    {canWriteVisit && <>
-                      <Button variant="ghost" size="icon" onClick={() => handleEditVisit(v)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingVisit(v)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </>}
-                  </div>
-                </div>
-                {/* Archivio allegati PDF della visita */}
-                {canSeeAttachments && Array.isArray(v.attachments) && v.attachments.length > 0 && (
-                  <div className="pt-1.5 border-t border-border/50">
-                    <button
-                      type="button"
-                      onClick={() => setOpenAttachments(prev => ({ ...prev, [v.id]: !prev[v.id] }))}
-                      className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-left"
-                    >
-                      <Paperclip className="h-3 w-3 shrink-0" />
-                      <span className="font-medium">Archivio documenti PDF ({v.attachments.length})</span>
-                      <span className="ml-auto">{openAttachments[v.id] ? '▲' : '▼'}</span>
-                    </button>
-                    {openAttachments[v.id] && (
-                      <div className="mt-2 space-y-1">
-                        {v.attachments.map((a, i) => {
-                          const url = typeof a === 'object' ? a.url : a;
-                          const label = typeof a === 'object' ? (a.label || `Allegato ${i + 1}`) : `Allegato ${i + 1}`;
-                          return (
-                            <a
-                              key={i}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-muted/40 hover:bg-muted/70 transition-colors text-xs font-medium text-primary"
-                            >
-                              <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
-                              {label}
-                            </a>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>}
+          {patientVisits.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nessuna visita registrata</p>
+          ) : (
+            <div className="space-y-3">
+              {patientVisits.map(v => (
+                <VisitCard
+                  key={v.id}
+                  visit={v}
+                  canWriteVisit={canWriteVisit}
+                  canSeeAttachments={canSeeAttachments}
+                  onEdit={handleEditVisit}
+                  onDelete={setDeletingVisit}
+                  onPrint={handlePrintVisit}
+                />
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
 
 
