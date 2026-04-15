@@ -86,14 +86,6 @@ export default function Scadenze() {
     queryFn: () => base44.entities.Patient.list(),
   });
 
-  if (!canAccess(user, 'scadenze')) return <AccessDenied />;
-
-  const toggleExam = (exam) => {
-    setSelectedExams(prev =>
-      prev.includes(exam) ? prev.filter(e => e !== exam) : [...prev, exam]
-    );
-  };
-
   const results = useMemo(() => {
     if (!elaborated) return [];
 
@@ -142,6 +134,14 @@ export default function Scadenze() {
       };
     });
   }, [elaborated, visits, patients, fromDate, toDate, selectedCompany, inclNoVisit, inclSospesi, inclDaRivisitare, companies]);
+
+  if (!canAccess(user, 'scadenze')) return <AccessDenied />;
+
+  const toggleExam = (exam) => {
+    setSelectedExams(prev =>
+      prev.includes(exam) ? prev.filter(e => e !== exam) : [...prev, exam]
+    );
+  };
 
   const handleElabora = () => setElaborated(true);
 
