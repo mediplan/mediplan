@@ -95,6 +95,11 @@ export default function PatientDetail() {
             {patient.company_name} {patient.job_role_name ? `· ${patient.job_role_name}` : ''}
           </p>
         </div>
+        <Link to={`/archivio-paziente/${patientId}`}>
+          <Button variant="outline" size="sm" className="gap-2">
+            <FileHeart className="h-4 w-4" /> Archivio Storico
+          </Button>
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4 mb-8">

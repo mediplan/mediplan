@@ -13,6 +13,7 @@ import PatientDetail from '@/pages/PatientDetail';
 import VisitEdit from '@/pages/VisitEdit';
 
 import Settings from '@/pages/Settings';
+import ArchivioPaziente from '@/pages/ArchivioPaziente';
 import Scadenze from '@/pages/Scadenze';
 import Fatturazione from '@/pages/Fatturazione';
 
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/aziende/:id" element={<CompanyDetail />} />
         <Route path="/pazienti/:id" element={<PatientDetail />} />
         <Route path="/visita" element={<VisitEdit />} />
+        <Route path="/archivio-paziente/:id" element={<ArchivioPaziente />} />
 
         <Route path="/scadenze" element={<Scadenze />} />
         <Route path="/fatturazione" element={<Fatturazione />} />
