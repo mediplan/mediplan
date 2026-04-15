@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -78,29 +77,19 @@ export default function CompanyDetail() {
           </div>
           {company.sector && <p className="text-sm text-muted-foreground mt-1">{company.sector}</p>}
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Printer className="h-4 w-4" /> Stampa documenti <ChevronDown className="h-3.5 w-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Documenti aziendali</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}>
-              <ClipboardList className="h-4 w-4 mr-2 text-primary" />
-              Protocollo Sanitario
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRelazioneDialog(true)}>
-              <FileText className="h-4 w-4 mr-2 text-accent" />
-              Relazione Sanitaria
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}>
-              <MapPinned className="h-4 w-4 mr-2 text-chart-4" />
-              Verbale di Sopralluogo
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2 bg-muted/60 border border-border rounded-lg px-3 py-2">
+          <Printer className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-xs font-medium text-muted-foreground mr-1">Stampa:</span>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 bg-white" onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}>
+            <ClipboardList className="h-3.5 w-3.5 text-primary" /> Protocollo Sanitario
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 bg-white" onClick={() => setRelazioneDialog(true)}>
+            <FileText className="h-3.5 w-3.5 text-accent" /> Relazione Sanitaria
+          </Button>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 bg-white" onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}>
+            <MapPinned className="h-3.5 w-3.5 text-chart-4" /> Verbale Sopralluogo
+          </Button>
+        </div>
       </div>
 
       {/* Dialog selezione anno relazione sanitaria */}
