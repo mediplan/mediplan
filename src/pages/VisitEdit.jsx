@@ -421,7 +421,9 @@ export default function VisitEdit() {
   const currentTabIndex = TAB_ORDER.indexOf(activeTab);
   const isLastTab = currentTabIndex === TAB_ORDER.length - 1;
 
-  const goToNextTab = () => {
+  const goToNextTab = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!isLastTab) {
       setActiveTab(TAB_ORDER[currentTabIndex + 1]);
     }
@@ -481,7 +483,7 @@ export default function VisitEdit() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         {/* Dati base */}
         <Card>
           <CardContent className="pt-4">
@@ -678,13 +680,13 @@ export default function VisitEdit() {
               Scheda successiva →
             </Button>
           ) : (
-            <Button type="submit" disabled={saveMutation.isPending} className="gap-2">
+            <Button type="button" onClick={() => saveMutation.mutate(buildData())} disabled={saveMutation.isPending} className="gap-2">
               <Save className="h-4 w-4" />
               {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
             </Button>
           )}
         </div>
-      </form>
+      </div>
 
       <AlertDialog open={showConcludiDialog} onOpenChange={setShowConcludiDialog}>
         <AlertDialogContent>
