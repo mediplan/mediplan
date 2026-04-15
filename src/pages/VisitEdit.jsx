@@ -473,10 +473,12 @@ export default function VisitEdit() {
           </Button>
         )}
 
-        <Button onClick={handleSubmit} disabled={saveMutation.isPending} className="gap-2">
-          <Save className="h-4 w-4" />
-          {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
-        </Button>
+        {!isNew && (
+          <Button onClick={handleSubmit} disabled={saveMutation.isPending} className="gap-2">
+            <Save className="h-4 w-4" />
+            {saveMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -671,14 +673,14 @@ export default function VisitEdit() {
 
         <div className="flex justify-end gap-3 pt-2 pb-6">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>Annulla</Button>
-          {isLastTab ? (
+          {!isLastTab ? (
+            <Button type="button" onClick={goToNextTab} className="gap-2">
+              Scheda successiva →
+            </Button>
+          ) : (
             <Button type="submit" disabled={saveMutation.isPending} className="gap-2">
               <Save className="h-4 w-4" />
               {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
-            </Button>
-          ) : (
-            <Button type="button" onClick={goToNextTab} className="gap-2">
-              Scheda successiva →
             </Button>
           )}
         </div>
