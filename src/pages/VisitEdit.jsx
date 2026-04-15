@@ -416,6 +416,17 @@ export default function VisitEdit() {
 
   const isNew = !currentVisitId;
 
+  const TAB_ORDER = ['lavorativa', 'fisiologica', 'patologica', 'obiettivo', 'accertamenti', 'giudizio'];
+  const [activeTab, setActiveTab] = useState('lavorativa');
+  const currentTabIndex = TAB_ORDER.indexOf(activeTab);
+  const isLastTab = currentTabIndex === TAB_ORDER.length - 1;
+
+  const goToNextTab = () => {
+    if (!isLastTab) {
+      setActiveTab(TAB_ORDER[currentTabIndex + 1]);
+    }
+  };
+
   const handlePrint = async () => {
     const patientData = patients.find(p => String(p.id) === String(form.patient_id));
     let companyData = null;
@@ -498,7 +509,7 @@ export default function VisitEdit() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="lavorativa" className="mt-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
           <TabsList className="flex flex-wrap h-auto gap-1 mb-2">
             <TabsTrigger value="lavorativa">Anamn. Lavorativa</TabsTrigger>
             <TabsTrigger value="fisiologica">Anamn. Fisiologica</TabsTrigger>
@@ -660,10 +671,16 @@ export default function VisitEdit() {
 
         <div className="flex justify-end gap-3 pt-2 pb-6">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>Annulla</Button>
-          <Button type="submit" disabled={saveMutation.isPending} className="gap-2">
-            <Save className="h-4 w-4" />
-            {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
-          </Button>
+          {isLastTab ? (
+            <Button type="submit" disabled={saveMutation.isPending} className="gap-2">
+              <Save className="h-4 w-4" />
+              {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
+            </Button>
+          ) : (
+            <Button type="button" onClick={goToNextTab} className="gap-2">
+              Scheda successiva →
+            </Button>
+          )}
         </div>
       </form>
 
