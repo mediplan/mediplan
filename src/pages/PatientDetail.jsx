@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight, ShieldCheck, ClipboardList, Archive } from 'lucide-react';
 import { openPrintWindow, openGiudizioWindow } from '@/lib/printVisit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -265,11 +265,35 @@ export default function PatientDetail() {
             {patient.company_name} {patient.job_role_name ? `· ${patient.job_role_name}` : ''}
           </p>
         </div>
-        <Link to={`/archivio-paziente/${patientId}`}>
-          <Button variant="outline" size="sm" className="gap-2">
-            <FileHeart className="h-4 w-4" /> Archivio Storico
-          </Button>
-        </Link>
+        {/* Pannello stampe */}
+        <div className="shrink-0">
+          <div className="bg-muted/40 border border-border rounded-xl p-3 space-y-1.5 min-w-[180px]">
+            <div className="flex items-center gap-1.5 px-1 pb-1.5 mb-0.5 border-b border-border/60">
+              <Printer className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
+            </div>
+            <button
+              onClick={() => patientVisits[0] && handlePrintGiudizio(patientVisits[0])}
+              disabled={patientVisits.length === 0}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ShieldCheck className="h-4 w-4 text-accent shrink-0" />
+              Idoneità Lavoratore
+            </button>
+            <button
+              onClick={() => patientVisits[0] && handlePrintVisit(patientVisits[0])}
+              disabled={patientVisits.length === 0}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ClipboardList className="h-4 w-4 text-primary shrink-0" />
+              Cartella Sanitaria
+            </button>
+            <Link to={`/archivio-paziente/${patientId}`} className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all">
+              <Archive className="h-4 w-4 text-muted-foreground shrink-0" />
+              Archivio Storico
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4 mb-8">
