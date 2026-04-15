@@ -71,15 +71,49 @@ export default function CompanyDetail() {
         <ArrowLeft className="h-4 w-4 mr-2" /> Torna alle aziende
       </Button>
 
-      <div className="flex gap-6 items-start">
-        {/* Contenuto principale */}
-        <div className="flex-1 min-w-0">
-
+      {/* Header: titolo + pannello stampe */}
+      <div className="flex items-start justify-between gap-4 mb-1">
+        <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-semibold text-foreground">{company.name}</h1>
             <StatusBadge status={company.status} />
           </div>
-          {company.sector && <p className="text-sm text-muted-foreground mb-6">{company.sector}</p>}
+          {company.sector && <p className="text-sm text-muted-foreground">{company.sector}</p>}
+        </div>
+
+        {/* Pannello stampe inline */}
+        <div className="shrink-0">
+          <div className="bg-muted/40 border border-border rounded-xl p-3 space-y-1.5 min-w-[180px]">
+            <div className="flex items-center gap-1.5 px-1 pb-1.5 mb-0.5 border-b border-border/60">
+              <Printer className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
+            </div>
+            <button
+              onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
+            >
+              <ClipboardList className="h-4 w-4 text-primary shrink-0" />
+              Protocollo Sanitario
+            </button>
+            <button
+              onClick={() => setRelazioneDialog(true)}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
+            >
+              <FileText className="h-4 w-4 text-accent shrink-0" />
+              Relazione Sanitaria
+            </button>
+            <button
+              onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
+            >
+              <MapPinned className="h-4 w-4 text-chart-4 shrink-0" />
+              Verbale Sopralluogo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6">
 
       {/* Dialog selezione anno relazione sanitaria */}
       <Dialog open={relazioneDialog} onOpenChange={setRelazioneDialog}>
@@ -166,39 +200,7 @@ export default function CompanyDetail() {
         onOpenChange={setJobRolesDialog}
         company={company}
       />
-        </div>{/* fine contenuto principale */}
-
-        {/* Pannello laterale stampe */}
-        <div className="shrink-0 w-48 sticky top-4">
-          <div className="bg-muted/40 border border-border rounded-xl p-3 space-y-1.5">
-            <div className="flex items-center gap-1.5 px-1 pb-1.5 mb-0.5 border-b border-border/60">
-              <Printer className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
-            </div>
-            <button
-              onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
-            >
-              <ClipboardList className="h-4 w-4 text-primary shrink-0" />
-              Protocollo Sanitario
-            </button>
-            <button
-              onClick={() => setRelazioneDialog(true)}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
-            >
-              <FileText className="h-4 w-4 text-accent shrink-0" />
-              Relazione Sanitaria
-            </button>
-            <button
-              onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
-            >
-              <MapPinned className="h-4 w-4 text-chart-4 shrink-0" />
-              Verbale Sopralluogo
-            </button>
-          </div>
-        </div>
-      </div>{/* fine flex wrapper */}
+      </div>{/* fine mt-6 */}
     </div>
   );
 }
