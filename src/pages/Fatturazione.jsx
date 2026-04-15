@@ -40,8 +40,6 @@ function getExams(v) {
 
 export default function Fatturazione() {
   const { user } = useAuth();
-  if (!canAccess(user, 'fatturazione')) return <AccessDenied />;
-
   const today = new Date();
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(today), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(endOfMonth(today), 'yyyy-MM-dd'));
@@ -105,6 +103,8 @@ export default function Fatturazione() {
     }
     return map;
   }, [filtered]);
+
+  if (!canAccess(user, 'fatturazione')) return <AccessDenied />;
 
   const handleExportCSV = () => {
     const rows = [

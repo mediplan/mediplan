@@ -41,17 +41,6 @@ const JUDGMENT_COLORS = {
 
 export default function Scadenze() {
   const { user } = useAuth();
-  if (!canAccess(user, 'scadenze')) return <AccessDenied />;
-
-  // Carica il profilo medico dell'utente corrente (se ruolo = medico)
-  const { data: allDoctors = [] } = useQuery({
-    queryKey: ['doctorProfiles'],
-    queryFn: () => base44.entities.DoctorProfile.list(),
-    enabled: user?.role === 'medico',
-  });
-  const myDoctorProfile = user?.role === 'medico'
-    ? allDoctors.find(d => d.user_email === user.email)
-    : null;
 
   const today = new Date();
   const defaultFrom = '2025-01-01';
@@ -70,6 +59,16 @@ export default function Scadenze() {
   const [showMansione, setShowMansione] = useState(false);
   const [elaborated, setElaborated] = useState(false);
 
+  // Carica il profilo medico dell'utente corrente (se ruolo = medico)
+  const { data: allDoctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list(),
+    enabled: user?.role === 'medico',
+  });
+  const myDoctorProfile = user?.role === 'medico'
+    ? allDoctors.find(d => d.user_email === user.email)
+    : null;
+
   const { data: allCompanies = [] } = useQuery({
     queryKey: ['companies'],
     queryFn: () => base44.entities.Company.list('name'),
@@ -86,6 +85,8 @@ export default function Scadenze() {
     queryKey: ['patients'],
     queryFn: () => base44.entities.Patient.list(),
   });
+
+  if (!canAccess(user, 'scadenze')) return <AccessDenied />;
 
   const toggleExam = (exam) => {
     setSelectedExams(prev =>
