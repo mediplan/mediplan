@@ -4,8 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
-import { openPrintWindow } from '@/lib/printVisit';
+import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight, ShieldCheck } from 'lucide-react';
+import { openPrintWindow, openGiudizioWindow } from '@/lib/printVisit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +49,7 @@ const VISIT_TYPE_LABELS = {
   cessazione: 'Cessazione',
 };
 
-function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, onPrint }) {
+function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, onPrint, onPrintGiudizio }) {
   const [open, setOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
 
@@ -87,7 +87,12 @@ function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, 
               {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
             </button>
           )}
-          <Button variant="ghost" size="icon" title="Stampa / PDF" onClick={() => onPrint(visit)}>
+          {visit.judgment && (
+            <Button variant="ghost" size="icon" title="Comunicazione Giudizio Idoneità" onClick={() => onPrintGiudizio(visit)}>
+              <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" title="Stampa Cartella Sanitaria" onClick={() => onPrint(visit)}>
             <Printer className="h-3.5 w-3.5" />
           </Button>
           {canWriteVisit && (
@@ -216,9 +221,22 @@ export default function PatientDetail() {
     queryFn: () => base44.entities.Company.list(),
   });
 
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list(),
+  });
+
   const handlePrintVisit = (v) => {
     const company = companies.find(c => String(c.id) === String(v.company_id || patient?.company_id));
     openPrintWindow(v, patient, company);
+  };
+
+  const handlePrintGiudizio = (v) => {
+    const company = companies.find(c => String(c.id) === String(v.company_id || patient?.company_id));
+    const doctor = company?.assigned_doctor_id
+      ? doctors.find(d => String(d.id) === String(company.assigned_doctor_id))
+      : doctors[0] || null;
+    openGiudizioWindow(v, patient, company, doctor);
   };
 
 
@@ -321,6 +339,7 @@ export default function PatientDetail() {
                   onEdit={handleEditVisit}
                   onDelete={setDeletingVisit}
                   onPrint={handlePrintVisit}
+                  onPrintGiudizio={handlePrintGiudizio}
                 />
               ))}
             </div>

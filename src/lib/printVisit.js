@@ -361,6 +361,189 @@ export function buildPrintHTML(f = {}, pat = null, company = null) {
   return html;
 }
 
+/**
+ * Genera il documento "Comunicazione del Giudizio di Idoneità alla Mansione Specifica"
+ */
+export function buildGiudizioHTML(f = {}, pat = null, company = null, doctor = null) {
+  const visitTypeLabel = {
+    preventiva: 'Visita preventiva', periodica: 'Visita periodica', su_richiesta: 'Visita su richiesta',
+    cambio_mansione: 'Cambio mansione', rientro_malattia: 'Rientro malattia', cessazione: 'Cessazione',
+  };
+  const judgmentLabel = {
+    idoneo: 'idoneo alla mansione specifica',
+    idoneo_con_prescrizioni: 'idoneo con prescrizioni alla mansione specifica',
+    idoneo_con_limitazioni: 'idoneo con limitazioni alla mansione specifica',
+    temporaneamente_non_idoneo: 'temporaneamente non idoneo alla mansione specifica',
+    non_idoneo: 'non idoneo alla mansione specifica',
+  };
+
+  const fmtDate = (d) => {
+    if (!d) return '—';
+    try {
+      const dt = new Date(d);
+      return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+    } catch { return String(d); }
+  };
+
+  const today = new Date();
+  const todayStr = fmtDate(today);
+
+  // Accertamenti eseguiti (lista nomi)
+  const ACCS = [
+    { key: 'audiometry_result', label: 'Audiometria' },
+    { key: 'spirometry_result', label: 'Spirometria' },
+    { key: 'ecg_result', label: 'ECG' },
+    { key: 'visiotest_result', label: 'Visiotest' },
+    { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori' },
+    { key: 'drug_test_result', label: 'Drug Test' },
+    { key: 'alcohol_test_result', label: 'Alcol Test' },
+    { key: 'audit_c_result', label: 'AUDIT-C' },
+    { key: 'blood_tests_result', label: 'Esami ematochimici' },
+    { key: 'other_exams', label: 'Esami strumentali aggiuntivi' },
+    { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive' },
+  ];
+  const doneAcc = ACCS.filter(a => f[`${a.key}_done`]).map(a => a.label);
+  const doneAccText = doneAcc.length > 0 ? doneAcc.join(', ') : '—';
+
+  // Dati paziente
+  const patName = f.patient_name || (pat ? `${pat.last_name || ''} ${pat.first_name || ''}`.trim() : '—');
+  const birthDate = pat?.birth_date ? fmtDate(pat.birth_date) : '—';
+  const birthPlace = pat?.birth_place || '—';
+  const nationality = pat?.nationality || '—';
+  const fiscalCode = pat?.fiscal_code || '—';
+  const mansione = pat?.job_role_name || '—';
+  const companyName = f.company_name || company?.name || '—';
+
+  // Età
+  let age = '';
+  if (pat?.birth_date) {
+    const birth = new Date(pat.birth_date);
+    age = ` (${Math.floor((today - birth) / (365.25 * 24 * 3600 * 1000))} anni)`;
+  }
+
+  // Medico
+  const doctorName = doctor?.full_name || 'Il Medico Competente';
+  const doctorSpec = doctor?.specialization || '';
+
+  // Periodicità visita (da next_visit_date e visit_date)
+  let periodicita = '—';
+  if (f.visit_date && f.next_visit_date) {
+    const d1 = new Date(f.visit_date);
+    const d2 = new Date(f.next_visit_date);
+    const months = Math.round((d2 - d1) / (30.44 * 24 * 3600 * 1000));
+    if (months === 12) periodicita = 'Annuale';
+    else if (months === 6) periodicita = 'Semestrale';
+    else if (months === 24) periodicita = 'Biennale';
+    else periodicita = `${months} mesi`;
+  }
+
+  const judgmentText = f.judgment ? (judgmentLabel[f.judgment] || f.judgment.replace(/_/g,' ')) : '—';
+
+  return `<div style="font-family:Arial,sans-serif;font-size:11px;color:#111827;max-width:780px;margin:0 auto;">
+
+  <!-- INTESTAZIONE -->
+  <div style="border-bottom:2px solid #0284c7;padding-bottom:10px;margin-bottom:16px;">
+    <div style="font-size:16px;font-weight:800;color:#0284c7;margin-bottom:2px;">MEDIPLAN</div>
+    <div style="font-size:10.5px;color:#374151;">${doctorName}${doctorSpec ? ' — ' + doctorSpec : ''}</div>
+  </div>
+
+  <!-- TITOLO -->
+  <div style="text-align:center;margin-bottom:16px;">
+    <div style="font-size:16px;font-weight:800;letter-spacing:0.3px;">Comunicazione del GIUDIZIO di IDONEITA' alla MANSIONE SPECIFICA</div>
+  </div>
+
+  <!-- BOX DATI PRINCIPALI -->
+  <div style="border:1px solid #d1d5db;border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:11px;line-height:1.8;">
+    <div><strong>Azienda:</strong> ${companyName}</div>
+    <div><strong>Lavoratore:</strong> ${patName}${age} &nbsp; CF: ${fiscalCode}</div>
+    <div>Nato il: ${birthDate} &nbsp; a: ${birthPlace} &nbsp; Nazionalità: ${nationality}</div>
+    <div>Mansione: ${mansione}</div>
+    ${f.judgment_details ? `<div>Prescrizioni/Limitazioni: ${f.judgment_details}</div>` : ''}
+  </div>
+
+  <!-- FATTORI DI RISCHIO -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:6px;">
+    <tr><th style="background:#f3f4f6;border:1px solid #d1d5db;padding:5px 10px;text-align:center;font-size:11px;">Fattori di rischio valutati (come da Protocollo Sanitario)</th></tr>
+    <tr><td style="border:1px solid #d1d5db;padding:8px 10px;font-size:10.5px;line-height:1.7;">
+      D.Lgs. 81/08 e s.m.i.<br/>
+      &nbsp;- Art.41, comma 4: Dipendenze (alcol, sostanze stupefacenti e psicotrope);<br/>
+      &nbsp;- Art.28, comma 1: Stress lavoro correlato;<br/>
+      &nbsp;- Art.15, comma 1: Posture;
+    </td></tr>
+  </table>
+
+  <!-- ACCERTAMENTI -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:6px;">
+    <tr><th style="background:#f3f4f6;border:1px solid #d1d5db;padding:5px 10px;text-align:center;font-size:11px;">Accertamenti integrativi eseguiti</th></tr>
+    <tr><td style="border:1px solid #d1d5db;padding:8px 10px;font-size:10.5px;">${doneAccText}</td></tr>
+  </table>
+
+  <!-- GIUDIZIO -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+    <tr><td style="border:1px solid #d1d5db;padding:7px 10px;font-size:11px;">
+      <strong>Giudizio di idoneità alla mansione specifica:</strong> ${judgmentText}
+    </td></tr>
+  </table>
+
+  <!-- DATA VISITA + PROSSIMA VISITA -->
+  <div style="font-size:10.5px;margin-bottom:10px;line-height:1.8;">
+    <strong>Data visita:</strong> ${fmtDate(f.visit_date)} &nbsp;
+    <strong>Tipologia:</strong> ${visitTypeLabel[f.visit_type] || f.visit_type || '—'} &nbsp;
+    <strong>Periodicità visita:</strong> ${periodicita} &nbsp;
+    <strong>Data giudizio:</strong> ${fmtDate(f.visit_date)}
+  </div>
+  ${f.next_visit_date ? `<div style="font-size:10.5px;margin-bottom:14px;">
+    Da sottoporre a nuova visita medica entro il <strong>${fmtDate(f.next_visit_date)}</strong> previa esecuzione degli accertamenti previsti dal programma di sorveglianza sanitaria predisposto dal medico competente ed in vostro possesso.
+  </div>` : ''}
+
+  <!-- TESTO LEGALE -->
+  <div style="font-size:9.5px;color:#374151;text-align:justify;line-height:1.6;margin-bottom:14px;">
+    Il lavoratore dichiara che quanto segnalato nell'anamnesi corrisponde al vero e si impegna ad informare il medico competente su future variazioni del proprio stato di salute. Dichiara di essere consapevole che il trattamento dei dati personali raccolti è finalizzato allo svolgimento dell'attività di Sorveglianza Sanitaria nel rispetto del D.Lgs 196/03 e Reg. UE 679/2016. Esprime il consenso al trattamento dei propri dati, autorizzandone l'eventuale trasmissione ad Enti che ne facciano richiesta, nel rispetto del segreto professionale. Il lavoratore dichiara che il medico competente gli ha fornito informazioni sul significato e sui risultati degli accertamenti sanitari cui è stato sottoposto, sui rischi lavorativi connessi alla mansione specifica, sulle misure di protezione, sul corretto utilizzo dei dispositivi di protezione individuale e sulla possibilità di ricevere copia della documentazione sanitaria previa richiesta al medico competente stesso. Il lavoratore ha accettato di sottoporsi al Protocollo Sanitario definito ed agli ulteriori accertamenti che il medico competente vorrà eventualmente richiedere. Il lavoratore attesta e sottoscrive di aver preso visione e di aver ricevuto copia della Comunicazione del Giudizio di Idoneità alla mansione specifica.
+  </div>
+  <div style="font-size:9.5px;color:#374151;text-align:justify;line-height:1.6;margin-bottom:20px;">
+    Avverso il giudizio del medico competente - entro trenta giorni dalla comunicazione - è ammesso ricorso, del lavoratore o del datore di lavoro, all'Azienda Sanitaria Locale territorialmente competente che dispone, dopo eventuali ulteriori accertamenti, la conferma, modifica o revoca del giudizio stesso (Art. 41 Comma 9 D. Lgs. 81/08 e S.M.I.).
+  </div>
+
+  <!-- TRASMISSIONE -->
+  <div style="font-size:10px;margin-bottom:20px;">
+    <strong>Trasmissione al lavoratore:</strong> ${todayStr} &nbsp;&nbsp;
+    <strong>Trasmissione al datore di lavoro:</strong> ${todayStr} &nbsp; a mezzo e-mail
+  </div>
+
+  <!-- FIRME -->
+  <div style="display:flex;justify-content:space-between;margin-top:10px;">
+    <div style="text-align:center;min-width:200px;">
+      <div style="font-size:11px;font-weight:700;margin-bottom:40px;">Firma del lavoratore</div>
+      <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">_______________________</div>
+    </div>
+    <div style="text-align:center;min-width:200px;">
+      <div style="font-size:11px;font-weight:700;margin-bottom:40px;">Il medico competente</div>
+      <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">(${doctorName})</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:8px;font-size:9px;color:#9ca3af;display:flex;justify-content:space-between;">
+    <span>Giudizio di Idoneità alla mansione specifica compilato da ${doctorName}</span>
+    <span>Copia per il datore di lavoro - Pag. 1</span>
+  </div>
+  <div style="margin-top:6px;font-size:9px;color:#9ca3af;text-align:center;">
+    Il presente documento digitale è una rappresentazione autentica dei dati contenuti nella cartella sanitaria elettronica
+  </div>
+</div>`;
+}
+
+export function openGiudizioWindow(f, pat, company, doctor) {
+  const printWin = window.open('', '_blank');
+  const html = buildGiudizioHTML(f, pat, company, doctor);
+  printWin.document.write(`<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"/>
+    <title>Giudizio Idoneità - ${f.patient_name || ''}</title>
+    <style>* { box-sizing: border-box; } body { font-family: Arial, sans-serif; font-size: 11px; color: #111827; margin: 0; padding: 24px; background:#fff; }
+    @media print { body { padding: 0; } @page { margin: 15mm; size: A4; } }</style>
+  </head><body>${html}<script>window.onload=function(){setTimeout(function(){window.print();},200);}<\/script></body></html>`);
+  printWin.document.close();
+}
+
 export function openPrintWindow(f, pat, company) {
   const printWin = window.open('', '_blank');
   const html = buildPrintHTML(f, pat, company);
