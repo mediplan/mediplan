@@ -1,16 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Briefcase, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusBadge from '@/components/shared/StatusBadge';
 import CompanyWorkers from '@/components/companies/CompanyWorkers';
+import { openProtocolloSanitario, openRelazioneSanitaria, openVerbaleSupralluogo } from '@/lib/printCompany';
 
 export default function CompanyDetail() {
   const companyId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
+  const [relazioneDialog, setRelazioneDialog] = useState(false);
+  const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
@@ -23,6 +30,31 @@ export default function CompanyDetail() {
     queryFn: () => base44.entities.JobRole.list(),
   });
   const companyRoles = jobRoles.filter(j => String(j.company_id) === companyId);
+
+  const { data: patients = [] } = useQuery({
+    queryKey: ['patients'],
+    queryFn: () => base44.entities.Patient.list(),
+  });
+  const companyPatients = patients.filter(p => String(p.company_id) === companyId);
+
+  const { data: visits = [] } = useQuery({
+    queryKey: ['visits'],
+    queryFn: () => base44.entities.MedicalVisit.list(),
+  });
+
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list(),
+  });
+
+  const getDoctor = (co) => co?.assigned_doctor_id
+    ? doctors.find(d => String(d.id) === String(co.assigned_doctor_id))
+    : doctors[0] || null;
+
+  // Anni disponibili per relazione sanitaria
+  const availableYears = [];
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= currentYear - 5; y--) availableYears.push(String(y));
 
   if (!company) {
     return (
@@ -46,7 +78,57 @@ export default function CompanyDetail() {
           </div>
           {company.sector && <p className="text-sm text-muted-foreground mt-1">{company.sector}</p>}
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Printer className="h-4 w-4" /> Stampa documenti <ChevronDown className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Documenti aziendali</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}>
+              <ClipboardList className="h-4 w-4 mr-2 text-primary" />
+              Protocollo Sanitario
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setRelazioneDialog(true)}>
+              <FileText className="h-4 w-4 mr-2 text-accent" />
+              Relazione Sanitaria
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}>
+              <MapPinned className="h-4 w-4 mr-2 text-chart-4" />
+              Verbale di Sopralluogo
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {/* Dialog selezione anno relazione sanitaria */}
+      <Dialog open={relazioneDialog} onOpenChange={setRelazioneDialog}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Relazione Sanitaria</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label>Anno di riferimento</Label>
+            <Select value={relazioneYear} onValueChange={setRelazioneYear}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRelazioneDialog(false)}>Annulla</Button>
+            <Button onClick={() => {
+              setRelazioneDialog(false);
+              openRelazioneSanitaria(company, companyPatients, visits, getDoctor(company), Number(relazioneYear));
+            }}>
+              <Printer className="h-4 w-4 mr-2" /> Stampa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Info cards */}
       <div className="grid md:grid-cols-3 gap-4 mb-8">
