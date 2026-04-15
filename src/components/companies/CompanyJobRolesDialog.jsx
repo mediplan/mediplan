@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, CheckSquare, Square, Copy } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, Pencil, Trash2, CheckSquare, Square, Copy, Search } from 'lucide-react';
 
 export default function CompanyJobRolesDialog({ open, onOpenChange, company }) {
   const companyId = String(company.id);
   const queryClient = useQueryClient();
   const [newRoleOpen, setNewRoleOpen] = useState(false);
   const [editRole, setEditRole] = useState(null);
+  const [catalogSearch, setCatalogSearch] = useState('');
 
   const { data: allRoles = [] } = useQuery({
     queryKey: ['jobRoles'],
@@ -27,6 +29,11 @@ export default function CompanyJobRolesDialog({ open, onOpenChange, company }) {
 
   // IDs delle mansioni globali già aggiunte (tramite based_on_role_id)
   const linkedGlobalIds = useMemo(() => new Set(companyRoles.map(r => r.based_on_role_id).filter(Boolean)), [companyRoles]);
+
+  const filteredGlobalRoles = useMemo(() => {
+    if (!catalogSearch.trim()) return globalRoles;
+    return globalRoles.filter(r => r.name.toLowerCase().includes(catalogSearch.toLowerCase()));
+  }, [globalRoles, catalogSearch]);
 
   const createMutation = useMutation({
     mutationFn: data => base44.entities.JobRole.create(data),
@@ -143,11 +150,23 @@ export default function CompanyJobRolesDialog({ open, onOpenChange, company }) {
               <p className="text-sm text-muted-foreground mb-3">
                 Seleziona le mansioni dal catalogo standard. Verranno copiate nell'azienda e potrai personalizzarle.
               </p>
+              <div className="relative mb-3">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Cerca mansione..."
+                  value={catalogSearch}
+                  onChange={e => setCatalogSearch(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                />
+              </div>
               {globalRoles.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-6 text-center">Nessuna mansione nel catalogo. Aggiungile dalle Impostazioni → Mansionario.</p>
               ) : (
                 <div className="space-y-2">
-                  {globalRoles.map(role => {
+                  {filteredGlobalRoles.length === 0 && (
+                    <p className="text-sm text-muted-foreground py-4 text-center">Nessuna mansione trovata.</p>
+                  )}
+                  {filteredGlobalRoles.map(role => {
                     const isLinked = linkedGlobalIds.has(role.id);
                     return (
                       <div key={role.id} className={`flex items-start gap-3 p-3 border rounded-lg transition-colors ${isLinked ? 'bg-primary/5 border-primary/30' : 'hover:bg-muted/30'}`}>
