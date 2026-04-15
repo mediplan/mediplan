@@ -75,11 +75,11 @@ export default function CompanyDetail() {
         {/* Contenuto principale */}
         <div className="flex-1 min-w-0">
 
-      <div className="flex items-center gap-3 mb-1">
-        <h1 className="text-2xl font-semibold text-foreground">{company.name}</h1>
-        <StatusBadge status={company.status} />
-      </div>
-      {company.sector && <p className="text-sm text-muted-foreground mb-6">{company.sector}</p>}
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-semibold text-foreground">{company.name}</h1>
+            <StatusBadge status={company.status} />
+          </div>
+          {company.sector && <p className="text-sm text-muted-foreground mb-6">{company.sector}</p>}
 
       {/* Dialog selezione anno relazione sanitaria */}
       <Dialog open={relazioneDialog} onOpenChange={setRelazioneDialog}>
@@ -169,27 +169,34 @@ export default function CompanyDetail() {
         </div>{/* fine contenuto principale */}
 
         {/* Pannello laterale stampe */}
-        <div className="shrink-0 w-44 sticky top-4">
-          <Card className="p-3">
-            <div className="flex items-center gap-1.5 mb-3 pb-2 border-b">
+        <div className="shrink-0 w-48 sticky top-4">
+          <div className="bg-muted/40 border border-border rounded-xl p-3 space-y-1.5">
+            <div className="flex items-center gap-1.5 px-1 pb-1.5 mb-0.5 border-b border-border/60">
               <Printer className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Stampa</span>
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
             </div>
-            <div className="flex flex-col gap-2">
-              <Button size="sm" variant="outline" className="w-full justify-start gap-2 h-8 text-xs" onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}>
-                <ClipboardList className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span>Protocollo Sanitario</span>
-              </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start gap-2 h-8 text-xs" onClick={() => setRelazioneDialog(true)}>
-                <FileText className="h-3.5 w-3.5 text-accent shrink-0" />
-                <span>Relazione Sanitaria</span>
-              </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start gap-2 h-8 text-xs" onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}>
-                <MapPinned className="h-3.5 w-3.5 text-chart-4 shrink-0" />
-                <span>Verbale Sopralluogo</span>
-              </Button>
-            </div>
-          </Card>
+            <button
+              onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
+            >
+              <ClipboardList className="h-4 w-4 text-primary shrink-0" />
+              Protocollo Sanitario
+            </button>
+            <button
+              onClick={() => setRelazioneDialog(true)}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
+            >
+              <FileText className="h-4 w-4 text-accent shrink-0" />
+              Relazione Sanitaria
+            </button>
+            <button
+              onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
+            >
+              <MapPinned className="h-4 w-4 text-chart-4 shrink-0" />
+              Verbale Sopralluogo
+            </button>
+          </div>
         </div>
       </div>{/* fine flex wrapper */}
     </div>
