@@ -1,0 +1,84 @@
+{
+  "name": "JobRole",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome della mansione"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrizione della mansione"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda (se valorizzato, mansione specifica per quella azienda; se vuoto, mansione del catalogo globale)"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda (se mansione specifica)"
+    },
+    "based_on_role_id": {
+      "type": "string",
+      "description": "ID della mansione standard da cui deriva (se personalizzata)"
+    },
+    "risks": {
+      "type": "array",
+      "description": "Rischi specifici associati alla mansione",
+      "items": {
+        "type": "object",
+        "properties": {
+          "risk_name": {
+            "type": "string",
+            "description": "Nome del rischio"
+          },
+          "risk_category": {
+            "type": "string",
+            "description": "Categoria del rischio"
+          },
+          "risk_level": {
+            "type": "string",
+            "description": "Livello di rischio"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrizione del rischio"
+          }
+        }
+      }
+    },
+    "required_exams": {
+      "type": "array",
+      "description": "Accertamenti sanitari previsti",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exam_name": {
+            "type": "string",
+            "description": "Nome dell'esame"
+          },
+          "frequency_months": {
+            "type": "number",
+            "description": "Frequenza in mesi"
+          }
+        }
+      }
+    },
+    "surveillance_frequency_months": {
+      "type": "number",
+      "description": "Periodicit\u00e0 sorveglianza sanitaria (mesi)",
+      "default": 12
+    },
+    "ppe_required": {
+      "type": "string",
+      "description": "DPI richiesti"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

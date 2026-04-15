@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusBadge from '@/components/shared/StatusBadge';
 import CompanyWorkers from '@/components/companies/CompanyWorkers';
+import CompanyJobRolesDialog from '@/components/companies/CompanyJobRolesDialog';
 import { openProtocolloSanitario, openRelazioneSanitaria, openVerbaleSupralluogo } from '@/lib/printCompany';
 
 export default function CompanyDetail() {
@@ -17,6 +18,7 @@ export default function CompanyDetail() {
   const navigate = useNavigate();
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
+  const [jobRolesDialog, setJobRolesDialog] = useState(false);
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
@@ -154,21 +156,29 @@ export default function CompanyDetail() {
             <Briefcase className="h-4 w-4 text-accent" />
             <h2 className="text-sm font-semibold">Mansioni ({companyRoles.length})</h2>
           </div>
-          <Link to="/impostazioni" className="text-xs text-primary hover:underline">Gestisci</Link>
+          <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={() => setJobRolesDialog(true)}>
+            <Plus className="h-3.5 w-3.5" /> Aggiungi / Gestisci
+          </Button>
         </div>
         {companyRoles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nessuna mansione definita</p>
+          <p className="text-sm text-muted-foreground">Nessuna mansione associata. Clicca "Aggiungi" per selezionare dal catalogo o crearne una nuova.</p>
         ) : (
           <div className="space-y-2">
             {companyRoles.map(r => (
               <div key={r.id} className="flex items-center justify-between text-sm">
                 <span className="font-medium">{r.name}</span>
-                <span className="text-muted-foreground">{r.risks?.length || 0} rischi</span>
+                <span className="text-muted-foreground">{r.risks?.length || 0} rischi · {r.required_exams?.length || 0} accert.</span>
               </div>
             ))}
           </div>
         )}
       </Card>
+
+      <CompanyJobRolesDialog
+        open={jobRolesDialog}
+        onOpenChange={setJobRolesDialog}
+        company={company}
+      />
     </div>
   );
 }
