@@ -157,12 +157,19 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
                   </Select>
                 </div>
                 <div>
-                  <Label>Nato a</Label>
-                  <ItalianMunicipalityInput value={form.birth_place} onChange={v => handleChange('birth_place', v)} />
+                  <Label>Prov. di nascita</Label>
+                  <ItalianProvinceSelect
+                    value={form.birth_province}
+                    onChange={v => { handleChange('birth_province', v); handleChange('birth_place', ''); }}
+                  />
                 </div>
                 <div>
-                  <Label>Prov.</Label>
-                  <ItalianProvinceSelect value={form.birth_province} onChange={v => handleChange('birth_province', v)} />
+                  <Label>Nato a</Label>
+                  <ItalianMunicipalityInput
+                    value={form.birth_place}
+                    onChange={v => handleChange('birth_place', v)}
+                    provinceSigla={form.birth_province}
+                  />
                 </div>
                 <div>
                   <Label>Data di nascita</Label>
