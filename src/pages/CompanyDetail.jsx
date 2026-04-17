@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import StatusBadge from '@/components/shared/StatusBadge';
 import CompanyWorkers from '@/components/companies/CompanyWorkers';
 import CompanyJobRolesDialog from '@/components/companies/CompanyJobRolesDialog';
-import { openProtocolloSanitario, openRelazioneSanitaria, openVerbaleSupralluogo } from '@/lib/printCompany';
+import { buildProtocolloHTML, buildRelazioneSanitariaHTML, buildVerbaleHTML } from '@/lib/printCompany';
+import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 
 export default function CompanyDetail() {
   const companyId = window.location.pathname.split('/').pop();
@@ -19,6 +20,7 @@ export default function CompanyDetail() {
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
   const [jobRolesDialog, setJobRolesDialog] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
@@ -89,7 +91,7 @@ export default function CompanyDetail() {
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
             </div>
             <button
-              onClick={() => openProtocolloSanitario(company, companyPatients, jobRoles, getDoctor(company))}
+              onClick={() => setPreviewDoc({ title: `Protocollo Sanitario — ${company.name}`, html: buildProtocolloHTML(company, companyPatients, jobRoles, getDoctor(company)) })}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
             >
               <ClipboardList className="h-4 w-4 text-primary shrink-0" />
@@ -103,7 +105,7 @@ export default function CompanyDetail() {
               Relazione Sanitaria
             </button>
             <button
-              onClick={() => openVerbaleSupralluogo(company, getDoctor(company))}
+              onClick={() => setPreviewDoc({ title: `Verbale Sopralluogo — ${company.name}`, html: buildVerbaleHTML(company, getDoctor(company)) })}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
             >
               <MapPinned className="h-4 w-4 text-chart-4 shrink-0" />
@@ -134,9 +136,12 @@ export default function CompanyDetail() {
             <Button variant="outline" onClick={() => setRelazioneDialog(false)}>Annulla</Button>
             <Button onClick={() => {
               setRelazioneDialog(false);
-              openRelazioneSanitaria(company, companyPatients, visits, getDoctor(company), Number(relazioneYear));
+              setPreviewDoc({
+                title: `Relazione Sanitaria ${relazioneYear} — ${company.name}`,
+                html: buildRelazioneSanitariaHTML(company, companyPatients, visits, getDoctor(company), Number(relazioneYear)),
+              });
             }}>
-              <Printer className="h-4 w-4 mr-2" /> Stampa
+              <Printer className="h-4 w-4 mr-2" /> Anteprima
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -199,6 +204,13 @@ export default function CompanyDetail() {
         open={jobRolesDialog}
         onOpenChange={setJobRolesDialog}
         company={company}
+      />
+
+      <DocumentPreviewDialog
+        open={!!previewDoc}
+        onOpenChange={v => !v && setPreviewDoc(null)}
+        title={previewDoc?.title}
+        html={previewDoc?.html}
       />
       </div>{/* fine mt-6 */}
     </div>

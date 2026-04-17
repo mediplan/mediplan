@@ -533,6 +533,15 @@ export function buildGiudizioHTML(f = {}, pat = null, company = null, doctor = n
 </div>`;
 }
 
+export function getGiudizioHTML(f, pat, company, doctor) {
+  return buildGiudizioHTML(f, pat, company, doctor);
+}
+
+export function getPrintHTML(f, pat, company) {
+  return buildPrintHTML(f, pat, company);
+}
+
+// Legacy: apre direttamente la stampa (mantenuto per retrocompatibilità)
 export function openGiudizioWindow(f, pat, company, doctor) {
   const printWin = window.open('', '_blank');
   const html = buildGiudizioHTML(f, pat, company, doctor);

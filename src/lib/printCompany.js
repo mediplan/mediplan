@@ -64,6 +64,183 @@ function openDoc(html, title) {
   win.document.close();
 }
 
+// ─── BUILDER FUNCTIONS (return HTML string) ───────────────────────────────────
+
+export function buildProtocolloHTML(company, patients, jobRoles, doctor) {
+  const doctorName = doctor?.full_name || '';
+  const roleMap = {};
+  patients.forEach(p => {
+    const key = p.job_role_name || 'Non specificata';
+    if (!roleMap[key]) roleMap[key] = { patients: [], roleId: p.job_role_id };
+    roleMap[key].patients.push(p);
+  });
+
+  let html = `<div style="font-family:Arial,sans-serif;font-size:11px;color:#111827;max-width:780px;margin:0 auto;">`;
+  html += header(company, doctor, 'PROTOCOLLO SANITARIO');
+
+  let azHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;">`;
+  azHtml += row('Ragione sociale', company.name);
+  azHtml += row('P.IVA', company.vat_number);
+  azHtml += row('Indirizzo', company.address ? `${company.address}, ${company.zip_code || ''} ${company.city || ''} ${company.province ? `(${company.province})` : ''}`.trim() : null);
+  azHtml += row('Rappresentante legale', company.legal_representative);
+  azHtml += row('RSPP', company.rspp);
+  azHtml += row('RLS', company.rls);
+  azHtml += row('N. dipendenti', company.employee_count);
+  azHtml += row('Codice ATECO', company.ateco_code);
+  azHtml += row('Settore', company.sector);
+  azHtml += row('Medico Competente', doctorName);
+  azHtml += `</div>`;
+  html += section('DATI AZIENDA', azHtml);
+
+  let tabHtml = `<table style="width:100%;border-collapse:collapse;font-size:10px;">
+    <thead><tr style="background:#0284c7;color:#fff;">
+      <th style="padding:5px 8px;text-align:left;width:22%;">Mansione</th>
+      <th style="padding:5px 8px;text-align:left;width:10%;">N. Lav.</th>
+      <th style="padding:5px 8px;text-align:left;width:20%;">Periodicità</th>
+      <th style="padding:5px 8px;text-align:left;">Accertamenti sanitari previsti</th>
+    </tr></thead><tbody>`;
+
+  const allRoleNames = [...new Set(patients.map(p => p.job_role_name).filter(Boolean))];
+  if (allRoleNames.length > 0) {
+    allRoleNames.sort().forEach((roleName, idx) => {
+      const patientsInRole = patients.filter(p => p.job_role_name === roleName);
+      const roleId = patientsInRole[0]?.job_role_id;
+      const role = roleId ? jobRoles.find(r => String(r.id) === String(roleId)) : null;
+      const freq = role?.surveillance_frequency_months;
+      const freqLabel = freq === 6 ? 'Semestrale' : freq === 12 ? 'Annuale' : freq === 24 ? 'Biennale' : freq ? `Ogni ${freq} mesi` : '—';
+      const exams = role?.required_exams?.map(e => e.exam_name).join(', ') || '—';
+      const bg = idx % 2 === 0 ? '#fff' : '#f9fafb';
+      tabHtml += `<tr style="border-bottom:1px solid #e5e7eb;background:${bg};">
+        <td style="padding:5px 8px;font-weight:600;">${roleName}</td>
+        <td style="padding:5px 8px;">${patientsInRole.length}</td>
+        <td style="padding:5px 8px;">${freqLabel}</td>
+        <td style="padding:5px 8px;">${exams}</td>
+      </tr>`;
+    });
+  } else {
+    tabHtml += `<tr><td colspan="4" style="padding:10px;text-align:center;color:#6b7280;">Nessuna mansione definita</td></tr>`;
+  }
+  tabHtml += `</tbody></table>`;
+  html += section('MANSIONI E ACCERTAMENTI SANITARI', tabHtml);
+  html += section('NOTE', `<p style="font-size:10px;line-height:1.6;color:#374151;">Il presente Protocollo Sanitario è redatto ai sensi del D.Lgs. 81/08 e s.m.i., art. 25 comma 1 lettera b).</p>`);
+  html += footerSign(doctorName);
+  html += `</div>`;
+  return html;
+}
+
+export function buildRelazioneSanitariaHTML(company, patients, visits, doctor, year) {
+  const doctorName = doctor?.full_name || '';
+  const yr = year || new Date().getFullYear() - 1;
+  const companyVisits = visits.filter(v =>
+    String(v.company_id) === String(company.id) &&
+    v.visit_date && new Date(v.visit_date).getFullYear() === yr
+  );
+  const visitTypeLabel = {
+    preventiva: 'Preventiva', periodica: 'Periodica', su_richiesta: 'Su richiesta',
+    cambio_mansione: 'Cambio mansione', rientro_malattia: 'Rientro malattia', cessazione: 'Cessazione',
+  };
+  const judgmentLabel = {
+    idoneo: 'Idoneo', idoneo_con_prescrizioni: 'Idoneo c/ prescrizioni',
+    idoneo_con_limitazioni: 'Idoneo c/ limitazioni',
+    temporaneamente_non_idoneo: 'Temp. non idoneo', non_idoneo: 'Non idoneo',
+  };
+  const ACCS = [
+    { key: 'audiometry_result', label: 'Audiometria' }, { key: 'spirometry_result', label: 'Spirometria' },
+    { key: 'ecg_result', label: 'ECG' }, { key: 'visiotest_result', label: 'Visiotest' },
+    { key: 'upper_limbs_eval_result', label: 'Arti Superiori' }, { key: 'drug_test_result', label: 'Drug Test' },
+    { key: 'alcohol_test_result', label: 'Alcol Test' }, { key: 'audit_c_result', label: 'AUDIT-C' },
+    { key: 'blood_tests_result', label: 'Es. ematochimici' }, { key: 'other_exams', label: 'Es. strumentali' },
+    { key: 'specialist_visits_result', label: 'Visite spec.' },
+  ];
+  const byType = {};
+  companyVisits.forEach(v => { const t = v.visit_type || 'altro'; byType[t] = (byType[t] || 0) + 1; });
+  const byJudgment = {};
+  companyVisits.forEach(v => { if (v.judgment) byJudgment[v.judgment] = (byJudgment[v.judgment] || 0) + 1; });
+  const accCounts = {};
+  ACCS.forEach(a => { const count = companyVisits.filter(v => v[`${a.key}_done`]).length; if (count > 0) accCounts[a.label] = count; });
+
+  let html = `<div style="font-family:Arial,sans-serif;font-size:11px;color:#111827;max-width:780px;margin:0 auto;">`;
+  html += header(company, doctor, `RELAZIONE SANITARIA ${yr}`);
+
+  let azHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;">`;
+  azHtml += row('Ragione sociale', company.name);
+  azHtml += row('Periodo di riferimento', `01/01/${yr} — 31/12/${yr}`);
+  azHtml += row('N. lavoratori sorvegliati', patients.length);
+  azHtml += row('Medico Competente', doctorName);
+  azHtml += `</div>`;
+  html += section('DATI AZIENDA', azHtml);
+
+  html += section('RIEPILOGO ATTIVITÀ', `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px;">
+      <div style="border:1px solid #d1d5db;border-radius:4px;padding:10px;text-align:center;background:#f0f9ff;">
+        <div style="font-size:22px;font-weight:800;color:#0284c7;">${companyVisits.length}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px;">Visite totali</div>
+      </div>
+      <div style="border:1px solid #d1d5db;border-radius:4px;padding:10px;text-align:center;background:#f0fdf4;">
+        <div style="font-size:22px;font-weight:800;color:#16a34a;">${patients.filter(p => p.status === 'active').length}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px;">Lavoratori attivi</div>
+      </div>
+      <div style="border:1px solid #d1d5db;border-radius:4px;padding:10px;text-align:center;background:#fefce8;">
+        <div style="font-size:22px;font-weight:800;color:#ca8a04;">${Object.values(accCounts).reduce((a, b) => a + b, 0)}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px;">Accertamenti eseguiti</div>
+      </div>
+    </div>
+  `);
+
+  if (companyVisits.length > 0) {
+    let detTable = `<table style="width:100%;border-collapse:collapse;font-size:9.5px;">
+      <thead><tr style="background:#0284c7;color:#fff;">
+        <th style="padding:4px 6px;text-align:left;">Lavoratore</th>
+        <th style="padding:4px 6px;text-align:left;">Data</th>
+        <th style="padding:4px 6px;text-align:left;">Tipo</th>
+        <th style="padding:4px 6px;text-align:left;">Giudizio</th>
+        <th style="padding:4px 6px;text-align:left;">Prossima visita</th>
+      </tr></thead><tbody>`;
+    const sorted = [...companyVisits].sort((a, b) => new Date(a.visit_date) - new Date(b.visit_date));
+    sorted.forEach((v, i) => {
+      detTable += `<tr style="border-bottom:1px solid #e5e7eb;background:${i % 2 === 0 ? '#fff' : '#f9fafb'};">
+        <td style="padding:3px 6px;font-weight:500;">${v.patient_name || '—'}</td>
+        <td style="padding:3px 6px;">${fmtDate(v.visit_date)}</td>
+        <td style="padding:3px 6px;">${visitTypeLabel[v.visit_type] || v.visit_type || '—'}</td>
+        <td style="padding:3px 6px;">${judgmentLabel[v.judgment] || '—'}</td>
+        <td style="padding:3px 6px;">${fmtDate(v.next_visit_date)}</td>
+      </tr>`;
+    });
+    detTable += `</tbody></table>`;
+    html += section('ELENCO DETTAGLIATO PRESTAZIONI', detTable);
+  }
+
+  html += footerSign(doctorName);
+  html += `</div>`;
+  return html;
+}
+
+export function buildVerbaleHTML(company, doctor, date) {
+  const doctorName = doctor?.full_name || '';
+  const visitDate = date || today();
+
+  let html = `<div style="font-family:Arial,sans-serif;font-size:11px;color:#111827;max-width:780px;margin:0 auto;">`;
+  html += header(company, doctor, 'VERBALE DI SOPRALLUOGO');
+
+  let azHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;">`;
+  azHtml += row('Ragione sociale', company.name);
+  azHtml += row('P.IVA', company.vat_number);
+  azHtml += row('Indirizzo sede', company.address ? `${company.address}, ${company.zip_code || ''} ${company.city || ''} ${company.province ? `(${company.province})` : ''}`.trim() : null);
+  azHtml += row('Rappresentante legale', company.legal_representative);
+  azHtml += row('RSPP', company.rspp);
+  azHtml += row('RLS', company.rls);
+  azHtml += row('Medico Competente', doctorName);
+  azHtml += row('Data sopralluogo', visitDate);
+  azHtml += `</div>`;
+  html += section('DATI AZIENDA', azHtml);
+  html += section('PARTECIPANTI AL SOPRALLUOGO', `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;">${row('Medico Competente', doctorName)}${row('Datore di lavoro / Delegato', '&nbsp;')}${row('RSPP', company.rspp || '&nbsp;')}${row('RLS', company.rls || '&nbsp;')}</div>`);
+  html += section('AMBIENTI E REPARTI VISITATI', `<div style="min-height:60px;border:1px dashed #d1d5db;border-radius:4px;padding:8px;font-size:10px;color:#9ca3af;">[Da compilare durante il sopralluogo]</div>`);
+  html += section('OSSERVAZIONI E PRESCRIZIONI', `<div style="min-height:80px;border:1px dashed #d1d5db;border-radius:4px;padding:8px;font-size:10px;color:#9ca3af;">[Osservazioni del medico competente]</div>`);
+  html += footerSign(doctorName);
+  html += `</div>`;
+  return html;
+}
+
 // ─── PROTOCOLLO SANITARIO ─────────────────────────────────────────────────────
 
 export function openProtocolloSanitario(company, patients, jobRoles, doctor) {

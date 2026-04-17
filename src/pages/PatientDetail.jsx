@@ -5,7 +5,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
 import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight, ShieldCheck, ClipboardList, Archive } from 'lucide-react';
-import { openPrintWindow, openGiudizioWindow } from '@/lib/printVisit';
+import { getPrintHTML, getGiudizioHTML } from '@/lib/printVisit';
+import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -187,6 +188,7 @@ export default function PatientDetail() {
   const canSeeAttachments = canAccess(user, 'allegati_accertamenti');
 
   const [deletingVisit, setDeletingVisit] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -228,7 +230,10 @@ export default function PatientDetail() {
 
   const handlePrintVisit = (v) => {
     const company = companies.find(c => String(c.id) === String(v.company_id || patient?.company_id));
-    openPrintWindow(v, patient, company);
+    setPreviewDoc({
+      title: `Cartella Sanitaria — ${patient?.last_name} ${patient?.first_name}`,
+      html: getPrintHTML(v, patient, company),
+    });
   };
 
   const handlePrintGiudizio = (v) => {
@@ -236,7 +241,10 @@ export default function PatientDetail() {
     const doctor = company?.assigned_doctor_id
       ? doctors.find(d => String(d.id) === String(company.assigned_doctor_id))
       : doctors[0] || null;
-    openGiudizioWindow(v, patient, company, doctor);
+    setPreviewDoc({
+      title: `Giudizio Idoneità — ${patient?.last_name} ${patient?.first_name}`,
+      html: getGiudizioHTML(v, patient, company, doctor),
+    });
   };
 
 
@@ -372,6 +380,13 @@ export default function PatientDetail() {
       )}
 
 
+
+      <DocumentPreviewDialog
+        open={!!previewDoc}
+        onOpenChange={v => !v && setPreviewDoc(null)}
+        title={previewDoc?.title}
+        html={previewDoc?.html}
+      />
 
       {/* Delete confirm */}
       <AlertDialog open={!!deletingVisit} onOpenChange={() => setDeletingVisit(null)}>
