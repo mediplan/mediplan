@@ -50,6 +50,13 @@ const VISIT_TYPE_LABELS = {
   cessazione: 'Cessazione',
 };
 
+function getExamAttachments(attachments, examLabel) {
+  return attachments.filter(a => {
+    const lbl = typeof a === 'object' ? (a.label || '') : '';
+    return lbl.startsWith(examLabel);
+  });
+}
+
 function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, onPrint, onPrintGiudizio }) {
   const [open, setOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
@@ -139,6 +146,25 @@ function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, 
                   {visit[a.key] && (
                     <p className="text-muted-foreground mt-0.5 line-clamp-2">{visit[a.key]}</p>
                   )}
+                  {canSeeAttachments && (() => {
+                    const examFiles = getExamAttachments(attachments, a.label);
+                    return examFiles.length > 0 ? (
+                      <div className="mt-1 space-y-0.5">
+                        {examFiles.map((att, i) => (
+                          <a
+                            key={i}
+                            href={typeof att === 'object' ? att.url : att}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[10px] text-primary hover:underline"
+                          >
+                            <Paperclip className="h-2.5 w-2.5 shrink-0" />
+                            <span className="truncate">{typeof att === 'object' ? (att.label || 'Referto PDF') : 'Referto PDF'}</span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
               </div>
             ))}
