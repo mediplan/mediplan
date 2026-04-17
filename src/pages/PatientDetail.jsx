@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight, ShieldCheck, ClipboardList, Archive } from 'lucide-react';
+import { ArrowLeft, FileHeart, User, Heart, Pill, Plus, Pencil, Trash2, Printer, Paperclip, CheckCircle2, Calendar, ChevronDown, ChevronRight, ShieldCheck, ClipboardList, Archive, FileText } from 'lucide-react';
 import { getPrintHTML, getGiudizioHTML } from '@/lib/printVisit';
 import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 import { Button } from '@/components/ui/button';
@@ -149,17 +149,17 @@ function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, 
                   {canSeeAttachments && (() => {
                     const examFiles = getExamAttachments(attachments, a.label);
                     return examFiles.length > 0 ? (
-                      <div className="mt-1 space-y-0.5">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {examFiles.map((att, i) => (
                           <a
                             key={i}
                             href={typeof att === 'object' ? att.url : att}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-[10px] text-primary hover:underline"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium hover:bg-primary/20 transition-colors"
                           >
-                            <Paperclip className="h-2.5 w-2.5 shrink-0" />
-                            <span className="truncate">{typeof att === 'object' ? (att.label || 'Referto PDF') : 'Referto PDF'}</span>
+                            <FileText className="h-3 w-3 shrink-0" />
+                            Apri referto PDF
                           </a>
                         ))}
                       </div>
