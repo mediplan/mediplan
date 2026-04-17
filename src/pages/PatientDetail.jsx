@@ -386,6 +386,12 @@ export default function PatientDetail() {
         onOpenChange={v => !v && setPreviewDoc(null)}
         title={previewDoc?.title}
         html={previewDoc?.html}
+        defaultEmails={[
+          ...(patient?.email ? [{ label: 'Invia al lavoratore', email: patient.email }] : []),
+          ...(companies.find(c => String(c.id) === String(patient?.company_id))?.email
+            ? [{ label: 'Invia ad azienda', email: companies.find(c => String(c.id) === String(patient?.company_id)).email }]
+            : []),
+        ]}
       />
 
       {/* Delete confirm */}

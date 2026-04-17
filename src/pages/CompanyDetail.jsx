@@ -211,6 +211,7 @@ export default function CompanyDetail() {
         onOpenChange={v => !v && setPreviewDoc(null)}
         title={previewDoc?.title}
         html={previewDoc?.html}
+        defaultEmails={company?.email ? [{ label: 'Invia ad azienda', email: company.email }] : []}
       />
       </div>{/* fine mt-6 */}
     </div>

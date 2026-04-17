@@ -11,11 +11,12 @@ import { base44 } from '@/api/base44Client';
  * Props:
  *   open: boolean
  *   onOpenChange: (bool) => void
- *   title: string — titolo del dialog
- *   html: string — HTML del documento da mostrare
- *   filename: string — nome file per il PDF/email
+ *   title: string
+ *   html: string
+ *   filename: string
+ *   defaultEmails: Array<{ label: string, email: string }> — tasti email predefiniti
  */
-export default function DocumentPreviewDialog({ open, onOpenChange, title, html, filename = 'documento' }) {
+export default function DocumentPreviewDialog({ open, onOpenChange, title, html, filename = 'documento', defaultEmails = [] }) {
   const iframeRef = useRef(null);
   const [emailMode, setEmailMode] = useState(false);
   const [emailTo, setEmailTo] = useState('');
@@ -38,9 +39,13 @@ export default function DocumentPreviewDialog({ open, onOpenChange, title, html,
     const win = window.open('', '_blank');
     win.document.write(fullHtml);
     win.document.close();
-    win.onload = () => setTimeout(() => {
-      win.print();
-    }, 200);
+    win.onload = () => setTimeout(() => win.print(), 200);
+  };
+
+  const openEmailMode = (prefill = '') => {
+    setEmailTo(prefill);
+    setSent(false);
+    setEmailMode(true);
   };
 
   const handleSendEmail = async () => {
@@ -74,16 +79,25 @@ export default function DocumentPreviewDialog({ open, onOpenChange, title, html,
       <DialogContent className="max-w-5xl w-full h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <DialogHeader className="px-5 py-3 border-b border-border flex-shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <DialogTitle className="text-base">{title || 'Anteprima documento'}</DialogTitle>
-            <div className="flex items-center gap-2">
-              {/* Email mode toggle */}
+            <div className="flex items-center gap-2 flex-wrap justify-end">
               {!emailMode ? (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => setEmailMode(true)} className="gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    Invia email
-                  </Button>
+                  {/* Tasti email predefiniti */}
+                  {defaultEmails.map((item, i) => (
+                    <Button key={i} size="sm" variant="outline" onClick={() => openEmailMode(item.email)} className="gap-1.5">
+                      <Mail className="h-3.5 w-3.5" />
+                      {item.label}
+                    </Button>
+                  ))}
+                  {/* Se nessuna email predefinita, bottone generico */}
+                  {defaultEmails.length === 0 && (
+                    <Button size="sm" variant="outline" onClick={() => openEmailMode('')} className="gap-1.5">
+                      <Mail className="h-3.5 w-3.5" />
+                      Invia email
+                    </Button>
+                  )}
                   <Button size="sm" variant="outline" onClick={handleSavePdf} className="gap-1.5">
                     <Download className="h-3.5 w-3.5" />
                     Salva PDF
@@ -94,7 +108,7 @@ export default function DocumentPreviewDialog({ open, onOpenChange, title, html,
                   </Button>
                 </>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <Label className="text-xs whitespace-nowrap">Destinatario:</Label>
                     <Input
