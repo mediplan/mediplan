@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ItalianMunicipalityInput from '@/components/shared/ItalianMunicipalityInput';
+import ItalianProvinceSelect from '@/components/shared/ItalianProvinceSelect';
 
 const emptyForm = {
   first_name: '', last_name: '', fiscal_code: '', birth_date: '', birth_place: '',
@@ -156,11 +158,11 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
                 </div>
                 <div>
                   <Label>Nato a</Label>
-                  <Input value={form.birth_place} onChange={e => handleChange('birth_place', e.target.value)} placeholder="Comune" />
+                  <ItalianMunicipalityInput value={form.birth_place} onChange={v => handleChange('birth_place', v)} />
                 </div>
                 <div>
                   <Label>Prov.</Label>
-                  <Input value={form.birth_province} onChange={e => handleChange('birth_province', e.target.value)} maxLength={2} placeholder="XX" />
+                  <ItalianProvinceSelect value={form.birth_province} onChange={v => handleChange('birth_province', v)} />
                 </div>
                 <div>
                   <Label>Data di nascita</Label>
