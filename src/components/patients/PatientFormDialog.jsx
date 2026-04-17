@@ -269,13 +269,20 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
             <TabsContent value="residenza" className="space-y-3 mt-4">
               <SectionTitle>Residenza</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div className="md:col-span-2">
-                  <Label>Comune</Label>
-                  <Input value={form.residence_city} onChange={e => handleChange('residence_city', e.target.value)} />
-                </div>
                 <div>
                   <Label>Prov.</Label>
-                  <Input value={form.residence_province} onChange={e => handleChange('residence_province', e.target.value)} maxLength={2} placeholder="XX" />
+                  <ItalianProvinceSelect
+                    value={form.residence_province}
+                    onChange={v => { handleChange('residence_province', v); handleChange('residence_city', ''); }}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Comune</Label>
+                  <ItalianMunicipalityInput
+                    value={form.residence_city}
+                    onChange={v => handleChange('residence_city', v)}
+                    provinceSigla={form.residence_province}
+                  />
                 </div>
                 <div>
                   <Label>CAP</Label>
@@ -293,13 +300,20 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
 
               <SectionTitle>Domicilio (se diverso dalla residenza)</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div className="md:col-span-2">
-                  <Label>Comune</Label>
-                  <Input value={form.domicile_city} onChange={e => handleChange('domicile_city', e.target.value)} />
-                </div>
                 <div>
                   <Label>Prov.</Label>
-                  <Input value={form.domicile_province} onChange={e => handleChange('domicile_province', e.target.value)} maxLength={2} placeholder="XX" />
+                  <ItalianProvinceSelect
+                    value={form.domicile_province}
+                    onChange={v => { handleChange('domicile_province', v); handleChange('domicile_city', ''); }}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Comune</Label>
+                  <ItalianMunicipalityInput
+                    value={form.domicile_city}
+                    onChange={v => handleChange('domicile_city', v)}
+                    provinceSigla={form.domicile_province}
+                  />
                 </div>
                 <div>
                   <Label>CAP</Label>
@@ -397,15 +411,22 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
                   <Label>Nominativo medico curante</Label>
                   <Input value={form.gp_name} onChange={e => handleChange('gp_name', e.target.value)} />
                 </div>
-                <div className="md:col-span-2">
-                  <Label>Comune</Label>
-                  <Input value={form.gp_city} onChange={e => handleChange('gp_city', e.target.value)} />
-                </div>
                 <div>
                   <Label>Prov.</Label>
-                  <Input value={form.gp_province} onChange={e => handleChange('gp_province', e.target.value)} maxLength={2} placeholder="XX" />
+                  <ItalianProvinceSelect
+                    value={form.gp_province}
+                    onChange={v => { handleChange('gp_province', v); handleChange('gp_city', ''); }}
+                  />
                 </div>
-                <div className="md:col-span-2">
+                <div>
+                  <Label>Comune</Label>
+                  <ItalianMunicipalityInput
+                    value={form.gp_city}
+                    onChange={v => handleChange('gp_city', v)}
+                    provinceSigla={form.gp_province}
+                  />
+                </div>
+                <div className="md:col-span-3">
                   <Label>Indirizzo</Label>
                   <Input value={form.gp_address} onChange={e => handleChange('gp_address', e.target.value)} />
                 </div>

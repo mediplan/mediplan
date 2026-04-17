@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ItalianMunicipalityInput from '@/components/shared/ItalianMunicipalityInput';
+import ItalianProvinceSelect from '@/components/shared/ItalianProvinceSelect';
 
 const emptyForm = {
   name: '', vat_number: '', fiscal_code: '', address: '', city: '', province: '',
@@ -77,12 +79,19 @@ export default function CompanyFormDialog({ open, onOpenChange, company, onSave 
               <Input value={form.address} onChange={e => handleChange('address', e.target.value)} />
             </div>
             <div>
-              <Label>Città</Label>
-              <Input value={form.city} onChange={e => handleChange('city', e.target.value)} />
+              <Label>Provincia</Label>
+              <ItalianProvinceSelect
+                value={form.province}
+                onChange={v => { handleChange('province', v); handleChange('city', ''); }}
+              />
             </div>
             <div>
-              <Label>Provincia</Label>
-              <Input value={form.province} onChange={e => handleChange('province', e.target.value)} />
+              <Label>Città</Label>
+              <ItalianMunicipalityInput
+                value={form.city}
+                onChange={v => handleChange('city', v)}
+                provinceSigla={form.province}
+              />
             </div>
             <div>
               <Label>CAP</Label>
