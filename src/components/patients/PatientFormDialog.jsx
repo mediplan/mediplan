@@ -204,6 +204,14 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
                   <Label>Data scadenza 1ª visita</Label>
                   <Input type="date" value={form.first_visit_expiry} onChange={e => handleChange('first_visit_expiry', e.target.value)} />
                 </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input type="email" value={form.email} onChange={e => handleChange('email', e.target.value)} />
+                </div>
+                <div>
+                  <Label>Telefono</Label>
+                  <Input value={form.phone} onChange={e => handleChange('phone', e.target.value)} />
+                </div>
               </div>
               <div className="flex flex-wrap gap-4 pt-1">
                 <CheckField id="disabled" label="Assunto come invalido" checked={form.disabled_employee} onChange={v => handleChange('disabled_employee', v)} />
@@ -365,10 +373,6 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
                       <SelectItem value="convivente">Convivente</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input type="email" value={form.email} onChange={e => handleChange('email', e.target.value)} />
                 </div>
                 <div>
                   <Label>Telefono</Label>
