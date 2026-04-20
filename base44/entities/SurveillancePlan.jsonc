@@ -1,0 +1,97 @@
+{
+  "name": "SurveillancePlan",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda"
+    },
+    "version_label": {
+      "type": "string",
+      "description": "Etichetta versione (es. v1, v2-mod)"
+    },
+    "source_document_id": {
+      "type": "string",
+      "description": "ID CompanyDocument DVR da cui \u00e8 stato generato"
+    },
+    "source_document_title": {
+      "type": "string",
+      "description": "Titolo DVR sorgente"
+    },
+    "is_ai_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Generato da AI"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "bozza_ai",
+        "in_revisione",
+        "approvato"
+      ],
+      "default": "bozza_ai",
+      "description": "Stato piano"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email medico che ha approvato"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Data approvazione"
+    },
+    "roles": {
+      "type": "array",
+      "description": "Mansioni nel piano di sorveglianza",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role_name": {
+            "type": "string"
+          },
+          "risks": {
+            "type": "string"
+          },
+          "exams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "exam_name": {
+                  "type": "string"
+                },
+                "frequency_months": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "frequency_months": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "Sommario analisi AI"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note del medico"
+    }
+  },
+  "required": [
+    "company_id",
+    "version_label"
+  ]
+}

@@ -4,6 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned, Plus } from 'lucide-react';
 import CompanyPriceListPanel from '@/components/companies/CompanyPriceListPanel';
+import CompanyDocumentsPanel from '@/components/companies/CompanyDocumentsPanel';
+import SurveillancePlanPanel from '@/components/companies/SurveillancePlanPanel';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccess } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -18,6 +22,8 @@ import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 export default function CompanyDetail() {
   const companyId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canSeeDVR = user && canAccess(user, 'dvr_sorveglianza');
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
   const [jobRolesDialog, setJobRolesDialog] = useState(false);
@@ -205,6 +211,14 @@ export default function CompanyDetail() {
       <div className="mt-6">
         <CompanyPriceListPanel company={company} />
       </div>
+
+      {/* Archivio DVR + Piano di sorveglianza (solo admin, medico, segreteria) */}
+      {canSeeDVR && (
+        <div className="mt-6 space-y-6">
+          <CompanyDocumentsPanel company={company} />
+          <SurveillancePlanPanel company={company} />
+        </div>
+      )}
 
       <CompanyJobRolesDialog
         open={jobRolesDialog}

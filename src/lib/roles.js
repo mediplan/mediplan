@@ -52,6 +52,8 @@ export function canAccess(user, section) {
     medici_incaricati:  ['amministratore'],
     // Può vedere e gestire listini prezzi
     listini:            ['amministratore', 'segreteria'],
+    // Può vedere archivio DVR e piano di sorveglianza sanitaria
+    dvr_sorveglianza:   ['amministratore', 'medico', 'segreteria'],
   };
   return (permissions[section] || []).includes(role);
 }

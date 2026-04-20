@@ -1,0 +1,55 @@
+{
+  "name": "CompanyDocument",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda"
+    },
+    "doc_type": {
+      "type": "string",
+      "enum": [
+        "dvr",
+        "duvri",
+        "pos",
+        "altro"
+      ],
+      "default": "dvr",
+      "description": "Tipologia documento"
+    },
+    "title": {
+      "type": "string",
+      "description": "Titolo / descrizione"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL file PDF"
+    },
+    "version": {
+      "type": "string",
+      "description": "Versione (es. 1.0, 2024-rev1)"
+    },
+    "version_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data versione"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    },
+    "uploaded_by": {
+      "type": "string",
+      "description": "Email di chi ha caricato"
+    }
+  },
+  "required": [
+    "company_id",
+    "doc_type",
+    "title"
+  ]
+}
