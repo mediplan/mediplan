@@ -237,7 +237,7 @@ export default function Dashboard() {
                     {!isAppointment && (
                       <Button
                         size="sm"
-                        className="h-7 px-2.5 text-xs gap-1 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                        variant="outline"
                         onClick={() => {
                           setScheduleDialogContext({
                             type: 'visita_medica',
@@ -248,8 +248,9 @@ export default function Dashboard() {
                           });
                           setScheduleDialogOpen(true);
                         }}
+                        className="h-7 px-2 text-xs gap-1"
                       >
-                        <Plus className="h-3.5 w-3.5" />
+                        <Plus className="h-3 w-3" />
                         Programma
                       </Button>
                     )}
@@ -293,7 +294,7 @@ export default function Dashboard() {
                   {source !== 'appointment' && (
                     <Button
                       size="sm"
-                      className="h-7 px-2.5 text-xs gap-1 bg-purple-600 hover:bg-purple-700 text-white font-medium"
+                      variant="outline"
                       onClick={() => {
                         setScheduleDialogContext({
                           type: 'sopralluogo',
@@ -304,8 +305,9 @@ export default function Dashboard() {
                         });
                         setScheduleDialogOpen(true);
                       }}
+                      className="h-7 px-2 text-xs gap-1"
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="h-3 w-3" />
                       Programma
                     </Button>
                   )}
