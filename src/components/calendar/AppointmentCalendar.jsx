@@ -76,12 +76,11 @@ export default function AppointmentCalendar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 3 settimane centrate sull'offset corrente
-  const weeks = [-1, 0, 1].map(rel => {
+  // 2 settimane: quella corrente e quella successiva
+  const weeks = [0, 1].map(rel => {
     const wStart = addWeeks(baseWeekStart, weekOffset + rel);
     const days = Array.from({ length: 7 }, (_, i) => addDays(wStart, i));
-    const isCurrentReal = weekOffset + rel === 0;
-    return { wStart, days, isCurrent: isCurrentReal };
+    return { wStart, days };
   });
 
   const getAppointmentsForDay = (day) =>
@@ -141,13 +140,7 @@ export default function AppointmentCalendar() {
         {/* Calendar content */}
         <div className="flex-1 overflow-hidden">
           {/* Weeks - mostri solo current e next */}
-          {weeks.filter((w, idx) => {
-            const baseWeekIdx = Math.floor(weekOffset / 7);
-            const startIdx = Math.max(0, baseWeekIdx);
-            return idx === startIdx || idx === startIdx + 1;
-          }).map(({ wStart, days }, weekIdx) => {
-            const baseWeekIdx = Math.floor(weekOffset / 7);
-            const startIdx = Math.max(0, baseWeekIdx);
+          {weeks.map(({ wStart, days }, weekIdx) => {
             const isMainWeek = weekIdx === 0;
 
             return (
