@@ -55,8 +55,8 @@ const AuthenticatedApp = () => {
         <Route path="/scadenze" element={<Scadenze />} />
         <Route path="/fatturazione" element={<Fatturazione />} />
         <Route path="/impostazioni" element={<Settings />} />
-        <Route path="/piano-sorveglianza" element={<SurveillancePlanEditor />} />
       </Route>
+      <Route path="/piano-sorveglianza" element={<SurveillancePlanEditor />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
