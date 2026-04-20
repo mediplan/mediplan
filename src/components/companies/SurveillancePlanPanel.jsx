@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   ShieldCheck, Sparkles, CheckCircle2, Clock, Pencil, Plus, Trash2,
-  ChevronDown, ChevronUp, Loader2, History, Save, ThumbsUp
+  ChevronDown, ChevronUp, Loader2, History, Save, ThumbsUp, Search
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -23,8 +23,29 @@ const STATUS_COLORS = {
   approvato: 'bg-green-100 text-green-800',
 };
 
-function RoleCard({ role, onChange, onDelete, editable }) {
+function RoleCard({ role, onChange, onDelete, editable, jobRoles = [] }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const filtered = search.length > 0
+    ? jobRoles.filter(j => j.name.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
+    : jobRoles.slice(0, 8);
+
+  const selectJobRole = (jr) => {
+    onChange({
+      ...role,
+      role_name: jr.name,
+      risks: jr.risks?.map(r => r.risk_name).join(', ') || role.risks || '',
+      exams: jr.required_exams?.length > 0
+        ? jr.required_exams.map(e => ({ exam_name: e.exam_name, frequency_months: e.frequency_months || 12 }))
+        : role.exams,
+      frequency_months: jr.surveillance_frequency_months || role.frequency_months || 12,
+      notes: jr.notes || role.notes || '',
+    });
+    setSearch('');
+    setShowSuggestions(false);
+  };
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -52,9 +73,40 @@ function RoleCard({ role, onChange, onDelete, editable }) {
           {editable ? (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="relative">
                   <Label className="text-xs">Nome mansione</Label>
-                  <Input value={role.role_name || ''} onChange={e => onChange({ ...role, role_name: e.target.value })} className="h-8 text-sm" />
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                    <Input
+                      value={search || role.role_name || ''}
+                      onChange={e => {
+                        setSearch(e.target.value);
+                        onChange({ ...role, role_name: e.target.value });
+                        setShowSuggestions(true);
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      placeholder="Cerca o scrivi mansione..."
+                      className="h-8 text-sm pl-7"
+                    />
+                  </div>
+                  {showSuggestions && filtered.length > 0 && (
+                    <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filtered.map(jr => (
+                        <button
+                          key={jr.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-muted border-b last:border-0"
+                          onMouseDown={() => selectJobRole(jr)}
+                        >
+                          <span className="font-medium">{jr.name}</span>
+                          {jr.risks?.length > 0 && (
+                            <span className="text-muted-foreground ml-1">— {jr.risks.map(r => r.risk_name).join(', ')}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">Periodicità visita (mesi)</Label>
@@ -132,6 +184,11 @@ export default function SurveillancePlanPanel({ company }) {
     queryKey: ['company_documents', company?.id],
     queryFn: () => base44.entities.CompanyDocument.filter({ company_id: company.id }, '-created_date'),
     enabled: !!company?.id,
+  });
+
+  const { data: jobRoles = [] } = useQuery({
+    queryKey: ['jobRoles'],
+    queryFn: () => base44.entities.JobRole.list(),
   });
 
   const createMutation = useMutation({
@@ -332,6 +389,7 @@ export default function SurveillancePlanPanel({ company }) {
                   key={idx}
                   role={role}
                   editable={!!editingPlan}
+                  jobRoles={jobRoles}
                   onChange={(updated) => {
                     const roles = [...editingPlan.roles];
                     roles[idx] = updated;
