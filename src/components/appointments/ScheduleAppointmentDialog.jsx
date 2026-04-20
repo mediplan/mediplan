@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -45,6 +45,13 @@ export default function ScheduleAppointmentDialog({
     visit_type: 'periodica',
     notes: '',
   });
+
+  React.useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      title: generateDefaultTitle(),
+    }));
+  }, [appointmentType, companyName]);
 
   const queryClient = useQueryClient();
 
