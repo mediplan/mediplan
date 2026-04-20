@@ -21,6 +21,9 @@ export default function Dashboard() {
     companyId: null,
     companyName: null,
   });
+  const [expandedVisits, setExpandedVisits] = useState(false);
+  const [expandedSopralluoghi, setExpandedSopralluoghi] = useState(false);
+  const [expandedActivities, setExpandedActivities] = useState(false);
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
@@ -240,10 +243,12 @@ export default function Dashboard() {
               Visite scadute e in scadenza ({visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+          <CardContent className="space-y-2">
             {visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita scaduta o in scadenza</p>
-            ) : visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).map(v => {
+            ) : (
+              <>
+                {visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).slice(0, 3).map(v => {
               const d = parseISO(v.next_visit_date);
               const isExpired = isBefore(d, today);
 
@@ -285,6 +290,69 @@ export default function Dashboard() {
                 </div>
               );
             })}
+                {visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).length > 3 && !expandedVisits && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExpandedVisits(true)}
+                    className="w-full text-xs"
+                  >
+                    Vedi altre {visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).length - 3}
+                  </Button>
+                )}
+                {expandedVisits && visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).slice(3).map(v => {
+                  const d = parseISO(v.next_visit_date);
+                  const isExpired = isBefore(d, today);
+                  return (
+                    <div
+                      key={v.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}
+                    >
+                      <Link
+                        to={`/pazienti/${v.patient_id}`}
+                        className="min-w-0 hover:opacity-75"
+                      >
+                        <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
+                        <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
+                      </Link>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setScheduleDialogContext({
+                              type: 'visita_medica',
+                              patientId: v.patient_id,
+                              patientName: v.patient_name,
+                              companyId: v.company_id,
+                              companyName: v.company_name,
+                            });
+                            setScheduleDialogOpen(true);
+                          }}
+                          className="h-7 px-2 text-xs gap-1"
+                        >
+                          <Plus className="h-3 w-3" />
+                          Programma
+                        </Button>
+                        <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                          {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+                {expandedVisits && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExpandedVisits(false)}
+                    className="w-full text-xs"
+                  >
+                    Nascondi
+                  </Button>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -296,10 +364,12 @@ export default function Dashboard() {
               Sopralluoghi da effettuare ({sopralluoghiInScadenza.filter(s => !s.scheduledAppt).length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+          <CardContent className="space-y-2">
             {sopralluoghiInScadenza.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
-            ) : sopralluoghiInScadenza.filter(s => !s.scheduledAppt).map(({ company, lastDate, nextDue, isExpired, scheduledAppt }) => (
+            ) : (
+              <>
+                {sopralluoghiInScadenza.filter(s => !s.scheduledAppt).slice(0, 3).map(({ company, lastDate, nextDue, isExpired, scheduledAppt }) => (
               <div
                 key={company?.id}
                 className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}
@@ -338,6 +408,67 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+                {sopralluoghiInScadenza.filter(s => !s.scheduledAppt).length > 3 && !expandedSopralluoghi && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExpandedSopralluoghi(true)}
+                    className="w-full text-xs"
+                  >
+                    Vedi altri {sopralluoghiInScadenza.filter(s => !s.scheduledAppt).length - 3}
+                  </Button>
+                )}
+                {expandedSopralluoghi && sopralluoghiInScadenza.filter(s => !s.scheduledAppt).slice(3).map(({ company, lastDate, nextDue, isExpired, scheduledAppt }) => (
+                  <div
+                    key={company?.id}
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}
+                  >
+                    <Link
+                      to={`/aziende/${company?.id}`}
+                      className="min-w-0 hover:opacity-75"
+                    >
+                      <p className="text-sm font-medium truncate">{company?.name || '—'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {lastDate ? `Ultimo: ${lastDate.toLocaleDateString('it-IT')}` : 'Nessun sopralluogo registrato'}
+                      </p>
+                    </Link>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setScheduleDialogContext({
+                            type: 'sopralluogo',
+                            patientId: null,
+                            patientName: null,
+                            companyId: company?.id,
+                            companyName: company?.name,
+                          });
+                          setScheduleDialogOpen(true);
+                        }}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Programma
+                      </Button>
+                      <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
+                        {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+                {expandedSopralluoghi && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExpandedSopralluoghi(false)}
+                    className="w-full text-xs"
+                  >
+                    Nascondi
+                  </Button>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -355,11 +486,12 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {appointments.filter(a => a.status === 'schedulato').length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nessuna attività programmata</p>
-            ) : (
-              <div className="space-y-2">
-                {appointments.filter(a => a.status === 'schedulato').sort((a, b) => new Date(a.date) - new Date(b.date)).map((item) => {
+           {appointments.filter(a => a.status === 'schedulato').length === 0 ? (
+             <p className="text-sm text-muted-foreground text-center py-4">Nessuna attività programmata</p>
+           ) : (
+             <>
+               <div className="space-y-2">
+                 {appointments.filter(a => a.status === 'schedulato').sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 3).map((item) => {
                   const typeLabel = item.appointment_type === 'visita_medica' 
                     ? (item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')
                     : 'Sopralluogo';
@@ -387,12 +519,66 @@ export default function Dashboard() {
                       </div>
                     </div>
                   );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  })}
+                  </div>
+                  {appointments.filter(a => a.status === 'schedulato').length > 3 && !expandedActivities && (
+                  <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setExpandedActivities(true)}
+                  className="w-full text-xs"
+                  >
+                  Vedi altre {appointments.filter(a => a.status === 'schedulato').length - 3}
+                  </Button>
+                  )}
+                  {expandedActivities && (
+                  <div className="space-y-2">
+                  {appointments.filter(a => a.status === 'schedulato').sort((a, b) => new Date(a.date) - new Date(b.date)).slice(3).map((item) => {
+                    const typeLabel = item.appointment_type === 'visita_medica' 
+                      ? (item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')
+                      : 'Sopralluogo';
+                    return (
+                      <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200 gap-3">
+                        <div className="min-w-0 flex-1">
+                          {item.patient_name && (
+                            <Link to={`/pazienti/${item.patient_id}`} className="text-base font-semibold hover:text-primary hover:underline truncate block">
+                              {item.patient_name}
+                            </Link>
+                          )}
+                          {item.company_name && (
+                            <Link to={`/aziende/${item.company_id}`} className="text-sm text-muted-foreground hover:text-primary hover:underline truncate block">
+                              {item.company_name}
+                            </Link>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">
+                            {format(parseISO(item.date), 'dd/MM/yyyy')}
+                          </Badge>
+                          <Badge className={`text-xs ${item.appointment_type === 'sopralluogo' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                            {item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica'}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  </div>
+                  )}
+                  {expandedActivities && (
+                  <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setExpandedActivities(false)}
+                  className="w-full text-xs"
+                  >
+                  Nascondi
+                  </Button>
+                  )}
+                  </>
+                  )}
+                  </CardContent>
+                  </Card>
+                  </div>
 
       {/* Situazioni in sospeso */}
       <div className="grid lg:grid-cols-2 gap-6">
