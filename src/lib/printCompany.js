@@ -66,14 +66,9 @@ function openDoc(html, title) {
 
 // ─── BUILDER FUNCTIONS (return HTML string) ───────────────────────────────────
 
-export function buildProtocolloHTML(company, patients, jobRoles, doctor) {
+export function buildProtocolloHTML(company, patients, surveillancePlan, doctor) {
   const doctorName = doctor?.full_name || '';
-  const roleMap = {};
-  patients.forEach(p => {
-    const key = p.job_role_name || 'Non specificata';
-    if (!roleMap[key]) roleMap[key] = { patients: [], roleId: p.job_role_id };
-    roleMap[key].patients.push(p);
-  });
+  const planRoles = surveillancePlan?.roles || [];
 
   let html = `<div style="font-family:Arial,sans-serif;font-size:11px;color:#111827;max-width:780px;margin:0 auto;">`;
   html += header(company, doctor, 'PROTOCOLLO SANITARIO');
@@ -89,6 +84,8 @@ export function buildProtocolloHTML(company, patients, jobRoles, doctor) {
   azHtml += row('Codice ATECO', company.ateco_code);
   azHtml += row('Settore', company.sector);
   azHtml += row('Medico Competente', doctorName);
+  if (surveillancePlan?.version_label) azHtml += row('Versione protocollo', surveillancePlan.version_label);
+  if (surveillancePlan?.approved_at) azHtml += row('Data approvazione', fmtDate(surveillancePlan.approved_at));
   azHtml += `</div>`;
   html += section('DATI AZIENDA', azHtml);
 
@@ -96,33 +93,53 @@ export function buildProtocolloHTML(company, patients, jobRoles, doctor) {
     <thead><tr style="background:#0284c7;color:#fff;">
       <th style="padding:5px 8px;text-align:left;width:22%;">Mansione</th>
       <th style="padding:5px 8px;text-align:left;width:10%;">N. Lav.</th>
-      <th style="padding:5px 8px;text-align:left;width:20%;">Periodicità</th>
+      <th style="padding:5px 8px;text-align:left;width:14%;">Periodicità</th>
+      <th style="padding:5px 8px;text-align:left;width:24%;">Rischi</th>
       <th style="padding:5px 8px;text-align:left;">Accertamenti sanitari previsti</th>
     </tr></thead><tbody>`;
 
-  const allRoleNames = [...new Set(patients.map(p => p.job_role_name).filter(Boolean))];
-  if (allRoleNames.length > 0) {
-    allRoleNames.sort().forEach((roleName, idx) => {
-      const patientsInRole = patients.filter(p => p.job_role_name === roleName);
-      const roleId = patientsInRole[0]?.job_role_id;
-      const role = roleId ? jobRoles.find(r => String(r.id) === String(roleId)) : null;
-      const freq = role?.surveillance_frequency_months;
+  if (planRoles.length > 0) {
+    planRoles.forEach((role, idx) => {
+      const patientsInRole = patients.filter(p => p.job_role_name === role.role_name);
+      const freq = role.frequency_months;
       const freqLabel = freq === 6 ? 'Semestrale' : freq === 12 ? 'Annuale' : freq === 24 ? 'Biennale' : freq ? `Ogni ${freq} mesi` : '—';
-      const exams = role?.required_exams?.map(e => e.exam_name).join(', ') || '—';
+      const exams = role.exams?.map(e => `${e.exam_name}${e.frequency_months ? ` (ogni ${e.frequency_months} mesi)` : ''}`).join(', ') || '—';
+      const risks = role.risks || '—';
       const bg = idx % 2 === 0 ? '#fff' : '#f9fafb';
-      tabHtml += `<tr style="border-bottom:1px solid #e5e7eb;background:${bg};">
-        <td style="padding:5px 8px;font-weight:600;">${roleName}</td>
-        <td style="padding:5px 8px;">${patientsInRole.length}</td>
+      tabHtml += `<tr style="border-bottom:1px solid #e5e7eb;background:${bg};vertical-align:top;">
+        <td style="padding:5px 8px;font-weight:600;">${role.role_name || '—'}</td>
+        <td style="padding:5px 8px;">${patientsInRole.length > 0 ? patientsInRole.length : '—'}</td>
         <td style="padding:5px 8px;">${freqLabel}</td>
+        <td style="padding:5px 8px;color:#374151;">${risks}</td>
         <td style="padding:5px 8px;">${exams}</td>
       </tr>`;
     });
   } else {
-    tabHtml += `<tr><td colspan="4" style="padding:10px;text-align:center;color:#6b7280;">Nessuna mansione definita</td></tr>`;
+    // fallback: usa le mansioni dai pazienti se non c'è un piano
+    const allRoleNames = [...new Set(patients.map(p => p.job_role_name).filter(Boolean))];
+    if (allRoleNames.length > 0) {
+      allRoleNames.sort().forEach((roleName, idx) => {
+        const patientsInRole = patients.filter(p => p.job_role_name === roleName);
+        const bg = idx % 2 === 0 ? '#fff' : '#f9fafb';
+        tabHtml += `<tr style="border-bottom:1px solid #e5e7eb;background:${bg};">
+          <td style="padding:5px 8px;font-weight:600;">${roleName}</td>
+          <td style="padding:5px 8px;">${patientsInRole.length}</td>
+          <td style="padding:5px 8px;">—</td>
+          <td style="padding:5px 8px;">—</td>
+          <td style="padding:5px 8px;">—</td>
+        </tr>`;
+      });
+    } else {
+      tabHtml += `<tr><td colspan="5" style="padding:10px;text-align:center;color:#6b7280;">Nessun protocollo sanitario definito</td></tr>`;
+    }
   }
   tabHtml += `</tbody></table>`;
   html += section('MANSIONI E ACCERTAMENTI SANITARI', tabHtml);
-  html += section('NOTE', `<p style="font-size:10px;line-height:1.6;color:#374151;">Il presente Protocollo Sanitario è redatto ai sensi del D.Lgs. 81/08 e s.m.i., art. 25 comma 1 lettera b).</p>`);
+
+  if (surveillancePlan?.notes) {
+    html += section('NOTE DEL MEDICO', `<p style="font-size:10px;line-height:1.6;color:#374151;">${surveillancePlan.notes}</p>`);
+  }
+  html += section('RIFERIMENTI NORMATIVI', `<p style="font-size:10px;line-height:1.6;color:#374151;">Il presente Protocollo Sanitario è redatto ai sensi del D.Lgs. 81/08 e s.m.i., art. 25 comma 1 lettera b).</p>`);
   html += footerSign(doctorName);
   html += `</div>`;
   return html;

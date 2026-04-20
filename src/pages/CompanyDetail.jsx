@@ -49,6 +49,15 @@ export default function CompanyDetail() {
     queryFn: () => base44.entities.DoctorProfile.list(),
   });
 
+  const { data: surveillancePlans = [] } = useQuery({
+    queryKey: ['surveillance_plans', companyId],
+    queryFn: () => base44.entities.SurveillancePlan.filter({ company_id: companyId }, '-created_date'),
+    enabled: !!companyId,
+  });
+
+  // Piano approvato o più recente
+  const activePlan = surveillancePlans.find(p => p.status === 'approvato') || surveillancePlans[0] || null;
+
   const getDoctor = (co) => co?.assigned_doctor_id
     ? doctors.find(d => String(d.id) === String(co.assigned_doctor_id))
     : doctors[0] || null;
@@ -90,7 +99,7 @@ export default function CompanyDetail() {
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
             </div>
             <button
-              onClick={() => setPreviewDoc({ title: `Protocollo Sanitario — ${company.name}`, html: buildProtocolloHTML(company, companyPatients, [], getDoctor(company)) })}
+              onClick={() => setPreviewDoc({ title: `Protocollo Sanitario — ${company.name}`, html: buildProtocolloHTML(company, companyPatients, activePlan, getDoctor(company)) })}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
             >
               <ClipboardList className="h-4 w-4 text-primary shrink-0" />
