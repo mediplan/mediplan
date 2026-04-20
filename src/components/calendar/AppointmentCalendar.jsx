@@ -142,12 +142,18 @@ export default function AppointmentCalendar() {
         <div className="flex-1 overflow-hidden">
           {/* Weeks - mostri solo current e next */}
           {weeks.filter((w, idx) => {
-            const currentWeekIdx = weeks.findIndex(x => x.isCurrent);
-            return idx === currentWeekIdx || idx === currentWeekIdx + 1;
-          }).map(({ wStart, days, isCurrent }) => (
+            const baseWeekIdx = Math.floor(weekOffset / 7);
+            const startIdx = Math.max(0, baseWeekIdx);
+            return idx === startIdx || idx === startIdx + 1;
+          }).map(({ wStart, days }, weekIdx) => {
+            const baseWeekIdx = Math.floor(weekOffset / 7);
+            const startIdx = Math.max(0, baseWeekIdx);
+            const isMainWeek = weekIdx === 0;
+
+            return (
             <div key={wStart.toISOString()}>
               {/* Weekday headers - solo per la prima settimana */}
-              {isCurrent && (
+              {isMainWeek && (
                 <div className="grid grid-cols-7 border-b bg-muted/20">
                   {WEEKDAYS.map(wd => (
                     <div key={wd} className="py-2 text-center text-xs font-medium text-muted-foreground">
@@ -160,9 +166,9 @@ export default function AppointmentCalendar() {
               {/* Week label */}
               <div className={cn(
                 'px-3 py-2 text-xs font-medium border-b',
-                isCurrent ? 'bg-primary/10 text-primary text-sm' : 'bg-muted/40 text-muted-foreground'
+                isMainWeek ? 'bg-primary/10 text-primary text-sm' : 'bg-muted/40 text-muted-foreground'
               )}>
-                {isCurrent ? '📍 Settimana corrente' : 'Settimana successiva'} — {format(wStart, "d MMM", { locale: it })} › {format(addDays(wStart, 6), "d MMM", { locale: it })}
+                {isMainWeek ? '📍 Settimana visualizzata' : 'Settimana successiva'} — {format(wStart, "d MMM", { locale: it })} › {format(addDays(wStart, 6), "d MMM", { locale: it })}
               </div>
 
               {/* Days row */}
@@ -178,7 +184,7 @@ export default function AppointmentCalendar() {
                       onClick={() => setSelectedDay(isSelected ? null : day)}
                       className={cn(
                         'border-b border-r cursor-pointer transition-colors',
-                        isCurrent ? 'p-3 min-h-[120px]' : 'p-2 min-h-[80px]',
+                        isMainWeek ? 'p-3 min-h-[120px]' : 'p-2 min-h-[80px]',
                         isSelected && 'bg-primary/5',
                         'hover:bg-muted/50'
                       )}
@@ -186,7 +192,7 @@ export default function AppointmentCalendar() {
                       <div className="flex items-center justify-between mb-2">
                         <span className={cn(
                           'flex items-center justify-center rounded-full font-semibold',
-                          isCurrent ? 'text-sm w-7 h-7' : 'text-xs w-6 h-6',
+                          isMainWeek ? 'text-sm w-7 h-7' : 'text-xs w-6 h-6',
                           isToday && 'bg-primary text-white',
                           !isToday && 'text-foreground',
                         )}>
@@ -197,17 +203,17 @@ export default function AppointmentCalendar() {
                             onClick={e => { e.stopPropagation(); handleNewAppt(day); }}
                             className="text-primary hover:text-primary/70"
                           >
-                            <Plus className={isCurrent ? 'h-4 w-4' : 'h-3 w-3'} />
+                            <Plus className={isMainWeek ? 'h-4 w-4' : 'h-3 w-3'} />
                           </button>
                         )}
                       </div>
                       <div className="space-y-1">
-                        {dayAppts.slice(0, isCurrent ? 4 : 3).map(a => (
+                        {dayAppts.slice(0, isMainWeek ? 4 : 3).map(a => (
                           <div
                             key={a.id}
                             className={cn(
                               'px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80',
-                              isCurrent ? 'text-[11px]' : 'text-[10px]',
+                              isMainWeek ? 'text-[11px]' : 'text-[10px]',
                               STATUS_COLORS[a.status] || 'bg-primary/80 text-white'
                             )}
                             title={a.title}
@@ -215,9 +221,9 @@ export default function AppointmentCalendar() {
                             {a.time && <span className="font-mono">{a.time}</span>} {a.title}
                           </div>
                         ))}
-                        {dayAppts.length > (isCurrent ? 4 : 3) && (
-                          <div className={cn('text-muted-foreground px-1 font-medium', isCurrent ? 'text-[10px]' : 'text-[9px]')}>
-                            +{dayAppts.length - (isCurrent ? 4 : 3)}
+                        {dayAppts.length > (isMainWeek ? 4 : 3) && (
+                          <div className={cn('text-muted-foreground px-1 font-medium', isMainWeek ? 'text-[10px]' : 'text-[9px]')}>
+                            +{dayAppts.length - (isMainWeek ? 4 : 3)}
                           </div>
                         )}
                       </div>
@@ -226,7 +232,8 @@ export default function AppointmentCalendar() {
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
 
           {/* Selected day panel */}
           {selectedDay && (
