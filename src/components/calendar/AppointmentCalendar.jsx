@@ -141,7 +141,10 @@ export default function AppointmentCalendar() {
         {/* Calendar content */}
         <div className="flex-1 overflow-hidden">
           {/* Weeks - mostri solo current e next */}
-          {weeks.filter(w => w.isCurrent || (w.wStart.getTime() === addWeeks(weeks.find(x => x.isCurrent)?.wStart || today, 1).getTime())).map(({ wStart, days, isCurrent }) => (
+          {weeks.filter((w, idx) => {
+            const currentWeekIdx = weeks.findIndex(x => x.isCurrent);
+            return idx === currentWeekIdx || idx === currentWeekIdx + 1;
+          }).map(({ wStart, days, isCurrent }) => (
             <div key={wStart.toISOString()}>
               {/* Weekday headers - solo per la prima settimana */}
               {isCurrent && (
