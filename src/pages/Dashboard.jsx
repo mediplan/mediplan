@@ -237,16 +237,16 @@ export default function Dashboard() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm text-blue-600">
               <Stethoscope className="h-4 w-4" />
-              Visite scadute e in scadenza ({visiteScaduteEInScadenza.length})
+              Visite scadute e in scadenza ({visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-            {visiteScaduteEInScadenza.length === 0 ? (
+            {visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita scaduta o in scadenza</p>
-            ) : visiteScaduteEInScadenza.map(v => {
+            ) : visiteScaduteEInScadenza.filter(v => !v.scheduledAppt).map(v => {
               const d = parseISO(v.next_visit_date);
               const isExpired = isBefore(d, today);
-              
+
               return (
                 <div
                   key={v.id}
@@ -260,33 +260,24 @@ export default function Dashboard() {
                     <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
                   </Link>
                   <div className="flex items-center gap-2 shrink-0">
-                    {!v.scheduledAppt && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setScheduleDialogContext({
-                            type: 'visita_medica',
-                            patientId: v.patient_id,
-                            patientName: v.patient_name,
-                            companyId: v.company_id,
-                            companyName: v.company_name,
-                          });
-                          setScheduleDialogOpen(true);
-                        }}
-                        className="h-7 px-2 text-xs gap-1"
-                      >
-                        <Plus className="h-3 w-3" />
-                        Programma
-                      </Button>
-                    )}
-                    {v.scheduledAppt && (
-                      <Link to="/dashboard">
-                        <Badge className="text-xs bg-green-100 text-green-700 border border-green-300 cursor-pointer hover:bg-green-200">
-                          Programmato {parseISO(v.scheduledAppt.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </Badge>
-                      </Link>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setScheduleDialogContext({
+                          type: 'visita_medica',
+                          patientId: v.patient_id,
+                          patientName: v.patient_name,
+                          companyId: v.company_id,
+                          companyName: v.company_name,
+                        });
+                        setScheduleDialogOpen(true);
+                      }}
+                      className="h-7 px-2 text-xs gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Programma
+                    </Button>
                     <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
                       {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </Badge>
@@ -302,13 +293,13 @@ export default function Dashboard() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm text-purple-600">
               <MapPinned className="h-4 w-4" />
-              Sopralluoghi da effettuare ({sopralluoghiInScadenza.length})
+              Sopralluoghi da effettuare ({sopralluoghiInScadenza.filter(s => !s.scheduledAppt).length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
             {sopralluoghiInScadenza.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
-            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired, scheduledAppt }) => (
+            ) : sopralluoghiInScadenza.filter(s => !s.scheduledAppt).map(({ company, lastDate, nextDue, isExpired, scheduledAppt }) => (
               <div
                 key={company?.id}
                 className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}
@@ -323,39 +314,80 @@ export default function Dashboard() {
                   </p>
                 </Link>
                 <div className="flex items-center gap-2 shrink-0">
-                  {!scheduledAppt && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setScheduleDialogContext({
-                          type: 'sopralluogo',
-                          patientId: null,
-                          patientName: null,
-                          companyId: company?.id,
-                          companyName: company?.name,
-                        });
-                        setScheduleDialogOpen(true);
-                      }}
-                      className="h-7 px-2 text-xs gap-1"
-                    >
-                      <Plus className="h-3 w-3" />
-                      Programma
-                    </Button>
-                  )}
-                  {scheduledAppt && (
-                    <Link to="/dashboard">
-                      <Badge className="text-xs bg-green-100 text-green-700 border border-green-300 cursor-pointer hover:bg-green-200">
-                        Programmato {parseISO(scheduledAppt.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </Badge>
-                    </Link>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setScheduleDialogContext({
+                        type: 'sopralluogo',
+                        patientId: null,
+                        patientName: null,
+                        companyId: company?.id,
+                        companyName: company?.name,
+                      });
+                      setScheduleDialogOpen(true);
+                    }}
+                    className="h-7 px-2 text-xs gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Programma
+                  </Button>
                   <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
                     {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
                   </Badge>
                 </div>
               </div>
             ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Attività programmate — SPOSTATA QUI */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-foreground">
+              <CalendarDays className="h-4 w-4 text-primary" />
+              Attività programmate
+              <Badge variant="secondary" className="ml-auto">
+                {appointments.filter(a => a.status === 'schedulato').length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {appointments.filter(a => a.status === 'schedulato').length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Nessuna attività programmata</p>
+            ) : (
+              <div className="space-y-2">
+                {appointments.filter(a => a.status === 'schedulato').sort((a, b) => new Date(a.date) - new Date(b.date)).map((item) => {
+                  const typeLabel = item.appointment_type === 'visita_medica' 
+                    ? (item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')
+                    : 'Sopralluogo';
+                  return (
+                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-xs font-mono text-muted-foreground w-16 shrink-0">
+                          {format(parseISO(item.date), 'dd/MM/yyyy')}
+                        </span>
+                        <div className="min-w-0">
+                          {item.patient_name && (
+                            <Link to={`/pazienti/${item.patient_id}`} className="text-sm font-medium hover:text-primary hover:underline truncate block">
+                              {item.patient_name}
+                            </Link>
+                          )}
+                          {item.company_name && (
+                            <Link to={`/aziende/${item.company_id}`} className="text-xs text-muted-foreground hover:text-primary hover:underline truncate block">
+                              {item.company_name}
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs shrink-0">{typeLabel}</Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -428,45 +460,6 @@ export default function Dashboard() {
       {/* Calendario appuntamenti */}
       <div className="mt-8">
         <AppointmentCalendar />
-      </div>
-
-      {/* Attività mese successivo */}
-      <div className="mt-8">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm text-foreground">
-              <CalendarDays className="h-4 w-4 text-primary" />
-              Attività programmate — <span className="capitalize">{nextMonthLabel}</span>
-              <Badge variant="secondary" className="ml-auto">{nextMonthActivities.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {nextMonthActivities.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nessuna attività programmata per il mese di {nextMonthLabel}</p>
-            ) : (
-              <div className="space-y-2">
-                {nextMonthActivities.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-xs font-mono text-muted-foreground w-16 shrink-0">
-                        {format(item.date, 'dd/MM/yyyy')}
-                      </span>
-                      <div className="min-w-0">
-                        <Link to={`/pazienti/${item.patientId}`} className="text-sm font-medium hover:text-primary hover:underline truncate block">
-                          {item.patientName}
-                        </Link>
-                        <Link to={`/aziende/${item.companyId}`} className="text-xs text-muted-foreground hover:text-primary hover:underline truncate block">
-                          {item.companyName}
-                        </Link>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-xs shrink-0">{item.type}</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
 
       {/* Schedule Appointment Dialog */}
