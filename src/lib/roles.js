@@ -50,6 +50,8 @@ export function canAccess(user, section) {
     gestione_utenti:    ['amministratore'],
     // Può vedere tab Medici Incaricati nelle impostazioni
     medici_incaricati:  ['amministratore'],
+    // Può vedere e gestire listini prezzi
+    listini:            ['amministratore', 'segreteria'],
   };
   return (permissions[section] || []).includes(role);
 }

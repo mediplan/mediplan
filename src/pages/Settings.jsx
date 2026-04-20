@@ -18,9 +18,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import UtentiTab from '@/components/settings/UtentiTab';
+import PriceListsTab from '@/components/settings/PriceListsTab';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
 
@@ -510,6 +511,7 @@ export default function Settings() {
   if (!canAccess(user, 'impostazioni')) return <AccessDenied />;
 
   const isAdmin = canAccess(user, 'medici_incaricati');
+  const canSeePriceLists = canAccess(user, 'listini');
 
   return (
     <div>
@@ -525,6 +527,11 @@ export default function Settings() {
           <TabsTrigger value="integrazioni" className="gap-2">
             <Plug className="h-4 w-4" /> Integrazioni Strumenti
           </TabsTrigger>
+          {canSeePriceLists && (
+            <TabsTrigger value="listini" className="gap-2">
+              <Tag className="h-4 w-4" /> Listini Prezzi
+            </TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger value="medici" className="gap-2">
               <UserCheck className="h-4 w-4" /> Medici Incaricati
@@ -545,6 +552,11 @@ export default function Settings() {
         <TabsContent value="integrazioni">
           <IntegrazioniTab />
         </TabsContent>
+        {canSeePriceLists && (
+          <TabsContent value="listini">
+            <PriceListsTab />
+          </TabsContent>
+        )}
         {isAdmin && (
           <TabsContent value="medici">
             <MediciTab />

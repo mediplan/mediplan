@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned, Plus } from 'lucide-react';
+import CompanyPriceListPanel from '@/components/companies/CompanyPriceListPanel';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -199,6 +200,11 @@ export default function CompanyDetail() {
           </div>
         )}
       </Card>
+
+      {/* Listino prezzi aziendale */}
+      <div className="mt-6">
+        <CompanyPriceListPanel company={company} />
+      </div>
 
       <CompanyJobRolesDialog
         open={jobRolesDialog}

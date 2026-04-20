@@ -1,0 +1,51 @@
+{
+  "name": "CompanyPriceList",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda"
+    },
+    "base_price_list_id": {
+      "type": "string",
+      "description": "ID listino base da cui deriva"
+    },
+    "base_price_list_name": {
+      "type": "string",
+      "description": "Nome listino base"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome del listino aziendale"
+    },
+    "items": {
+      "type": "array",
+      "description": "Voci del listino aziendale (copia modificabile)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "vat_rate": {
+            "type": "number",
+            "default": 22
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "company_id"
+  ]
+}

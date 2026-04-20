@@ -1,0 +1,48 @@
+{
+  "name": "PriceList",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome del listino"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrizione del listino"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Listino attivo"
+    },
+    "items": {
+      "type": "array",
+      "description": "Voci del listino",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Codice voce"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrizione"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Importo"
+          },
+          "vat_rate": {
+            "type": "number",
+            "description": "Aliquota IVA (%)",
+            "default": 22
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

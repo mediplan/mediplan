@@ -5,7 +5,7 @@ import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
-import { Receipt, Building2, Download } from 'lucide-react';
+import { Receipt, Building2, Download, FileCode } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -106,6 +106,70 @@ export default function Fatturazione() {
 
   if (!canAccess(user, 'fatturazione')) return <AccessDenied />;
 
+  // ─── Export XML Danea EasyFatt ───────────────────────────────────────────────
+  const handleExportDanea = () => {
+    const rows = filtered.map((v, i) => {
+      const exams = getExams(v);
+      const desc = [VISIT_TYPE_LABELS[v.visit_type] || v.visit_type, ...exams.map(e => e.label)].join(', ');
+      return `
+    <Documento>
+      <TipoDocumento>F</TipoDocumento>
+      <Numero>${i + 1}</Numero>
+      <Data>${v.visit_date || ''}</Data>
+      <ClienteDescrizione>${escXml(v.company_name || '')}</ClienteDescrizione>
+      <Righe>
+        <Riga>
+          <Descrizione>${escXml(desc)}</Descrizione>
+          <Qta>1</Qta>
+          <PrezzoUnitario>0.00</PrezzoUnitario>
+          <CodiceIVA>22</CodiceIVA>
+        </Riga>
+      </Righe>
+    </Documento>`;
+    });
+    const xml = `<?xml version="1.0" encoding="utf-8"?>\n<EasyFatt xmlns="http://www.danea.it/software/easyfatt/xml">\n  <Azienda>\n    <Documenti>${rows.join('')}\n    </Documenti>\n  </Azienda>\n</EasyFatt>`;
+    downloadXml(xml, `danea_${dateFrom}_${dateTo}.xml`);
+  };
+
+  // ─── Export XML FattureInCloud / TeamSystem ───────────────────────────────────
+  const handleExportFIC = () => {
+    const now = new Date().toISOString().split('T')[0];
+    const items = filtered.map((v, i) => {
+      const exams = getExams(v);
+      const desc = [VISIT_TYPE_LABELS[v.visit_type] || v.visit_type, ...exams.map(e => e.label)].join(', ');
+      return `
+    <fattura>
+      <progressivo>${i + 1}</progressivo>
+      <data>${v.visit_date || now}</data>
+      <cliente>
+        <ragione_sociale>${escXml(v.company_name || '')}</ragione_sociale>
+      </cliente>
+      <righe>
+        <riga>
+          <descrizione>${escXml(desc)}</descrizione>
+          <quantita>1</quantita>
+          <prezzo_netto>0.00</prezzo_netto>
+          <aliquota_iva>22</aliquota_iva>
+        </riga>
+      </righe>
+    </fattura>`;
+    });
+    const xml = `<?xml version="1.0" encoding="utf-8"?>\n<fatture_in_cloud>\n  <fatture>${items.join('')}\n  </fatture>\n</fatture_in_cloud>`;
+    downloadXml(xml, `fic_${dateFrom}_${dateTo}.xml`);
+  };
+
+  function escXml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function downloadXml(xml, filename) {
+    const blob = new Blob([xml], { type: 'application/xml;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const handleExportCSV = () => {
     const rows = [
       ['Data', 'Paziente', 'Azienda', 'Tipo visita', 'Giudizio', 'Accertamenti integrativi'],
@@ -156,6 +220,14 @@ export default function Fatturazione() {
               <Button variant="outline" size="sm" onClick={handleExportCSV}>
                 <Download className="h-4 w-4 mr-1" />
                 Esporta CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportDanea}>
+                <FileCode className="h-4 w-4 mr-1" />
+                XML Danea
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExportFIC}>
+                <FileCode className="h-4 w-4 mr-1" />
+                XML FattureInCloud
               </Button>
             </div>
           </div>
