@@ -6,6 +6,7 @@ import { ArrowLeft, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPi
 import CompanyPriceListPanel from '@/components/companies/CompanyPriceListPanel';
 import CompanyDocumentsPanel from '@/components/companies/CompanyDocumentsPanel';
 import SurveillancePlanPanel from '@/components/companies/SurveillancePlanPanel';
+import SopralluoghiPanel from '@/components/companies/SopralluoghiPanel';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
@@ -113,11 +114,11 @@ export default function CompanyDetail() {
               Relazione Sanitaria
             </button>
             <button
-              onClick={() => setPreviewDoc({ title: `Verbale Sopralluogo — ${company.name}`, html: buildVerbaleHTML(company, getDoctor(company)) })}
+              onClick={() => setPreviewDoc({ title: `Verbale Sopralluogo — ${company.name}`, html: buildVerbaleHTML(company, getDoctor(company), null) })}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
             >
               <MapPinned className="h-4 w-4 text-chart-4 shrink-0" />
-              Verbale Sopralluogo
+              Verbale Sopralluogo (vuoto)
             </button>
           </div>
         </div>
@@ -190,6 +191,11 @@ export default function CompanyDetail() {
           <SurveillancePlanPanel company={company} />
         </div>
       )}
+
+      {/* Sopralluoghi */}
+      <div className="mt-6">
+        <SopralluoghiPanel company={company} doctor={getDoctor(company)} />
+      </div>
 
       {/* Listino prezzi aziendale */}
       <div className="mt-6">

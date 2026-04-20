@@ -1,0 +1,112 @@
+{
+  "name": "Sopralluogo",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data sopralluogo"
+    },
+    "time": {
+      "type": "string",
+      "description": "Ora sopralluogo (es. 10:00)"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "primo",
+        "periodico"
+      ],
+      "default": "periodico",
+      "description": "Tipo sopralluogo"
+    },
+    "attivita_predominante": {
+      "type": "string",
+      "description": "Attivit\u00e0 predominante"
+    },
+    "attrezzature": {
+      "type": "string",
+      "description": "Attrezzature di lavoro"
+    },
+    "presenti_datore": {
+      "type": "boolean",
+      "default": false
+    },
+    "presenti_rspp": {
+      "type": "boolean",
+      "default": false
+    },
+    "presenti_rls": {
+      "type": "boolean",
+      "default": false
+    },
+    "servizi_igienici": {
+      "type": "string",
+      "enum": [
+        "adeguati",
+        "non_adeguati",
+        "non_presenti"
+      ],
+      "default": "adeguati"
+    },
+    "servizi_igienici_note": {
+      "type": "string"
+    },
+    "spogliatoi": {
+      "type": "string",
+      "enum": [
+        "adeguati",
+        "non_adeguati",
+        "non_presenti"
+      ],
+      "default": "adeguati"
+    },
+    "spogliatoi_note": {
+      "type": "string"
+    },
+    "dpi_dotazione": {
+      "type": "string",
+      "description": "DPI in dotazione"
+    },
+    "stato_dpi": {
+      "type": "string",
+      "enum": [
+        "non_previsti",
+        "da_sostituire",
+        "buono"
+      ],
+      "default": "buono"
+    },
+    "dpi_note": {
+      "type": "string"
+    },
+    "cassetta_ps": {
+      "type": "string",
+      "enum": [
+        "adeguata",
+        "non_adeguata",
+        "non_presente"
+      ],
+      "default": "adeguata"
+    },
+    "integrazioni_consigliate": {
+      "type": "string"
+    },
+    "lavoratori_presenti": {
+      "type": "string"
+    },
+    "annotazioni": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "date"
+  ]
+}

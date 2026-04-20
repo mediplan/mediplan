@@ -232,27 +232,115 @@ export function buildRelazioneSanitariaHTML(company, patients, visits, doctor, y
   return html;
 }
 
-export function buildVerbaleHTML(company, doctor, date) {
+export function buildVerbaleHTML(company, doctor, sopralluogo) {
   const doctorName = doctor?.full_name || '';
-  const visitDate = date || today();
+  const s = sopralluogo || {};
+  const visitDate = s.date ? fmtDate(s.date) : today();
+  const visitTime = s.time || '';
+
+  const chk = (val) => val ? '&#9746;' : '&#9744;';
+  const tri3 = (val, a, b, c) => `
+    <span style="margin-right:14px;">${chk(val===a)} ${a==='adeguati'||a==='adeguata'?'adeguati/a':a==='non_adeguati'||a==='non_adeguata'?'non adeguati/a':'non presenti/e'}</span>
+    <span style="margin-right:14px;">${chk(val===b)} ${b==='non_adeguati'||b==='non_adeguata'?'non adeguati/a':b==='non_presenti'||b==='non_presente'?'non presenti/e':'da sostituire'}</span>
+    <span>${chk(val===c)} ${c==='non_presenti'||c==='non_presente'?'non presenti/e':c==='buono'?'buono':c}</span>`;
 
   let html = `<div style="font-family:Arial,sans-serif;font-size:11px;color:#111827;max-width:780px;margin:0 auto;">`;
-  html += header(company, doctor, 'VERBALE DI SOPRALLUOGO');
 
-  let azHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;">`;
-  azHtml += row('Ragione sociale', company.name);
-  azHtml += row('P.IVA', company.vat_number);
-  azHtml += row('Indirizzo sede', company.address ? `${company.address}, ${company.zip_code || ''} ${company.city || ''} ${company.province ? `(${company.province})` : ''}`.trim() : null);
-  azHtml += row('Rappresentante legale', company.legal_representative);
-  azHtml += row('RSPP', company.rspp);
-  azHtml += row('RLS', company.rls);
-  azHtml += row('Medico Competente', doctorName);
-  azHtml += row('Data sopralluogo', visitDate);
-  azHtml += `</div>`;
-  html += section('DATI AZIENDA', azHtml);
-  html += section('PARTECIPANTI AL SOPRALLUOGO', `<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;">${row('Medico Competente', doctorName)}${row('Datore di lavoro / Delegato', '&nbsp;')}${row('RSPP', company.rspp || '&nbsp;')}${row('RLS', company.rls || '&nbsp;')}</div>`);
-  html += section('AMBIENTI E REPARTI VISITATI', `<div style="min-height:60px;border:1px dashed #d1d5db;border-radius:4px;padding:8px;font-size:10px;color:#9ca3af;">[Da compilare durante il sopralluogo]</div>`);
-  html += section('OSSERVAZIONI E PRESCRIZIONI', `<div style="min-height:80px;border:1px dashed #d1d5db;border-radius:4px;padding:8px;font-size:10px;color:#9ca3af;">[Osservazioni del medico competente]</div>`);
+  // Titolo
+  html += `<div style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:16px;font-weight:800;">Verbale della visita dei luoghi di lavoro</div>
+    <div style="font-size:11px;color:#374151;">(Art. 25 lettera l, D.Lgs. 81/08 e s.m.i)</div>
+    ${doctor ? `<div style="font-size:11px;color:#374151;margin-top:4px;">${doctor.specialization ? doctor.specialization + ' — ' : ''}Medico Competente</div><div style="font-size:11px;font-weight:600;">${doctorName}</div>` : ''}
+  </div>`;
+
+  // Riga tipo + data
+  html += `<table style="width:100%;border:1px solid #374151;border-collapse:collapse;font-size:10.5px;margin-bottom:8px;">
+    <tr>
+      <td style="padding:5px 10px;border:1px solid #374151;">
+        <strong>Sopralluogo:</strong>&nbsp;&nbsp;
+        ${chk(s.tipo==='primo')} primo &nbsp;&nbsp;
+        ${chk(s.tipo==='periodico'||!s.tipo)} periodico
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>Data:</strong> ${visitDate} &nbsp; <strong>Ora:</strong> ${visitTime || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:5px 10px;border:1px solid #374151;">
+        <strong>Struttura visitata:</strong> ${company.name}${company.address ? ' ' + company.address : ''}${company.city ? ', ' + company.city : ''}${company.province ? ' (' + company.province + ')' : ''}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:5px 10px;border:1px solid #374151;">
+        In tale circostanza erano presenti le seguenti figure aziendali:<br/>
+        <div style="margin-top:5px;display:flex;gap:24px;">
+          <span>${chk(s.presenti_datore)} Datore di lavoro</span>
+          <span>${chk(s.presenti_rspp)} Responsabile del Servizio di Prevenzione e Protezione</span>
+        </div>
+        <div style="margin-top:4px;">${chk(s.presenti_rls)} Rappresentante dei Lavoratori per la Sicurezza</div>
+      </td>
+    </tr>
+  </table>`;
+
+  // Analisi luoghi
+  html += `<table style="width:100%;border:1px solid #374151;border-collapse:collapse;font-size:10.5px;margin-bottom:8px;">
+    <tr><td colspan="2" style="background:#f3f4f6;padding:4px 10px;font-weight:700;border:1px solid #374151;text-align:center;letter-spacing:1px;">ANALISI DEI LUOGHI DI LAVORO</td></tr>
+    <tr>
+      <td style="padding:5px 10px;border:1px solid #374151;"><strong>Attività predominante:</strong> ${s.attivita_predominante || ''}</td>
+      <td style="padding:5px 10px;border:1px solid #374151;"></td>
+    </tr>
+    <tr><td colspan="2" style="padding:5px 10px;border:1px solid #374151;"><strong>Attrezzature di lavoro:</strong><br/>${s.attrezzature || ''}</td></tr>
+    <tr>
+      <td colspan="2" style="padding:5px 10px;border:1px solid #374151;">
+        <strong>Servizi igienici:</strong> &nbsp;
+        ${chk(s.servizi_igienici==='adeguati'||!s.servizi_igienici)} adeguati &nbsp;&nbsp;
+        ${chk(s.servizi_igienici==='non_adeguati')} non adeguati &nbsp;&nbsp;
+        ${chk(s.servizi_igienici==='non_presenti')} non presenti
+        <br/><strong>ANNOTAZIONI:</strong> ${s.servizi_igienici_note || ''}
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:5px 10px;border:1px solid #374151;">
+        <strong>Spogliatoi:</strong> &nbsp;
+        ${chk(s.spogliatoi==='adeguati'||!s.spogliatoi)} adeguati &nbsp;&nbsp;
+        ${chk(s.spogliatoi==='non_adeguati')} non adeguati &nbsp;&nbsp;
+        ${chk(s.spogliatoi==='non_presenti')} non presenti
+        <br/><strong>ANNOTAZIONI:</strong> ${s.spogliatoi_note || ''}
+      </td>
+    </tr>
+    <tr><td colspan="2" style="padding:5px 10px;border:1px solid #374151;"><strong>D.P.I. in dotazione:</strong> ${s.dpi_dotazione || ''}</td></tr>
+    <tr>
+      <td colspan="2" style="padding:5px 10px;border:1px solid #374151;">
+        <strong>Stato D.P.I.:</strong> &nbsp;
+        ${chk(s.stato_dpi==='non_previsti')} non previsti &nbsp;&nbsp;
+        ${chk(s.stato_dpi==='da_sostituire')} da sostituire &nbsp;&nbsp;
+        ${chk(s.stato_dpi==='buono'||!s.stato_dpi)} buono
+        <br/><strong>ANNOTAZIONI:</strong> ${s.dpi_note || ''}
+      </td>
+    </tr>
+  </table>`;
+
+  // Primo soccorso
+  html += `<table style="width:100%;border:1px solid #374151;border-collapse:collapse;font-size:10.5px;margin-bottom:8px;">
+    <tr><td colspan="2" style="background:#f3f4f6;padding:4px 10px;font-weight:700;border:1px solid #374151;text-align:center;letter-spacing:1px;">MATERIALE DI PRIMO SOCCORSO</td></tr>
+    <tr><td colspan="2" style="padding:4px 10px;border:1px solid #374151;font-size:9.5px;font-style:italic;">Si è constatata la presenza nell'unità lavorativa della Cassetta di Primo Soccorso come da D.M. n°388 del 15/07/2003</td></tr>
+    <tr>
+      <td colspan="2" style="padding:5px 10px;border:1px solid #374151;">
+        <strong>Cassetta/Pacchetto P.S.:</strong> &nbsp;
+        ${chk(s.cassetta_ps==='adeguata'||!s.cassetta_ps)} adeguata &nbsp;&nbsp;
+        ${chk(s.cassetta_ps==='non_adeguata')} non adeguata &nbsp;&nbsp;
+        ${chk(s.cassetta_ps==='non_presente')} non presente
+      </td>
+    </tr>
+    <tr><td colspan="2" style="padding:5px 10px;border:1px solid #374151;"><strong>Integrazioni consigliate:</strong> ${s.integrazioni_consigliate || ''}</td></tr>
+    <tr><td colspan="2" style="padding:5px 10px;border:1px solid #374151;min-height:30px;"><strong>Lavoratori presenti:</strong> ${s.lavoratori_presenti || ''}</td></tr>
+    <tr>
+      <td colspan="2" style="border:1px solid #374151;">
+        <div style="background:#f3f4f6;padding:4px 10px;font-weight:700;text-align:center;letter-spacing:1px;">ANNOTAZIONI</div>
+        <div style="padding:8px 10px;min-height:50px;">${s.annotazioni || ''}</div>
+      </td>
+    </tr>
+  </table>`;
+
   html += footerSign(doctorName);
   html += `</div>`;
   return html;
