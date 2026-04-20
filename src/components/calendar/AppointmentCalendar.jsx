@@ -31,6 +31,11 @@ export default function AppointmentCalendar() {
     queryFn: () => base44.entities.Appointment.list('-date', 500),
   });
 
+  const { data: companies = [] } = useQuery({
+    queryKey: ['companies'],
+    queryFn: () => base44.entities.Company.list(),
+  });
+
   const saveMutation = useMutation({
     mutationFn: (data) => data.id
       ? base44.entities.Appointment.update(data.id, data)
@@ -227,7 +232,9 @@ export default function AppointmentCalendar() {
               <p className="text-sm text-muted-foreground">Nessun appuntamento per questo giorno.</p>
             ) : (
               <div className="space-y-2">
-                {selectedDayAppts.map(a => (
+                {selectedDayAppts.map(a => {
+                  const company = companies.find(c => String(c.id) === String(a.company_id));
+                  return (
                   <div key={a.id} className="flex items-start justify-between p-3 rounded-lg border bg-card gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -242,6 +249,12 @@ export default function AppointmentCalendar() {
                       <p className="text-sm font-medium mt-1">{a.title}</p>
                       {a.patient_name && <p className="text-xs text-muted-foreground">{a.patient_name}</p>}
                       {a.company_name && <p className="text-xs text-muted-foreground">{a.company_name}</p>}
+                      {company && (
+                        <>
+                          {company.address && <p className="text-xs text-muted-foreground">{company.address}, {company.city}</p>}
+                          {company.phone && <p className="text-xs text-muted-foreground">Tel: {company.phone}</p>}
+                        </>
+                      )}
                       {a.notes && <p className="text-xs text-muted-foreground mt-1 italic">{a.notes}</p>}
                     </div>
                     <div className="flex gap-1 shrink-0">
@@ -252,10 +265,11 @@ export default function AppointmentCalendar() {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                    </div>
+                    );
+                    })}
+                    </div>
+                    )}
           </div>
         )}
       </CardContent>

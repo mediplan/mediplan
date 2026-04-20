@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned } from 'lucide-react';
 import ScheduleAppointmentDialog from '@/components/appointments/ScheduleAppointmentDialog';
+import ScheduleVisitsDialog from '@/components/appointments/ScheduleVisitsDialog';
 import CompanyPriceListPanel from '@/components/companies/CompanyPriceListPanel';
 import CompanyDocumentsPanel from '@/components/companies/CompanyDocumentsPanel';
 import SurveillancePlanPanel from '@/components/companies/SurveillancePlanPanel';
@@ -30,6 +31,7 @@ export default function CompanyDetail() {
   const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [scheduleDialogType, setScheduleDialogType] = useState('visita_medica');
+  const [scheduleVisitsDialogOpen, setScheduleVisitsDialogOpen] = useState(false);
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
@@ -183,15 +185,12 @@ export default function CompanyDetail() {
       </div>
 
       {/* Workers list */}
-       <div className="mb-6">
-         <CompanyWorkers 
-           company={company} 
-           onScheduleVisit={() => {
-             setScheduleDialogType('visita_medica');
-             setScheduleDialogOpen(true);
-           }}
-         />
-       </div>
+      <div className="mb-6">
+        <CompanyWorkers 
+          company={company} 
+          onScheduleVisit={() => setScheduleVisitsDialogOpen(true)}
+        />
+      </div>
 
        {/* Sopralluoghi */}
        <div className="mb-6">
@@ -230,6 +229,13 @@ export default function CompanyDetail() {
          open={scheduleDialogOpen}
          onOpenChange={setScheduleDialogOpen}
          appointmentType={scheduleDialogType}
+         companyId={company.id}
+         companyName={company.name}
+       />
+
+      <ScheduleVisitsDialog
+         open={scheduleVisitsDialogOpen}
+         onOpenChange={setScheduleVisitsDialogOpen}
          companyId={company.id}
          companyName={company.name}
        />
