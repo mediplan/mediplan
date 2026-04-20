@@ -207,23 +207,11 @@ export default function Dashboard() {
 
         {/* Visite scadute e in scadenza */}
         <Card className="border-blue-300/50">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm text-blue-600">
               <Stethoscope className="h-4 w-4" />
               Visite scadute e in scadenza ({visiteScaduteEInScadenza.length})
             </CardTitle>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setScheduleDialogContext({ type: 'visita_medica', patientId: null, patientName: null, companyId: null, companyName: null });
-                setScheduleDialogOpen(true);
-              }}
-              className="h-8 gap-1"
-            >
-              <Plus className="h-3 w-3" />
-              Programma
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
             {visiteScaduteEInScadenza.length === 0 ? (
@@ -246,6 +234,26 @@ export default function Dashboard() {
                     <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
                   </Link>
                   <div className="flex items-center gap-2 shrink-0">
+                    {!isAppointment && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setScheduleDialogContext({
+                            type: 'visita_medica',
+                            patientId: v.patient_id,
+                            patientName: v.patient_name,
+                            companyId: v.company_id,
+                            companyName: v.company_name,
+                          });
+                          setScheduleDialogOpen(true);
+                        }}
+                        className="h-7 px-2 text-xs gap-1"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Programma
+                      </Button>
+                    )}
                     {isAppointment && <Badge className="text-xs bg-green-100 text-green-700 border border-green-300">Programmato</Badge>}
                     <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
                       {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -259,23 +267,11 @@ export default function Dashboard() {
 
         {/* Sopralluoghi da effettuare */}
         <Card className="border-purple-300/50">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm text-purple-600">
               <MapPinned className="h-4 w-4" />
               Sopralluoghi da effettuare ({sopralluoghiInScadenza.length})
             </CardTitle>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setScheduleDialogContext({ type: 'sopralluogo', patientId: null, patientName: null, companyId: null, companyName: null });
-                setScheduleDialogOpen(true);
-              }}
-              className="h-8 gap-1"
-            >
-              <Plus className="h-3 w-3" />
-              Programma
-            </Button>
           </CardHeader>
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
             {sopralluoghiInScadenza.length === 0 ? (
@@ -295,6 +291,26 @@ export default function Dashboard() {
                   </p>
                 </Link>
                 <div className="flex items-center gap-2 shrink-0">
+                  {source !== 'appointment' && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setScheduleDialogContext({
+                          type: 'sopralluogo',
+                          patientId: null,
+                          patientName: null,
+                          companyId: company?.id,
+                          companyName: company?.name,
+                        });
+                        setScheduleDialogOpen(true);
+                      }}
+                      className="h-7 px-2 text-xs gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Programma
+                    </Button>
+                  )}
                   {source === 'appointment' && <Badge className="text-xs bg-green-100 text-green-700 border border-green-300">Programmato</Badge>}
                   <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
                     {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
@@ -310,23 +326,11 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-2 gap-6">
           {/* Visite in corso */}
           <Card className="border-amber-300/50">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm text-amber-600">
                 <FileWarning className="h-4 w-4" />
                 Visite in sospeso ({visiteInCorso.length})
               </CardTitle>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setScheduleDialogContext({ type: 'visita_medica', patientId: null, patientName: null, companyId: null, companyName: null });
-                  setScheduleDialogOpen(true);
-                }}
-                className="h-8 gap-1"
-              >
-                <Plus className="h-3 w-3" />
-                Programma
-              </Button>
             </CardHeader>
             <CardContent className="space-y-2 max-h-64 overflow-y-auto">
               {visiteInCorso.length === 0 ? (
