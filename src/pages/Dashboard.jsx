@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { AlertTriangle, Clock, CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope } from 'lucide-react';
+import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope } from 'lucide-react';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -32,64 +32,6 @@ export default function Dashboard() {
   const in30Days = addDays(today, 30);
   const in60Days = addDays(today, 60);
 
-  // Per ogni azienda attiva, troviamo la next_visit_date più urgente considerando
-  // solo l'ULTIMA visita per ogni paziente (quella con visit_date più recente)
-  const companyAlerts = useMemo(() => {
-    const activeCompanyList = companies.filter(c => c.status === 'active');
-
-    // Per ogni paziente, troviamo la sua ultima visita (con next_visit_date)
-    const latestVisitPerPatient = {};
-    for (const v of visits) {
-      if (!v.next_visit_date || !v.patient_id) continue;
-      const existing = latestVisitPerPatient[v.patient_id];
-      if (!existing || v.visit_date > existing.visit_date) {
-        latestVisitPerPatient[v.patient_id] = v;
-      }
-    }
-
-    return activeCompanyList.map(company => {
-      // Prendi solo le ultime visite dei pazienti di questa azienda
-      const companyLatestVisits = Object.values(latestVisitPerPatient)
-        .filter(v => v.company_id === company.id);
-
-      // Troviamo la scadenza più urgente per questa azienda
-      let earliestExpiry = null;
-      for (const v of companyLatestVisits) {
-        const d = parseISO(v.next_visit_date);
-        if (!earliestExpiry || isBefore(d, earliestExpiry)) {
-          earliestExpiry = d;
-        }
-      }
-
-      // Anche i lavoratori con first_visit_expiry (solo se non hanno visite)
-      const companyPatients = patients.filter(p => p.company_id === company.id && p.first_visit_expiry);
-      for (const p of companyPatients) {
-        if (latestVisitPerPatient[p.id]) continue; // già coperto dalla visita
-        const d = parseISO(p.first_visit_expiry);
-        if (!earliestExpiry || isBefore(d, earliestExpiry)) {
-          earliestExpiry = d;
-        }
-      }
-
-      if (!earliestExpiry) return null;
-
-      const isExpired = isBefore(earliestExpiry, today);
-      const isExpiringSoon = !isExpired && isBefore(earliestExpiry, in30Days);
-
-      if (!isExpired && !isExpiringSoon) return null;
-
-      return {
-        company,
-        earliestExpiry,
-        isExpired,
-        isExpiringSoon,
-      };
-    }).filter(Boolean).sort((a, b) => a.earliestExpiry - b.earliestExpiry);
-  }, [companies, visits, patients, today, in30Days]);
-
-  const expiredAlerts = companyAlerts.filter(a => a.isExpired);
-  const expiringSoonAlerts = companyAlerts.filter(a => a.isExpiringSoon);
-
   // Visite in sospeso
   const visiteInCorso = useMemo(() =>
     visits.filter(v => v.visit_status === 'sospesa' || v.visit_status === 'in_corso'),
@@ -109,8 +51,8 @@ export default function Dashboard() {
     [visits]
   );
 
-  // Visite in scadenza nel prossimo mese (next_visit_date tra oggi e +30gg, escluse già scadute)
-  const visiteInScadenza = useMemo(() => {
+  // Visite scadute + in scadenza entro 30 giorni (ultima visita per paziente)
+  const visiteScaduteEInScadenza = useMemo(() => {
     const latestVisitPerPatient = {};
     for (const v of visits) {
       if (!v.next_visit_date || !v.patient_id) continue;
@@ -122,10 +64,10 @@ export default function Dashboard() {
     return Object.values(latestVisitPerPatient)
       .filter(v => {
         const d = parseISO(v.next_visit_date);
-        return isAfter(d, today) && isBefore(d, in30Days);
+        return isBefore(d, in30Days); // scadute (< oggi) + in scadenza (oggi..+30gg)
       })
       .sort((a, b) => new Date(a.next_visit_date) - new Date(b.next_visit_date));
-  }, [visits, today, in30Days]);
+  }, [visits, in30Days]);
 
   // Sopralluoghi: per ogni azienda attiva, l'ultimo sopralluogo e la scadenza annuale
   const sopralluoghiInScadenza = useMemo(() => {
@@ -221,73 +163,76 @@ export default function Dashboard() {
         description="Panoramica della sorveglianza sanitaria"
       />
 
-      {/* Alert aziende */}
-      {(expiredAlerts.length > 0 || expiringSoonAlerts.length > 0) && (
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Scadute */}
-          {expiredAlerts.length > 0 && (
-            <Card className="border-destructive/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  Adempimenti scaduti ({expiredAlerts.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {expiredAlerts.map(({ company, earliestExpiry }) => (
-                  <div
-                    key={company.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/10"
-                  >
-                    <Link to={`/aziende/${company.id}`} className="text-sm font-medium text-foreground hover:text-primary hover:underline">
-                      {company.name}
-                    </Link>
-                    <Badge variant="destructive" className="text-xs shrink-0">
-                      Scad. {earliestExpiry.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </Badge>
+      {/* Visite scadute/in scadenza + Sopralluoghi — IN CIMA */}
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+
+        {/* Visite scadute e in scadenza */}
+        <Card className="border-blue-300/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-blue-600">
+              <Stethoscope className="h-4 w-4" />
+              Visite scadute e in scadenza ({visiteScaduteEInScadenza.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+            {visiteScaduteEInScadenza.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita scaduta o in scadenza</p>
+            ) : visiteScaduteEInScadenza.map(v => {
+              const d = parseISO(v.next_visit_date);
+              const isExpired = isBefore(d, today);
+              return (
+                <Link
+                  key={v.id}
+                  to={`/pazienti/${v.patient_id}`}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100'}`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* In scadenza entro 30 giorni */}
-          {expiringSoonAlerts.length > 0 && (
-            <Card className="border-amber-300/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm text-amber-600">
-                  <Clock className="h-4 w-4" />
-                  In scadenza entro 30 giorni ({expiringSoonAlerts.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {expiringSoonAlerts.map(({ company, earliestExpiry }) => (
-                  <Link
-                    key={company.id}
-                    to={`/aziende/${company.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors"
-                  >
-                    <span className="text-sm font-medium text-foreground">{company.name}</span>
-                    <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300 shrink-0">
-                      Scad. {earliestExpiry.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </Badge>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
-
-      {/* Nessun alert */}
-      {expiredAlerts.length === 0 && expiringSoonAlerts.length === 0 && (
-        <Card className="p-6 text-center text-muted-foreground text-sm border-dashed">
-          Nessuna scadenza imminente o adempimento scaduto
+                  <Badge className={`text-xs shrink-0 ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                    {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </Badge>
+                </Link>
+              );
+            })}
+          </CardContent>
         </Card>
-      )}
+
+        {/* Sopralluoghi da effettuare */}
+        <Card className="border-purple-300/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-purple-600">
+              <MapPinned className="h-4 w-4" />
+              Sopralluoghi da effettuare ({sopralluoghiInScadenza.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+            {sopralluoghiInScadenza.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
+            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired }) => (
+              <Link
+                key={company?.id}
+                to={`/aziende/${company?.id}`}
+                className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'bg-purple-50 border-purple-200 hover:bg-purple-100'}`}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{company?.name || '—'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {lastDate ? `Ultimo: ${lastDate.toLocaleDateString('it-IT')}` : 'Nessun sopralluogo registrato'}
+                  </p>
+                </div>
+                <Badge className={`text-xs shrink-0 ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
+                  {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
+                </Badge>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Situazioni in sospeso */}
-      <div className="grid lg:grid-cols-2 gap-6 mt-6">
+      <div className="grid lg:grid-cols-2 gap-6">
           {/* Visite in corso */}
           <Card className="border-amber-300/50">
             <CardHeader className="pb-3">
@@ -350,70 +295,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
-      {/* Visite in scadenza + Sopralluoghi */}
-      <div className="grid lg:grid-cols-2 gap-6 mt-6">
-
-        {/* Visite mediche in scadenza entro 30 giorni */}
-        <Card className="border-blue-300/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm text-blue-600">
-              <Stethoscope className="h-4 w-4" />
-              Visite in scadenza — prossimi 30 giorni ({visiteInScadenza.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-            {visiteInScadenza.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita in scadenza nel prossimo mese</p>
-            ) : visiteInScadenza.map(v => (
-              <Link
-                key={v.id}
-                to={`/pazienti/${v.patient_id}`}
-                className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors gap-3"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
-                </div>
-                <Badge className="text-xs bg-blue-100 text-blue-700 border border-blue-300 shrink-0">
-                  Scad. {new Date(v.next_visit_date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
-                </Badge>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Sopralluoghi in scadenza */}
-        <Card className="border-purple-300/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm text-purple-600">
-              <MapPinned className="h-4 w-4" />
-              Sopralluoghi da effettuare ({sopralluoghiInScadenza.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-            {sopralluoghiInScadenza.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
-            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired }) => (
-              <Link
-                key={company?.id}
-                to={`/aziende/${company?.id}`}
-                className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'bg-purple-50 border-purple-200 hover:bg-purple-100'}`}
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{company?.name || '—'}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {lastDate ? `Ultimo: ${lastDate.toLocaleDateString('it-IT')}` : 'Nessun sopralluogo registrato'}
-                  </p>
-                </div>
-                <Badge className={`text-xs shrink-0 ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
-                  {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
-                </Badge>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Calendario appuntamenti */}
       <div className="mt-8">
