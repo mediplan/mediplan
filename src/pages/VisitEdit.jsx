@@ -20,14 +20,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import DianaIntegration from '@/components/visits/DianaIntegration';
 import FamilyAnamnesisForm from '@/components/visits/FamilyAnamnesisForm';
 import PhysiologicalAnamnesisForm from '@/components/visits/PhysiologicalAnamnesisForm';
 import LifestyleForm from '@/components/visits/LifestyleForm';
 import PathologicalAnamnesisTab from '@/components/visits/PathologicalAnamnesisTab';
 import ObjectiveExamTab from '@/components/visits/ObjectiveExamTab';
-import PdfExamUpload from '@/components/visits/PdfExamUpload';
-import VisitAttachments from '@/components/visits/VisitAttachments';
+import AccertamentiTab, { ACCERTAMENTI } from '@/components/visits/AccertamentiTab';
 import { addMonths, format } from 'date-fns';
 import { Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -73,132 +71,9 @@ const normalValues = {
   obj_romberg: 'negativo', obj_reflexes: 'validi',
 };
 
-// Accertamenti con flag eseguito + data esecuzione + note
-const ACCERTAMENTI = [
-  { key: 'audiometry_result', label: 'Audiometria', type: 'textarea', pdfKey: 'audiometro', pdfColor: 'text-chart-3', pdfBorder: 'border-chart-3/20', pdfBg: 'bg-chart-3/5' },
-  { key: 'spirometry_result', label: 'Spirometria', type: 'textarea', pdfKey: 'spirometro', pdfColor: 'text-chart-2', pdfBorder: 'border-chart-2/20', pdfBg: 'bg-chart-2/5' },
-  { key: 'ecg_result', label: 'ECG', type: 'textarea', pdfKey: 'ecg', pdfColor: 'text-destructive', pdfBorder: 'border-destructive/20', pdfBg: 'bg-destructive/5' },
-  { key: 'visiotest_result', label: 'Visiotest', type: 'textarea' },
-  { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori', type: 'textarea' },
-  { key: 'drug_test_result', label: 'Drug Test', type: 'textarea' },
-  { key: 'alcohol_test_result', label: 'Alcol Test', type: 'textarea' },
-  { key: 'audit_c_result', label: 'Questionario AUDIT-C', type: 'textarea' },
-  { key: 'blood_tests_result', label: 'Esami ematochimici', type: 'textarea', placeholder: 'Emocromo, glicemia, creatinina, AST, ALT, GGT...' },
-  { key: 'other_exams', label: 'Esami strumentali aggiuntivi', type: 'textarea' },
-  { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', type: 'textarea' },
-];
 
-function ExamRow({ exam, form, onChange, extraContent, onAttachment, attachmentsForExam = [] }) {
-  const doneKey = `${exam.key}_done`;
-  const dateKey = `${exam.key}_date`;
-  const outcomeKey = `${exam.key}_outcome`;
-  const isDone = !!form[doneKey];
-  const outcome = form[outcomeKey] || '';
 
-  return (
-    <Card className={cn(
-      'transition-all',
-      isDone && outcome === 'normale' && 'border-accent/40 bg-accent/5',
-      isDone && outcome === 'irregolare' && 'border-destructive/40 bg-destructive/5',
-      isDone && !outcome && 'border-accent/40 bg-accent/5',
-    )}>
-      <CardHeader className="pb-2 pt-3 px-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id={doneKey}
-              checked={isDone}
-              onChange={e => onChange(doneKey, e.target.checked)}
-              className="h-4 w-4 cursor-pointer accent-teal-500"
-            />
-            <label htmlFor={doneKey} className={cn(
-              'text-sm font-semibold cursor-pointer',
-              isDone && outcome === 'irregolare' ? 'text-destructive' : isDone && 'text-accent'
-            )}>
-              {exam.label}
-            </label>
-            {isDone && outcome === 'normale' && <CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0" />}
-            {isDone && outcome === 'irregolare' && <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">IRREGOLARE</span>}
-          </div>
-          {isDone && (
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Esito */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => onChange(outcomeKey, 'normale')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-l-md text-xs border font-medium transition-colors',
-                    outcome === 'normale'
-                      ? 'bg-accent text-white border-accent'
-                      : 'bg-background text-muted-foreground border-input hover:bg-muted'
-                  )}
-                >
-                  Nella norma
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onChange(outcomeKey, 'irregolare')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-r-md text-xs border-t border-b border-r font-medium transition-colors',
-                    outcome === 'irregolare'
-                      ? 'bg-destructive text-white border-destructive'
-                      : 'bg-background text-muted-foreground border-input hover:bg-muted'
-                  )}
-                >
-                  Irregolare
-                </button>
-              </div>
-              {/* Data */}
-              <div className="flex items-center gap-1.5">
-                <Label className="text-xs text-muted-foreground whitespace-nowrap">Data:</Label>
-                <Input
-                  type="date"
-                  value={form[dateKey] || ''}
-                  onChange={e => onChange(dateKey, e.target.value)}
-                  className="h-7 text-xs w-36"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      {isDone && (
-        <CardContent className="px-4 pb-3 space-y-2">
-          {extraContent}
-          {exam.pdfKey && (
-            <PdfExamUpload
-              label={exam.label}
-              settingsKey={exam.pdfKey}
-              examDate={form[`${exam.key}_date`] || ''}
-              color={exam.pdfColor}
-              borderColor={exam.pdfBorder}
-              bgColor={exam.pdfBg}
-              onResult={text => onChange(exam.key, form[exam.key] ? form[exam.key] + '\n' + text : text)}
-              onAttachment={onAttachment}
-              attachments={attachmentsForExam}
-            />
-          )}
-          {exam.type === 'input' ? (
-            <Input
-              value={form[exam.key] || ''}
-              onChange={e => onChange(exam.key, e.target.value)}
-              placeholder={exam.placeholder || ''}
-            />
-          ) : (
-            <Textarea
-              value={form[exam.key] || ''}
-              onChange={e => onChange(exam.key, e.target.value)}
-              rows={2}
-              placeholder={exam.placeholder || ''}
-            />
-          )}
-        </CardContent>
-      )}
-    </Card>
-  );
-}
+
 
 function SystemRow({ label, field, form, onChange }) {
   return (
@@ -369,15 +244,6 @@ export default function VisitEdit() {
     });
   };
 
-  // Restituisce gli allegati filtrati per un dato exam_key (basato sul label)
-  const getAttachmentsForExam = (examLabel) => {
-    const all = Array.isArray(form.attachments) ? form.attachments : [];
-    return all.filter(a => {
-      const lbl = typeof a === 'object' ? (a.label || '') : '';
-      return lbl.startsWith(examLabel);
-    });
-  };
-
   const fillNormal = (scope) => {
     const keys = Object.keys(normalValues).filter(k => k.startsWith(scope === 'apparati' ? 'systems_' : 'obj_'));
     setForm(prev => ({ ...prev, ...Object.fromEntries(keys.map(k => [k, normalValues[k]])) }));
@@ -440,7 +306,8 @@ export default function VisitEdit() {
   };
 
   // Numero accertamenti eseguiti
-  const doneCount = ACCERTAMENTI.filter(a => form[`${a.key}_done`]).length;
+  const doneCount = ACCERTAMENTI.filter(a => form[`${a.key}_done`]).length
+    + (Array.isArray(form.custom_exams) ? form.custom_exams.filter(e => e.done).length : 0);
 
   if (!loaded && (visitId || patientId)) {
     return (
@@ -589,47 +456,15 @@ export default function VisitEdit() {
           </TabsContent>
 
           {/* ACCERTAMENTI */}
-          <TabsContent value="accertamenti" className="mt-2 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Spunta gli accertamenti eseguiti. Solo quelli spuntati verranno conteggiati nello scadenziario e in fatturazione.
-              </p>
-              <Badge variant="outline" className="gap-1">
-                <CheckCircle2 className="h-3 w-3 text-accent" />
-                {doneCount} / {ACCERTAMENTI.length} eseguiti
-              </Badge>
-            </div>
-            {ACCERTAMENTI.map(exam => (
-              <ExamRow
-                key={exam.key}
-                exam={exam}
-                form={form}
-                onChange={handleChange}
-                onAttachment={handleAttachment}
-                attachmentsForExam={getAttachmentsForExam(exam.label)}
-                extraContent={exam.key === 'drug_test_result' ? (
-                  <DianaIntegration
-                    patient={patients.find(p => String(p.id) === String(form.patient_id))}
-                    onResult={text => handleChange('drug_test_result', form.drug_test_result ? form.drug_test_result + '\n' + text : text)}
-                  />
-                ) : undefined}
-              />
-            ))}
-
-            {/* Archivio tutti gli allegati della visita - visibili a tutti tranne segreteria */}
-            {canAccess(user, 'allegati_accertamenti') && Array.isArray(form.attachments) && form.attachments.length > 0 && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardHeader className="pb-2 pt-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <Paperclip className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold text-primary">Archivio allegati ({form.attachments.length})</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 pb-3">
-                  <VisitAttachments attachments={form.attachments} />
-                </CardContent>
-              </Card>
-            )}
+          <TabsContent value="accertamenti" className="mt-2">
+            <AccertamentiTab
+              form={form}
+              onChange={handleChange}
+              onAttachment={handleAttachment}
+              patient={patients.find(p => String(p.id) === String(form.patient_id))}
+              jobRoles={jobRoles}
+              user={user}
+            />
           </TabsContent>
 
           {/* GIUDIZIO */}
