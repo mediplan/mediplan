@@ -44,7 +44,7 @@ function CheckField({ id, label, checked, onChange }) {
   );
 }
 
-export default function PatientFormDialog({ open, onOpenChange, patient, onSave }) {
+export default function PatientFormDialog({ open, onOpenChange, patient, onSave, defaultCompany }) {
   const [form, setForm] = useState(emptyForm);
   const isEdit = !!patient;
 
@@ -54,8 +54,14 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave 
   const filteredRoles = jobRoles;
 
   useEffect(() => {
-    setForm(patient ? { ...emptyForm, ...patient } : emptyForm);
-  }, [patient, open]);
+    if (patient) {
+      setForm({ ...emptyForm, ...patient });
+    } else if (defaultCompany) {
+      setForm({ ...emptyForm, company_id: String(defaultCompany.id), company_name: defaultCompany.name });
+    } else {
+      setForm(emptyForm);
+    }
+  }, [patient, open, defaultCompany]);
 
   const handleChange = (field, value) => {
     const updates = { [field]: value };
