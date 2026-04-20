@@ -108,10 +108,9 @@ export default function AppointmentCalendar() {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex gap-1">
+          <div className="flex flex-col gap-1">
             <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane precedenti (↑)" onClick={() => setWeekOffset(o => o - 4)}>
-              <ChevronLeft className="h-4 w-4" />
-              <ChevronLeft className="h-3 w-3 -ml-2" />
+              <ChevronLeft className="h-4 w-4 rotate-90" />
             </Button>
             <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana precedente (←)" onClick={() => setWeekOffset(o => o - 1)}>
               <ChevronLeft className="h-4 w-4" />
@@ -127,20 +126,17 @@ export default function AppointmentCalendar() {
               </Button>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana successiva (→)" onClick={() => setWeekOffset(o => o + 1)}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
-                <ChevronRight className="h-3 w-3 -mr-2" />
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay || today)}>
-              <Plus className="h-3.5 w-3.5" /> Nuovo
+          <div className="flex flex-col gap-1">
+            <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana successiva (→)" onClick={() => setWeekOffset(o => o + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
+              <ChevronRight className="h-4 w-4 rotate-90" />
             </Button>
           </div>
+          <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay || today)}>
+            <Plus className="h-3.5 w-3.5" /> Nuovo
+          </Button>
         </div>
       </CardHeader>
 
