@@ -100,7 +100,8 @@ export default function Dashboard() {
       });
   }, [visits, appointments, in30Days]);
 
-  // Sopralluoghi: per ogni azienda attiva, l'ultimo sopralluogo e la scadenza annuale + appuntamenti programmati
+  // Sopralluoghi: per ogni azienda attiva, l'ultimo sopralluogo e la scadenza annuale
+  // Se programmato un appuntamento, mostra il badge sull'elemento sopralluogo
   const sopralluoghiInScadenza = useMemo(() => {
     const activeCompanyIds = new Set(companies.filter(c => c.status === 'active').map(c => c.id));
     // Ultimo sopralluogo per azienda
@@ -117,30 +118,33 @@ export default function Dashboard() {
       const nextDue = addMonths(lastDate, 12);
       if (isBefore(nextDue, in60Days)) {
         const comp = companies.find(c => String(c.id) === String(companyId));
-        items.push({ company: comp, lastDate, nextDue, isExpired: isBefore(nextDue, today), source: 'sopralluogo' });
+        // Cerca appuntamento programmato per questa azienda
+        const scheduledAppt = appointments.find(a => 
+          String(a.company_id) === String(companyId) && 
+          a.appointment_type === 'sopralluogo' && 
+          a.status === 'schedulato'
+        );
+        items.push({ company: comp, lastDate, nextDue, isExpired: isBefore(nextDue, today), source: 'sopralluogo', scheduledAppt });
       }
     }
     // Aziende senza alcun sopralluogo
     for (const c of companies.filter(c => c.status === 'active')) {
       if (!lastPerCompany[c.id]) {
-        items.push({ company: c, lastDate: null, nextDue: null, isExpired: true, source: 'sopralluogo' });
+        const scheduledAppt = appointments.find(a => 
+          String(a.company_id) === String(c.id) && 
+          a.appointment_type === 'sopralluogo' && 
+          a.status === 'schedulato'
+        );
+        items.push({ company: c, lastDate: null, nextDue: null, isExpired: true, source: 'sopralluogo', scheduledAppt });
       }
     }
-    
-    // Appuntamenti programmati per sopralluoghi
-    const appointmentItems = appointments
-      .filter(a => a.appointment_type === 'sopralluogo' && a.status === 'schedulato')
-      .map(a => {
-        const comp = companies.find(c => String(c.id) === String(a.company_id));
-        return { company: comp, lastDate: null, nextDue: parseISO(a.date), isExpired: false, source: 'appointment', appointmentData: a };
-      });
 
-    return [...items, ...appointmentItems]
-      .sort((a, b) => {
-        if (!a.nextDue) return -1;
-        if (!b.nextDue) return 1;
-        return a.nextDue - b.nextDue;
-      });
+    return items.sort((a, b) => {
+      if (!a.nextDue && !b.nextDue) return 0;
+      if (!a.nextDue) return -1;
+      if (!b.nextDue) return 1;
+      return a.nextDue - b.nextDue;
+    });
   }, [sopralluoghi, companies, appointments, today, in60Days]);
 
   // Attività del mese successivo: lavoratori con scadenza nel mese prossimo
@@ -283,9 +287,9 @@ export default function Dashboard() {
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
             {sopralluoghiInScadenza.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
-            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired, source, appointmentData }) => (
+            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired, scheduledAppt }) => (
               <div
-                key={`${source}-${appointmentData?.id || company?.id}`}
+                key={company?.id}
                 className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}
               >
                 <Link
@@ -298,7 +302,7 @@ export default function Dashboard() {
                   </p>
                 </Link>
                 <div className="flex items-center gap-2 shrink-0">
-                  {source !== 'appointment' && (
+                  {!scheduledAppt && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -318,7 +322,13 @@ export default function Dashboard() {
                       Programma
                     </Button>
                   )}
-                  {source === 'appointment' && <Badge className="text-xs bg-green-100 text-green-700 border border-green-300">Programmato</Badge>}
+                  {scheduledAppt && (
+                    <Link to="/dashboard">
+                      <Badge className="text-xs bg-green-100 text-green-700 border border-green-300 cursor-pointer hover:bg-green-200">
+                        Programmato {parseISO(scheduledAppt.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </Badge>
+                    </Link>
+                  )}
                   <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
                     {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
                   </Badge>
