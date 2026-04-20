@@ -122,15 +122,15 @@ export default function AppointmentCalendar() {
         </div>
       </CardHeader>
 
-      <CardContent className="p-0 relative flex">
-        {/* Scrollbar area */}
+      <CardContent className="p-0 relative flex flex-row-reverse">
+        {/* Scrollbar area - DESTRA */}
         <div className="flex flex-col items-center justify-between py-4 px-2 bg-muted/30 w-10 shrink-0">
           <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimane precedenti (↑)" onClick={() => setWeekOffset(o => o - 4)}>
             <ChevronLeft className="h-3.5 w-3.5 rotate-90" />
           </Button>
           
           <div className="flex-1 flex items-center justify-center">
-            <div className="w-1 bg-muted-foreground rounded-full" style={{ height: '60px' }}></div>
+            <div className="w-1 bg-muted-foreground rounded-full" style={{ height: '80px' }}></div>
           </div>
           
           <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
@@ -140,24 +140,26 @@ export default function AppointmentCalendar() {
 
         {/* Calendar content */}
         <div className="flex-1 overflow-hidden">
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 border-b bg-muted/20">
-            {WEEKDAYS.map(wd => (
-              <div key={wd} className="py-2 text-center text-xs font-medium text-muted-foreground">
-                {wd}
-              </div>
-            ))}
-          </div>
-
-          {/* Weeks */}
-          {weeks.map(({ wStart, days, isCurrent }) => (
+          {/* Weeks - mostri solo current e next */}
+          {weeks.filter(w => w.isCurrent || (w.wStart.getTime() === addWeeks(weeks.find(x => x.isCurrent)?.wStart || today, 1).getTime())).map(({ wStart, days, isCurrent }) => (
             <div key={wStart.toISOString()}>
+              {/* Weekday headers - solo per la prima settimana */}
+              {isCurrent && (
+                <div className="grid grid-cols-7 border-b bg-muted/20">
+                  {WEEKDAYS.map(wd => (
+                    <div key={wd} className="py-2 text-center text-xs font-medium text-muted-foreground">
+                      {wd}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Week label */}
               <div className={cn(
                 'px-3 py-2 text-xs font-medium border-b',
-                isCurrent ? 'bg-primary/10 text-primary' : 'bg-muted/40 text-muted-foreground'
+                isCurrent ? 'bg-primary/10 text-primary text-sm' : 'bg-muted/40 text-muted-foreground'
               )}>
-                {isCurrent ? '📍 ' : ''}{format(wStart, "d MMM", { locale: it })} › {format(addDays(wStart, 6), "d MMM", { locale: it })}
+                {isCurrent ? '📍 Settimana corrente' : 'Settimana successiva'} — {format(wStart, "d MMM", { locale: it })} › {format(addDays(wStart, 6), "d MMM", { locale: it })}
               </div>
 
               {/* Days row */}
@@ -172,15 +174,16 @@ export default function AppointmentCalendar() {
                       key={idx}
                       onClick={() => setSelectedDay(isSelected ? null : day)}
                       className={cn(
-                        'p-2 border-b border-r cursor-pointer transition-colors min-h-[80px]',
-                        isToday && 'ring-inset ring-2 ring-primary',
+                        'border-b border-r cursor-pointer transition-colors',
+                        isCurrent ? 'p-3 min-h-[120px]' : 'p-2 min-h-[80px]',
                         isSelected && 'bg-primary/5',
                         'hover:bg-muted/50'
                       )}
                     >
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-2">
                         <span className={cn(
-                          'flex items-center justify-center rounded-full text-xs font-semibold w-6 h-6',
+                          'flex items-center justify-center rounded-full font-semibold',
+                          isCurrent ? 'text-sm w-7 h-7' : 'text-xs w-6 h-6',
                           isToday && 'bg-primary text-white',
                           !isToday && 'text-foreground',
                         )}>
@@ -191,16 +194,17 @@ export default function AppointmentCalendar() {
                             onClick={e => { e.stopPropagation(); handleNewAppt(day); }}
                             className="text-primary hover:text-primary/70"
                           >
-                            <Plus className="h-3 w-3" />
+                            <Plus className={isCurrent ? 'h-4 w-4' : 'h-3 w-3'} />
                           </button>
                         )}
                       </div>
                       <div className="space-y-1">
-                        {dayAppts.slice(0, 3).map(a => (
+                        {dayAppts.slice(0, isCurrent ? 4 : 3).map(a => (
                           <div
                             key={a.id}
                             className={cn(
-                              'px-1 py-0.5 rounded text-[10px] truncate cursor-pointer hover:opacity-80',
+                              'px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80',
+                              isCurrent ? 'text-[11px]' : 'text-[10px]',
                               STATUS_COLORS[a.status] || 'bg-primary/80 text-white'
                             )}
                             title={a.title}
@@ -208,9 +212,9 @@ export default function AppointmentCalendar() {
                             {a.time && <span className="font-mono">{a.time}</span>} {a.title}
                           </div>
                         ))}
-                        {dayAppts.length > 3 && (
-                          <div className="text-[9px] text-muted-foreground px-1 font-medium">
-                            +{dayAppts.length - 3}
+                        {dayAppts.length > (isCurrent ? 4 : 3) && (
+                          <div className={cn('text-muted-foreground px-1 font-medium', isCurrent ? 'text-[10px]' : 'text-[9px]')}>
+                            +{dayAppts.length - (isCurrent ? 4 : 3)}
                           </div>
                         )}
                       </div>
