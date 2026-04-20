@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, Users, Stethoscope, AlertTriangle, Clock, CalendarDays, FileWarning, ShieldAlert } from 'lucide-react';
-import { addDays, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
+import { Building2, Users, Stethoscope, AlertTriangle, Clock, CalendarDays, FileWarning, ShieldAlert, MapPinned } from 'lucide-react';
+import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import StatCard from '@/components/shared/StatCard';
@@ -24,9 +24,14 @@ export default function Dashboard() {
     queryKey: ['visits'],
     queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 1000),
   });
+  const { data: sopralluoghi = [] } = useQuery({
+    queryKey: ['sopralluoghi_all'],
+    queryFn: () => base44.entities.Sopralluogo.list('-date', 1000),
+  });
 
   const today = new Date();
   const in30Days = addDays(today, 30);
+  const in60Days = addDays(today, 60);
 
   const activeCompanies = companies.filter(c => c.status === 'active').length;
   const activePatients = patients.filter(p => p.status === 'active').length;
@@ -107,6 +112,57 @@ export default function Dashboard() {
     visits.filter(v => GIUDIZI_CRITICI.includes(v.judgment)),
     [visits]
   );
+
+  // Visite in scadenza nel prossimo mese (next_visit_date tra oggi e +30gg, escluse già scadute)
+  const visiteInScadenza = useMemo(() => {
+    const latestVisitPerPatient = {};
+    for (const v of visits) {
+      if (!v.next_visit_date || !v.patient_id) continue;
+      const existing = latestVisitPerPatient[v.patient_id];
+      if (!existing || v.visit_date > existing.visit_date) {
+        latestVisitPerPatient[v.patient_id] = v;
+      }
+    }
+    return Object.values(latestVisitPerPatient)
+      .filter(v => {
+        const d = parseISO(v.next_visit_date);
+        return isAfter(d, today) && isBefore(d, in30Days);
+      })
+      .sort((a, b) => new Date(a.next_visit_date) - new Date(b.next_visit_date));
+  }, [visits, today, in30Days]);
+
+  // Sopralluoghi: per ogni azienda attiva, l'ultimo sopralluogo e la scadenza annuale
+  const sopralluoghiInScadenza = useMemo(() => {
+    const activeCompanyIds = new Set(companies.filter(c => c.status === 'active').map(c => c.id));
+    // Ultimo sopralluogo per azienda
+    const lastPerCompany = {};
+    for (const s of sopralluoghi) {
+      if (!activeCompanyIds.has(s.company_id)) continue;
+      if (!lastPerCompany[s.company_id] || s.date > lastPerCompany[s.company_id].date) {
+        lastPerCompany[s.company_id] = s;
+      }
+    }
+    const items = [];
+    for (const [companyId, s] of Object.entries(lastPerCompany)) {
+      const lastDate = parseISO(s.date);
+      const nextDue = addMonths(lastDate, 12);
+      if (isBefore(nextDue, in60Days)) {
+        const comp = companies.find(c => String(c.id) === String(companyId));
+        items.push({ company: comp, lastDate, nextDue, isExpired: isBefore(nextDue, today) });
+      }
+    }
+    // Aziende senza alcun sopralluogo
+    for (const c of companies.filter(c => c.status === 'active')) {
+      if (!lastPerCompany[c.id]) {
+        items.push({ company: c, lastDate: null, nextDue: null, isExpired: true });
+      }
+    }
+    return items.sort((a, b) => {
+      if (!a.nextDue) return -1;
+      if (!b.nextDue) return 1;
+      return a.nextDue - b.nextDue;
+    });
+  }, [sopralluoghi, companies, today, in60Days]);
 
   // Attività del mese successivo: lavoratori con scadenza nel mese prossimo
   const nextMonthStart = startOfMonth(addDays(today, 31));
@@ -305,6 +361,70 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+      {/* Visite in scadenza + Sopralluoghi */}
+      <div className="grid lg:grid-cols-2 gap-6 mt-6">
+
+        {/* Visite mediche in scadenza entro 30 giorni */}
+        <Card className="border-blue-300/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-blue-600">
+              <Stethoscope className="h-4 w-4" />
+              Visite in scadenza — prossimi 30 giorni ({visiteInScadenza.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+            {visiteInScadenza.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita in scadenza nel prossimo mese</p>
+            ) : visiteInScadenza.map(v => (
+              <Link
+                key={v.id}
+                to={`/pazienti/${v.patient_id}`}
+                className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors gap-3"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
+                </div>
+                <Badge className="text-xs bg-blue-100 text-blue-700 border border-blue-300 shrink-0">
+                  Scad. {new Date(v.next_visit_date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}
+                </Badge>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Sopralluoghi in scadenza */}
+        <Card className="border-purple-300/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm text-purple-600">
+              <MapPinned className="h-4 w-4" />
+              Sopralluoghi da effettuare ({sopralluoghiInScadenza.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+            {sopralluoghiInScadenza.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
+            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired }) => (
+              <Link
+                key={company?.id}
+                to={`/aziende/${company?.id}`}
+                className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'bg-purple-50 border-purple-200 hover:bg-purple-100'}`}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{company?.name || '—'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {lastDate ? `Ultimo: ${lastDate.toLocaleDateString('it-IT')}` : 'Nessun sopralluogo registrato'}
+                  </p>
+                </div>
+                <Badge className={`text-xs shrink-0 ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
+                  {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
+                </Badge>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Calendario appuntamenti */}
       <div className="mt-8">
