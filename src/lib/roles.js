@@ -30,6 +30,7 @@ export function canAccess(user, section) {
   const role = user?.role === 'admin' ? 'amministratore' : user?.role;
   const permissions = {
     dashboard:          ['amministratore', 'medico', 'operatore', 'segreteria'],
+    statistiche:        ['amministratore', 'medico', 'operatore', 'segreteria'],
     aziende:            ['amministratore', 'medico', 'operatore', 'segreteria'],
     lavoratori:         ['amministratore', 'medico', 'operatore', 'segreteria'],
     scadenze:           ['amministratore', 'medico', 'operatore', 'segreteria'],

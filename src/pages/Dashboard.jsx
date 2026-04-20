@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, Users, Stethoscope, AlertTriangle, Clock, CalendarDays, FileWarning, ShieldAlert, MapPinned } from 'lucide-react';
+import { AlertTriangle, Clock, CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope } from 'lucide-react';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
-import StatCard from '@/components/shared/StatCard';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,9 +31,6 @@ export default function Dashboard() {
   const today = new Date();
   const in30Days = addDays(today, 30);
   const in60Days = addDays(today, 60);
-
-  const activeCompanies = companies.filter(c => c.status === 'active').length;
-  const activePatients = patients.filter(p => p.status === 'active').length;
 
   // Per ogni azienda attiva, troviamo la next_visit_date più urgente considerando
   // solo l'ULTIMA visita per ogni paziente (quella con visit_date più recente)
@@ -224,13 +220,6 @@ export default function Dashboard() {
         title="Dashboard"
         description="Panoramica della sorveglianza sanitaria"
       />
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Aziende attive" value={activeCompanies} icon={Building2} color="blue" />
-        <StatCard label="Lavoratori attivi" value={activePatients} icon={Users} color="teal" />
-        <StatCard label="Visite eseguite" value={visits.length} icon={Stethoscope} color="purple" />
-      </div>
 
       {/* Alert aziende */}
       {(expiredAlerts.length > 0 || expiringSoonAlerts.length > 0) && (
