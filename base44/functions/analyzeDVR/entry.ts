@@ -14,6 +14,20 @@ Deno.serve(async (req) => {
     const { file_url, company_name } = await req.json();
     if (!file_url) return Response.json({ error: 'file_url mancante' }, { status: 400 });
 
+    // Carica il mansionario globale per contestualizzare le mansioni
+    let jobRolesContext = '';
+    try {
+      const jobRoles = await base44.asServiceRole.entities.JobRole.filter({});
+      if (jobRoles.length > 0) {
+        const catalogoStr = jobRoles.map(r => {
+          const examsStr = (r.required_exams || []).map(e => `${e.exam_name} (${e.frequency_months} mesi)`).join(', ');
+          const risksStr = (r.risks || []).map(e => e.risk_name).join(', ');
+          return `- ${r.name}${risksStr ? ` | Rischi: ${risksStr}` : ''}${examsStr ? ` | Esami standard: ${examsStr}` : ''}${r.surveillance_frequency_months ? ` | Periodicità standard: ${r.surveillance_frequency_months} mesi` : ''}`;
+        }).join('\n');
+        jobRolesContext = `\n\nMANSIONARIO AZIENDALE (catalogo mansioni configurato nel sistema):\n${catalogoStr}\n\nUsa queste informazioni come RIFERIMENTO per completare/integrare i dati mancanti nel documento, ma dai sempre PRIORITÀ a quanto scritto nel documento stesso.`;
+      }
+    } catch (_) { /* ignora se non disponibile */ }
+
     const prompt = `Sei un esperto di medicina del lavoro (Medico Competente) ai sensi del D.Lgs. 81/2008.
 Ti viene fornito un Protocollo Sanitario o DVR di un'azienda${company_name ? ` chiamata "${company_name}"` : ''}.
 
@@ -34,7 +48,7 @@ ISTRUZIONI:
 6. Nel "summary" descrivi sinteticamente il tipo di azienda/attività e le mansioni principali trovate.
 
 Sii PRECISO ed ESAUSTIVO: non omettere alcuna mansione né alcun accertamento presente nel documento.
-Usa la terminologia italiana corretta della medicina del lavoro.`;
+Usa la terminologia italiana corretta della medicina del lavoro.${jobRolesContext}`;
 
     const result = await base44.integrations.Core.InvokeLLM({
       prompt,

@@ -159,7 +159,7 @@ export default function SurveillancePlanPanel({ company }) {
       const res = await base44.functions.invoke('analyzeDVR', { file_url: doc.file_url, company_name: company.name });
       const plan = res.data.plan;
       const nextVersion = `v${plans.length + 1}-AI`;
-      await createMutation.mutateAsync({
+      const created = await createMutation.mutateAsync({
         company_id: company.id,
         company_name: company.name,
         version_label: nextVersion,
@@ -170,6 +170,8 @@ export default function SurveillancePlanPanel({ company }) {
         roles: plan.roles || [],
         ai_summary: plan.summary || '',
       });
+      // Apri la scheda di revisione/approvazione
+      window.open(`/piano-sorveglianza?plan_id=${created.id}&company_id=${company.id}`, '_blank');
     } catch (e) {
       setAiError(e.message || 'Errore durante l\'analisi AI');
     }

@@ -16,6 +16,7 @@ import Settings from '@/pages/Settings';
 import ArchivioPaziente from '@/pages/ArchivioPaziente';
 import Scadenze from '@/pages/Scadenze';
 import Fatturazione from '@/pages/Fatturazione';
+import SurveillancePlanEditor from '@/pages/SurveillancePlanEditor';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
         <Route path="/scadenze" element={<Scadenze />} />
         <Route path="/fatturazione" element={<Fatturazione />} />
         <Route path="/impostazioni" element={<Settings />} />
+        <Route path="/piano-sorveglianza" element={<SurveillancePlanEditor />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
