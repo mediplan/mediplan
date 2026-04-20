@@ -242,71 +242,69 @@ export default function Dashboard() {
       )}
 
       {/* Situazioni in sospeso */}
-      {(visiteInCorso.length > 0 || visiteCritiche.length > 0) && (
-        <div className="grid lg:grid-cols-2 gap-6 mt-6">
+      <div className="grid lg:grid-cols-2 gap-6 mt-6">
           {/* Visite in corso */}
-          {visiteInCorso.length > 0 && (
-            <Card className="border-amber-300/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm text-amber-600">
-                  <FileWarning className="h-4 w-4" />
-                  Visite in sospeso ({visiteInCorso.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-                {visiteInCorso.map(v => (
-                  <Link
-                    key={v.id}
-                    to={`/visita?id=${v.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors gap-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
-                      <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">{v.visit_date ? new Date(v.visit_date).toLocaleDateString('it-IT') : '—'}</Badge>
-                      <p className="text-xs text-muted-foreground mt-0.5 capitalize">{v.visit_type?.replace(/_/g, ' ')}</p>
-                    </div>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+          <Card className="border-amber-300/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm text-amber-600">
+                <FileWarning className="h-4 w-4" />
+                Visite in sospeso ({visiteInCorso.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+              {visiteInCorso.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita in sospeso</p>
+              ) : visiteInCorso.map(v => (
+                <Link
+                  key={v.id}
+                  to={`/visita?id=${v.id}`}
+                  className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">{v.visit_date ? new Date(v.visit_date).toLocaleDateString('it-IT') : '—'}</Badge>
+                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">{v.visit_type?.replace(/_/g, ' ')}</p>
+                  </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
 
           {/* Giudizi critici */}
-          {visiteCritiche.length > 0 && (
-            <Card className="border-orange-300/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm text-orange-600">
-                  <ShieldAlert className="h-4 w-4" />
-                  Giudizi critici/condizionati ({visiteCritiche.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-                {visiteCritiche.map(v => (
-                  <Link
-                    key={v.id}
-                    to={`/visita?id=${v.id}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors gap-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
-                      <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <Badge className="text-xs bg-orange-100 text-orange-700 border border-orange-300">
-                        {GIUDIZIO_LABELS[v.judgment] || v.judgment}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground mt-0.5">{v.visit_date ? new Date(v.visit_date).toLocaleDateString('it-IT') : '—'}</p>
-                    </div>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+          <Card className="border-orange-300/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm text-orange-600">
+                <ShieldAlert className="h-4 w-4" />
+                Non idoneità ({visiteCritiche.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+              {visiteCritiche.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nessun giudizio di non idoneità</p>
+              ) : visiteCritiche.map(v => (
+                <Link
+                  key={v.id}
+                  to={`/visita?id=${v.id}`}
+                  className="flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <Badge className="text-xs bg-orange-100 text-orange-700 border border-orange-300">
+                      {GIUDIZIO_LABELS[v.judgment] || v.judgment}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-0.5">{v.visit_date ? new Date(v.visit_date).toLocaleDateString('it-IT') : '—'}</p>
+                  </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
         </div>
-      )}
 
       {/* Calendario appuntamenti */}
       <div className="mt-8">
