@@ -272,7 +272,7 @@ export default function SurveillancePlanPanel({ company }) {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-base flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            Piano di Sorveglianza Sanitaria
+            Protocollo Sanitario
           </CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             {plans.length > 1 && (
