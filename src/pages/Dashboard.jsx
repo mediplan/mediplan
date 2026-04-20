@@ -89,9 +89,9 @@ export default function Dashboard() {
   const expiredAlerts = companyAlerts.filter(a => a.isExpired);
   const expiringSoonAlerts = companyAlerts.filter(a => a.isExpiringSoon);
 
-  // Visite in corso (non concluse)
+  // Visite in sospeso
   const visiteInCorso = useMemo(() =>
-    visits.filter(v => v.visit_status === 'in_corso'),
+    visits.filter(v => v.visit_status === 'sospesa' || v.visit_status === 'in_corso'),
     [visits]
   );
 
@@ -257,7 +257,7 @@ export default function Dashboard() {
               ) : visiteInCorso.map(v => (
                 <Link
                   key={v.id}
-                  to={`/visita?id=${v.id}`}
+                  to={`/visita?visitId=${v.id}`}
                   className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors gap-3"
                 >
                   <div className="min-w-0">
@@ -287,7 +287,7 @@ export default function Dashboard() {
               ) : visiteCritiche.map(v => (
                 <Link
                   key={v.id}
-                  to={`/visita?id=${v.id}`}
+                  to={`/visita?visitId=${v.id}`}
                   className="flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors gap-3"
                 >
                   <div className="min-w-0">
