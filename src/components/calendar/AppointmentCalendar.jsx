@@ -107,190 +107,166 @@ export default function AppointmentCalendar() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane precedenti (↑)" onClick={() => setWeekOffset(o => o - 4)}>
-              <ChevronLeft className="h-4 w-4 rotate-90" />
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-base capitalize">
+            Agenda — {format(addWeeks(baseWeekStart, weekOffset), "MMMM yyyy", { locale: it })}
+          </CardTitle>
+          {weekOffset !== 0 && (
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setWeekOffset(0)}>
+              Oggi
             </Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana precedente (←)" onClick={() => setWeekOffset(o => o - 1)}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex-1 text-center">
-            <CardTitle className="text-base capitalize">
-              Agenda — {format(addWeeks(baseWeekStart, weekOffset), "MMMM yyyy", { locale: it })}
-            </CardTitle>
-            {weekOffset !== 0 && (
-              <Button size="sm" variant="outline" className="h-6 text-xs mt-1" onClick={() => setWeekOffset(0)}>
-                Oggi
-              </Button>
-            )}
-          </div>
-          <div className="flex flex-col gap-1">
-            <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana successiva (→)" onClick={() => setWeekOffset(o => o + 1)}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
-              <ChevronRight className="h-4 w-4 rotate-90" />
-            </Button>
-          </div>
-          <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay || today)}>
+          )}
+          <Button size="sm" className="h-7 gap-1 text-xs ml-auto" onClick={() => handleNewAppt(selectedDay || today)}>
             <Plus className="h-3.5 w-3.5" /> Nuovo
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="p-0" ref={calendarRef}>
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 border-b">
-          {WEEKDAYS.map(wd => (
-            <div key={wd} className="py-2 text-center text-xs font-medium text-muted-foreground">
-              {wd}
-            </div>
-          ))}
+      <CardContent className="p-0 relative flex">
+        {/* Scrollbar area */}
+        <div className="flex flex-col items-center justify-between py-4 px-2 bg-muted/30 w-10 shrink-0">
+          <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimane precedenti (↑)" onClick={() => setWeekOffset(o => o - 4)}>
+            <ChevronLeft className="h-3.5 w-3.5 rotate-90" />
+          </Button>
+          
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-1 bg-muted-foreground rounded-full" style={{ height: '60px' }}></div>
+          </div>
+          
+          <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
+            <ChevronRight className="h-3.5 w-3.5 rotate-90" />
+          </Button>
         </div>
 
-        {/* Weeks */}
-        {weeks.map(({ wStart, days, isCurrent }) => (
-          <div key={wStart.toISOString()}>
-            {/* Week label */}
-            <div className={cn(
-              'px-3 py-1 text-xs font-medium border-b',
-              isCurrent ? 'bg-primary/10 text-primary' : 'bg-muted/40 text-muted-foreground'
-            )}>
-              {isCurrent
-                ? `Settimana corrente — ${format(wStart, "d MMM", { locale: it })} › ${format(addDays(wStart, 6), "d MMM", { locale: it })}`
-                : `${format(wStart, "d MMM", { locale: it })} › ${format(addDays(wStart, 6), "d MMM", { locale: it })}`
-              }
-            </div>
-
-            {/* Days row */}
-            <div className="grid grid-cols-7">
-              {days.map((day, idx) => {
-                const dayAppts = getAppointmentsForDay(day);
-                const isToday = isSameDay(day, today);
-                const isSelected = selectedDay && isSameDay(day, selectedDay);
-                const maxVisible = isCurrent ? 4 : 2;
-
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => setSelectedDay(isSelected ? null : day)}
-                    className={cn(
-                      'p-1.5 border-b border-r cursor-pointer transition-colors',
-                      isCurrent ? 'min-h-[110px]' : 'min-h-[64px]',
-                      isCurrent && !isSelected && 'bg-primary/[0.02]',
-                      isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/30',
-                      'hover:bg-muted/50'
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={cn(
-                        'flex items-center justify-center rounded-full font-medium',
-                        isCurrent ? 'text-sm w-7 h-7' : 'text-xs w-5 h-5',
-                        isToday && 'bg-primary text-white',
-                        !isToday && 'text-foreground',
-                        isCurrent && !isToday && 'font-semibold',
-                      )}>
-                        {format(day, 'd')}
-                      </span>
-                      {isSelected && (
-                        <button
-                          onClick={e => { e.stopPropagation(); handleNewAppt(day); }}
-                          className="text-primary hover:text-primary/70"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-0.5">
-                      {dayAppts.slice(0, maxVisible).map(a => (
-                        <div
-                          key={a.id}
-                          className={cn(
-                            'px-1 rounded truncate',
-                            isCurrent ? 'text-[11px] py-0.5' : 'text-[10px]',
-                            STATUS_COLORS[a.status] || 'bg-primary/80 text-white'
-                          )}
-                          title={a.title}
-                        >
-                          {a.time && <span className="opacity-80 mr-1">{a.time}</span>}
-                          {a.title}
-                        </div>
-                      ))}
-                      {dayAppts.length > maxVisible && (
-                        <div className="text-[10px] text-muted-foreground px-1">
-                          +{dayAppts.length - maxVisible} altri
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Calendar content */}
+        <div className="flex-1 overflow-hidden">
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 border-b bg-muted/20">
+            {WEEKDAYS.map(wd => (
+              <div key={wd} className="py-2 text-center text-xs font-medium text-muted-foreground">
+                {wd}
+              </div>
+            ))}
           </div>
-        ))}
 
-        {/* Selected day panel */}
-        {selectedDay && (
-          <div className="border-t p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold capitalize">
-                {format(selectedDay, "EEEE d MMMM yyyy", { locale: it })}
-              </h3>
-              <div className="flex gap-2">
-                <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay)}>
-                  <Plus className="h-3.5 w-3.5" /> Aggiungi
-                </Button>
-                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setSelectedDay(null)}>
-                  <X className="h-3.5 w-3.5" />
-                </Button>
+          {/* Weeks */}
+          {weeks.map(({ wStart, days, isCurrent }) => (
+            <div key={wStart.toISOString()}>
+              {/* Week label */}
+              <div className={cn(
+                'px-3 py-2 text-xs font-medium border-b',
+                isCurrent ? 'bg-primary/10 text-primary' : 'bg-muted/40 text-muted-foreground'
+              )}>
+                {isCurrent ? '📍 ' : ''}{format(wStart, "d MMM", { locale: it })} › {format(addDays(wStart, 6), "d MMM", { locale: it })}
+              </div>
+
+              {/* Days row */}
+              <div className="grid grid-cols-7">
+                {days.map((day, idx) => {
+                  const dayAppts = getAppointmentsForDay(day);
+                  const isToday = isSameDay(day, today);
+                  const isSelected = selectedDay && isSameDay(day, selectedDay);
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedDay(isSelected ? null : day)}
+                      className={cn(
+                        'p-2 border-b border-r cursor-pointer transition-colors min-h-[80px]',
+                        isToday && 'ring-inset ring-2 ring-primary',
+                        isSelected && 'bg-primary/5',
+                        'hover:bg-muted/50'
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={cn(
+                          'flex items-center justify-center rounded-full text-xs font-semibold w-6 h-6',
+                          isToday && 'bg-primary text-white',
+                          !isToday && 'text-foreground',
+                        )}>
+                          {format(day, 'd')}
+                        </span>
+                        {isSelected && dayAppts.length === 0 && (
+                          <button
+                            onClick={e => { e.stopPropagation(); handleNewAppt(day); }}
+                            className="text-primary hover:text-primary/70"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        {dayAppts.slice(0, 3).map(a => (
+                          <div
+                            key={a.id}
+                            className={cn(
+                              'px-1 py-0.5 rounded text-[10px] truncate cursor-pointer hover:opacity-80',
+                              STATUS_COLORS[a.status] || 'bg-primary/80 text-white'
+                            )}
+                            title={a.title}
+                          >
+                            {a.time && <span className="font-mono">{a.time}</span>} {a.title}
+                          </div>
+                        ))}
+                        {dayAppts.length > 3 && (
+                          <div className="text-[9px] text-muted-foreground px-1 font-medium">
+                            +{dayAppts.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            {selectedDayAppts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nessun appuntamento per questo giorno.</p>
-            ) : (
-              <div className="space-y-2">
-                {selectedDayAppts.map(a => {
-                  const company = companies.find(c => String(c.id) === String(a.company_id));
-                  return (
-                  <div key={a.id} className="flex items-start justify-between p-3 rounded-lg border bg-card gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {a.time && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />{a.time}
-                          </span>
-                        )}
-                        <Badge className={cn('text-xs', STATUS_COLORS[a.status])}>{a.status}</Badge>
-                        {a.visit_type && <Badge variant="outline" className="text-xs">{a.visit_type}</Badge>}
+          ))}
+
+          {/* Selected day panel */}
+          {selectedDay && (
+            <div className="border-t p-4 bg-primary/5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold capitalize">
+                  {format(selectedDay, "EEEE d MMMM", { locale: it })}
+                </h3>
+                <div className="flex gap-2">
+                  <Button size="sm" className="h-6 gap-1 text-xs" onClick={() => handleNewAppt(selectedDay)}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setSelectedDay(null)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+              {selectedDayAppts.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Nessun appuntamento</p>
+              ) : (
+                <div className="space-y-1">
+                  {selectedDayAppts.map(a => {
+                    const company = companies.find(c => String(c.id) === String(a.company_id));
+                    return (
+                      <div key={a.id} className="flex items-start justify-between p-2 rounded text-xs border bg-card gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium">{a.title}</p>
+                          {a.time && <p className="text-muted-foreground">{a.time}</p>}
+                          {a.patient_name && <p className="text-muted-foreground">{a.patient_name}</p>}
+                          {a.company_name && <p className="text-muted-foreground">{a.company_name}</p>}
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => handleEdit(a)}>
+                            <Pencil className="h-2.5 w-2.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-5 w-5 text-destructive" onClick={() => handleDelete(a.id)}>
+                            <Trash2 className="h-2.5 w-2.5" />
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-sm font-medium mt-1">{a.title}</p>
-                      {a.patient_name && <p className="text-xs text-muted-foreground">{a.patient_name}</p>}
-                      {a.company_name && <p className="text-xs text-muted-foreground">{a.company_name}</p>}
-                      {company && (
-                        <>
-                          {company.address && <p className="text-xs text-muted-foreground">{company.address}, {company.city}</p>}
-                          {company.phone && <p className="text-xs text-muted-foreground">Tel: {company.phone}</p>}
-                        </>
-                      )}
-                      {a.notes && <p className="text-xs text-muted-foreground mt-1 italic">{a.notes}</p>}
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(a)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(a.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    </div>
                     );
-                    })}
-                    </div>
-                    )}
-          </div>
-        )}
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
 
       <AppointmentFormDialog
