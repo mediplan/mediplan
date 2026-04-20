@@ -1,16 +1,27 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope } from 'lucide-react';
+import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus } from 'lucide-react';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import AppointmentCalendar from '@/components/calendar/AppointmentCalendar';
+import ScheduleAppointmentDialog from '@/components/appointments/ScheduleAppointmentDialog';
 
 export default function Dashboard() {
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [scheduleDialogContext, setScheduleDialogContext] = useState({
+    type: 'visita_medica',
+    patientId: null,
+    patientName: null,
+    companyId: null,
+    companyName: null,
+  });
+
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
     queryFn: () => base44.entities.Company.list(),
@@ -26,6 +37,10 @@ export default function Dashboard() {
   const { data: sopralluoghi = [] } = useQuery({
     queryKey: ['sopralluoghi_all'],
     queryFn: () => base44.entities.Sopralluogo.list('-date', 1000),
+  });
+  const { data: appointments = [] } = useQuery({
+    queryKey: ['appointments'],
+    queryFn: () => base44.entities.Appointment.list(),
   });
 
   const today = new Date();
@@ -51,7 +66,7 @@ export default function Dashboard() {
     [visits]
   );
 
-  // Visite scadute + in scadenza entro 30 giorni (ultima visita per paziente)
+  // Visite scadute + in scadenza entro 30 giorni (ultima visita per paziente) + appuntamenti programmati
   const visiteScaduteEInScadenza = useMemo(() => {
     const latestVisitPerPatient = {};
     for (const v of visits) {
@@ -61,15 +76,29 @@ export default function Dashboard() {
         latestVisitPerPatient[v.patient_id] = v;
       }
     }
-    return Object.values(latestVisitPerPatient)
+    
+    // Visite scadute/in scadenza
+    const visitItems = Object.values(latestVisitPerPatient)
       .filter(v => {
         const d = parseISO(v.next_visit_date);
-        return isBefore(d, in30Days); // scadute (< oggi) + in scadenza (oggi..+30gg)
+        return isBefore(d, in30Days);
       })
-      .sort((a, b) => new Date(a.next_visit_date) - new Date(b.next_visit_date));
-  }, [visits, in30Days]);
+      .map(v => ({ ...v, source: 'visit' }));
 
-  // Sopralluoghi: per ogni azienda attiva, l'ultimo sopralluogo e la scadenza annuale
+    // Appuntamenti programmati per visite mediche
+    const appointmentItems = appointments
+      .filter(a => a.appointment_type === 'visita_medica' && a.status === 'schedulato')
+      .map(a => ({ ...a, source: 'appointment' }));
+
+    return [...visitItems, ...appointmentItems]
+      .sort((a, b) => {
+        const dateA = a.source === 'visit' ? new Date(a.next_visit_date) : new Date(a.date);
+        const dateB = b.source === 'visit' ? new Date(b.next_visit_date) : new Date(b.date);
+        return dateA - dateB;
+      });
+  }, [visits, appointments, in30Days]);
+
+  // Sopralluoghi: per ogni azienda attiva, l'ultimo sopralluogo e la scadenza annuale + appuntamenti programmati
   const sopralluoghiInScadenza = useMemo(() => {
     const activeCompanyIds = new Set(companies.filter(c => c.status === 'active').map(c => c.id));
     // Ultimo sopralluogo per azienda
@@ -86,21 +115,31 @@ export default function Dashboard() {
       const nextDue = addMonths(lastDate, 12);
       if (isBefore(nextDue, in60Days)) {
         const comp = companies.find(c => String(c.id) === String(companyId));
-        items.push({ company: comp, lastDate, nextDue, isExpired: isBefore(nextDue, today) });
+        items.push({ company: comp, lastDate, nextDue, isExpired: isBefore(nextDue, today), source: 'sopralluogo' });
       }
     }
     // Aziende senza alcun sopralluogo
     for (const c of companies.filter(c => c.status === 'active')) {
       if (!lastPerCompany[c.id]) {
-        items.push({ company: c, lastDate: null, nextDue: null, isExpired: true });
+        items.push({ company: c, lastDate: null, nextDue: null, isExpired: true, source: 'sopralluogo' });
       }
     }
-    return items.sort((a, b) => {
-      if (!a.nextDue) return -1;
-      if (!b.nextDue) return 1;
-      return a.nextDue - b.nextDue;
-    });
-  }, [sopralluoghi, companies, today, in60Days]);
+    
+    // Appuntamenti programmati per sopralluoghi
+    const appointmentItems = appointments
+      .filter(a => a.appointment_type === 'sopralluogo' && a.status === 'schedulato')
+      .map(a => {
+        const comp = companies.find(c => String(c.id) === String(a.company_id));
+        return { company: comp, lastDate: null, nextDue: parseISO(a.date), isExpired: false, source: 'appointment', appointmentData: a };
+      });
+
+    return [...items, ...appointmentItems]
+      .sort((a, b) => {
+        if (!a.nextDue) return -1;
+        if (!b.nextDue) return 1;
+        return a.nextDue - b.nextDue;
+      });
+  }, [sopralluoghi, companies, appointments, today, in60Days]);
 
   // Attività del mese successivo: lavoratori con scadenza nel mese prossimo
   const nextMonthStart = startOfMonth(addDays(today, 31));
@@ -168,32 +207,51 @@ export default function Dashboard() {
 
         {/* Visite scadute e in scadenza */}
         <Card className="border-blue-300/50">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm text-blue-600">
               <Stethoscope className="h-4 w-4" />
               Visite scadute e in scadenza ({visiteScaduteEInScadenza.length})
             </CardTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setScheduleDialogContext({ type: 'visita_medica', patientId: null, patientName: null, companyId: null, companyName: null });
+                setScheduleDialogOpen(true);
+              }}
+              className="h-8 gap-1"
+            >
+              <Plus className="h-3 w-3" />
+              Programma
+            </Button>
           </CardHeader>
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
             {visiteScaduteEInScadenza.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita scaduta o in scadenza</p>
             ) : visiteScaduteEInScadenza.map(v => {
-              const d = parseISO(v.next_visit_date);
+              const isAppointment = v.source === 'appointment';
+              const d = isAppointment ? parseISO(v.date) : parseISO(v.next_visit_date);
               const isExpired = isBefore(d, today);
+              
               return (
-                <Link
-                  key={v.id}
-                  to={`/pazienti/${v.patient_id}`}
-                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100'}`}
+                <div
+                  key={`${v.source}-${v.id}`}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}
                 >
-                  <div className="min-w-0">
+                  <Link
+                    to={`/pazienti/${v.patient_id || v.patient_id}`}
+                    className="min-w-0 hover:opacity-75"
+                  >
                     <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
                     <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
+                  </Link>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isAppointment && <Badge className="text-xs bg-green-100 text-green-700 border border-green-300">Programmato</Badge>}
+                    <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                      {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </Badge>
                   </div>
-                  <Badge className={`text-xs shrink-0 ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-                    {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </Badge>
-                </Link>
+                </div>
               );
             })}
           </CardContent>
@@ -201,31 +259,48 @@ export default function Dashboard() {
 
         {/* Sopralluoghi da effettuare */}
         <Card className="border-purple-300/50">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm text-purple-600">
               <MapPinned className="h-4 w-4" />
               Sopralluoghi da effettuare ({sopralluoghiInScadenza.length})
             </CardTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setScheduleDialogContext({ type: 'sopralluogo', patientId: null, patientName: null, companyId: null, companyName: null });
+                setScheduleDialogOpen(true);
+              }}
+              className="h-8 gap-1"
+            >
+              <Plus className="h-3 w-3" />
+              Programma
+            </Button>
           </CardHeader>
           <CardContent className="space-y-2 max-h-64 overflow-y-auto">
             {sopralluoghiInScadenza.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Tutti i sopralluoghi sono in regola</p>
-            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired }) => (
-              <Link
-                key={company?.id}
-                to={`/aziende/${company?.id}`}
-                className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200 hover:bg-red-100' : 'bg-purple-50 border-purple-200 hover:bg-purple-100'}`}
+            ) : sopralluoghiInScadenza.map(({ company, lastDate, nextDue, isExpired, source, appointmentData }) => (
+              <div
+                key={`${source}-${appointmentData?.id || company?.id}`}
+                className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}
               >
-                <div className="min-w-0">
+                <Link
+                  to={`/aziende/${company?.id}`}
+                  className="min-w-0 hover:opacity-75"
+                >
                   <p className="text-sm font-medium truncate">{company?.name || '—'}</p>
                   <p className="text-xs text-muted-foreground">
                     {lastDate ? `Ultimo: ${lastDate.toLocaleDateString('it-IT')}` : 'Nessun sopralluogo registrato'}
                   </p>
+                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  {source === 'appointment' && <Badge className="text-xs bg-green-100 text-green-700 border border-green-300">Programmato</Badge>}
+                  <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
+                    {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
+                  </Badge>
                 </div>
-                <Badge className={`text-xs shrink-0 ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-purple-100 text-purple-700 border border-purple-300'}`}>
-                  {isExpired && !nextDue ? 'Da fare' : nextDue ? `Scad. ${nextDue.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}` : '—'}
-                </Badge>
-              </Link>
+              </div>
             ))}
           </CardContent>
         </Card>
@@ -235,11 +310,23 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-2 gap-6">
           {/* Visite in corso */}
           <Card className="border-amber-300/50">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm text-amber-600">
                 <FileWarning className="h-4 w-4" />
                 Visite in sospeso ({visiteInCorso.length})
               </CardTitle>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setScheduleDialogContext({ type: 'visita_medica', patientId: null, patientName: null, companyId: null, companyName: null });
+                  setScheduleDialogOpen(true);
+                }}
+                className="h-8 gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                Programma
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2 max-h-64 overflow-y-auto">
               {visiteInCorso.length === 0 ? (
@@ -339,6 +426,17 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Schedule Appointment Dialog */}
+      <ScheduleAppointmentDialog
+        open={scheduleDialogOpen}
+        onOpenChange={setScheduleDialogOpen}
+        appointmentType={scheduleDialogContext.type}
+        patientId={scheduleDialogContext.patientId}
+        patientName={scheduleDialogContext.patientName}
+        companyId={scheduleDialogContext.companyId}
+        companyName={scheduleDialogContext.companyName}
+      />
     </div>
   );
 }

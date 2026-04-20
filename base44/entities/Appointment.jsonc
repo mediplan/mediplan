@@ -1,0 +1,75 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titolo dell'appuntamento"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data dell'appuntamento"
+    },
+    "time": {
+      "type": "string",
+      "description": "Ora (HH:MM)"
+    },
+    "patient_id": {
+      "type": "string",
+      "description": "ID paziente (opzionale)"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Nome paziente"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda (opzionale)"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda"
+    },
+    "visit_type": {
+      "type": "string",
+      "enum": [
+        "preventiva",
+        "periodica",
+        "su_richiesta",
+        "cambio_mansione",
+        "rientro_malattia",
+        "cessazione",
+        "altro"
+      ],
+      "description": "Tipo appuntamento (visita medica)"
+    },
+    "appointment_type": {
+      "type": "string",
+      "enum": [
+        "visita_medica",
+        "sopralluogo"
+      ],
+      "default": "visita_medica",
+      "description": "Categoria appuntamento"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "schedulato",
+        "completato",
+        "annullato"
+      ],
+      "default": "schedulato",
+      "description": "Stato appuntamento"
+    }
+  },
+  "required": [
+    "title",
+    "date"
+  ]
+}
