@@ -365,24 +365,24 @@ export default function Dashboard() {
                     : 'Sopralluogo';
                   return (
                     <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200 gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-xs font-mono text-muted-foreground w-16 shrink-0">
-                          {format(parseISO(item.date), 'dd/MM/yyyy')}
-                        </span>
-                        <div className="min-w-0">
-                          {item.patient_name && (
-                            <Link to={`/pazienti/${item.patient_id}`} className="text-sm font-medium hover:text-primary hover:underline truncate block">
-                              {item.patient_name}
-                            </Link>
-                          )}
-                          {item.company_name && (
-                            <Link to={`/aziende/${item.company_id}`} className="text-xs text-muted-foreground hover:text-primary hover:underline truncate block">
-                              {item.company_name}
-                            </Link>
-                          )}
-                        </div>
+                      <div className="min-w-0 flex-1">
+                        {item.patient_name && (
+                          <Link to={`/pazienti/${item.patient_id}`} className="text-base font-semibold hover:text-primary hover:underline truncate block">
+                            {item.patient_name}
+                          </Link>
+                        )}
+                        {item.company_name && (
+                          <Link to={`/aziende/${item.company_id}`} className="text-sm text-muted-foreground hover:text-primary hover:underline truncate block">
+                            {item.company_name}
+                          </Link>
+                        )}
                       </div>
-                      <Badge variant="outline" className="text-xs shrink-0">{typeLabel}</Badge>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">
+                          {format(parseISO(item.date), 'dd/MM/yyyy')}
+                        </Badge>
+                        {item.visit_type && <span className="text-xs text-muted-foreground capitalize">{item.visit_type.replace(/_/g, ' ')}</span>}
+                      </div>
                     </div>
                   );
                 })}
