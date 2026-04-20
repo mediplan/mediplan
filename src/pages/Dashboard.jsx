@@ -198,8 +198,29 @@ export default function Dashboard() {
       }
     }
 
+    // Da appuntamenti programmati (visite mediche e sopralluoghi)
+    for (const a of appointments) {
+      if (a.status !== 'schedulato') continue;
+      const d = parseISO(a.date);
+      if (isAfter(d, nextMonthStart) || d.toDateString() === nextMonthStart.toDateString()) {
+        if (isBefore(d, nextMonthEnd) || d.toDateString() === nextMonthEnd.toDateString()) {
+          const typeLabel = a.appointment_type === 'visita_medica' 
+            ? (a.visit_type ? a.visit_type.replace(/_/g, ' ') : 'Visita medica')
+            : 'Sopralluogo';
+          items.push({
+            date: d,
+            patientName: a.patient_name || '—',
+            patientId: a.patient_id,
+            companyName: a.company_name || '—',
+            companyId: a.company_id,
+            type: typeLabel,
+          });
+        }
+      }
+    }
+
     return items.sort((a, b) => a.date - b.date);
-  }, [visits, patients, companies, nextMonthStart, nextMonthEnd]);
+  }, [visits, patients, companies, appointments, nextMonthStart, nextMonthEnd]);
 
   return (
     <div>
