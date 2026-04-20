@@ -364,7 +364,7 @@ export default function Dashboard() {
                     ? (item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')
                     : 'Sopralluogo';
                   return (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border gap-3">
+                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200 gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-xs font-mono text-muted-foreground w-16 shrink-0">
                           {format(parseISO(item.date), 'dd/MM/yyyy')}
