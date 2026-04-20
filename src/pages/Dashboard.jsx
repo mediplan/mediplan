@@ -96,7 +96,7 @@ export default function Dashboard() {
   );
 
   // Visite con giudizio negativo o condizionato
-  const GIUDIZI_CRITICI = ['non_idoneo', 'temporaneamente_non_idoneo', 'idoneo_con_prescrizioni', 'idoneo_con_limitazioni'];
+  const GIUDIZI_CRITICI = ['non_idoneo', 'temporaneamente_non_idoneo'];
   const GIUDIZIO_LABELS = {
     non_idoneo: 'Non idoneo',
     temporaneamente_non_idoneo: 'Temporaneamente non idoneo',
