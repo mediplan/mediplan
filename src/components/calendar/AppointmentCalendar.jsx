@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { format, startOfWeek, endOfWeek, addDays, addWeeks, isSameDay, isWithinInterval, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { Plus, Pencil, Trash2, Clock, X, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { Plus, Pencil, Trash2, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -275,8 +275,8 @@ export default function AppointmentCalendar() {
                         </div>
                         <div className="flex gap-1 shrink-0">
                           {a.company_id && (
-                            <Button size="icon" variant="ghost" className="h-5 w-5 text-primary" onClick={() => navigate(`/aziende/${a.company_id}`)} title="Vai all'azienda">
-                              <Play className="h-2.5 w-2.5" />
+                            <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => navigate(`/aziende/${a.company_id}`)}>
+                              Esegui
                             </Button>
                           )}
                           <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => handleEdit(a)}>
