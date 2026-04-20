@@ -109,15 +109,27 @@ export default function AppointmentCalendar() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setWeekOffset(o => o - 1)}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-1">
+              <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane precedenti (↑)" onClick={() => setWeekOffset(o => o - 4)}>
+                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3 w-3 -ml-2" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana precedente (←)" onClick={() => setWeekOffset(o => o - 1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
             <CardTitle className="text-base capitalize">
               Agenda — {format(addWeeks(baseWeekStart, weekOffset), "MMMM yyyy", { locale: it })}
             </CardTitle>
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setWeekOffset(o => o + 1)}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-1">
+              <Button size="icon" variant="ghost" className="h-7 w-7" title="Settimana successiva (→)" onClick={() => setWeekOffset(o => o + 1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7" title="4 settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
+                <ChevronRight className="h-3 w-3 -mr-2" />
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
             {weekOffset !== 0 && (
               <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setWeekOffset(0)}>
                 Oggi
