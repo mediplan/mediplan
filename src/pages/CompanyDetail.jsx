@@ -184,6 +184,11 @@ export default function CompanyDetail() {
         <CompanyWorkers company={company} />
       </div>
 
+      {/* Sopralluoghi */}
+      <div className="mb-6">
+        <SopralluoghiPanel company={company} doctor={getDoctor(company)} />
+      </div>
+
       {/* Archivio DVR + Piano di sorveglianza (solo admin, medico, segreteria) */}
       {canSeeDVR && (
         <div className="mt-6 space-y-6">
@@ -191,11 +196,6 @@ export default function CompanyDetail() {
           <SurveillancePlanPanel company={company} />
         </div>
       )}
-
-      {/* Sopralluoghi */}
-      <div className="mt-6">
-        <SopralluoghiPanel company={company} doctor={getDoctor(company)} />
-      </div>
 
       {/* Listino prezzi aziendale */}
       <div className="mt-6">
