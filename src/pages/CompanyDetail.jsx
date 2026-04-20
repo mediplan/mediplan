@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Briefcase, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned, Plus } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned } from 'lucide-react';
 import CompanyPriceListPanel from '@/components/companies/CompanyPriceListPanel';
 import CompanyDocumentsPanel from '@/components/companies/CompanyDocumentsPanel';
 import SurveillancePlanPanel from '@/components/companies/SurveillancePlanPanel';
@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusBadge from '@/components/shared/StatusBadge';
 import CompanyWorkers from '@/components/companies/CompanyWorkers';
-import CompanyJobRolesDialog from '@/components/companies/CompanyJobRolesDialog';
 import { buildProtocolloHTML, buildRelazioneSanitariaHTML, buildVerbaleHTML } from '@/lib/printCompany';
 import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 
@@ -26,7 +25,6 @@ export default function CompanyDetail() {
   const canSeeDVR = user && canAccess(user, 'dvr_sorveglianza');
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
-  const [jobRolesDialog, setJobRolesDialog] = useState(false);
   const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
 
   const { data: companies = [] } = useQuery({
@@ -34,12 +32,6 @@ export default function CompanyDetail() {
     queryFn: () => base44.entities.Company.list(),
   });
   const company = companies.find(c => String(c.id) === companyId);
-
-  const { data: jobRoles = [] } = useQuery({
-    queryKey: ['jobRoles'],
-    queryFn: () => base44.entities.JobRole.list(),
-  });
-  const companyRoles = jobRoles.filter(j => String(j.company_id) === companyId);
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -98,7 +90,7 @@ export default function CompanyDetail() {
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Documenti</span>
             </div>
             <button
-              onClick={() => setPreviewDoc({ title: `Protocollo Sanitario — ${company.name}`, html: buildProtocolloHTML(company, companyPatients, jobRoles, getDoctor(company)) })}
+              onClick={() => setPreviewDoc({ title: `Protocollo Sanitario — ${company.name}`, html: buildProtocolloHTML(company, companyPatients, [], getDoctor(company)) })}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground hover:bg-background hover:shadow-sm transition-all text-left"
             >
               <ClipboardList className="h-4 w-4 text-primary shrink-0" />
@@ -182,36 +174,6 @@ export default function CompanyDetail() {
         <CompanyWorkers company={company} />
       </div>
 
-      {/* Job roles */}
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-accent" />
-            <h2 className="text-sm font-semibold">Mansioni ({companyRoles.length})</h2>
-          </div>
-          <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={() => setJobRolesDialog(true)}>
-            <Plus className="h-3.5 w-3.5" /> Aggiungi / Gestisci
-          </Button>
-        </div>
-        {companyRoles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nessuna mansione associata. Clicca "Aggiungi" per selezionare dal catalogo o crearne una nuova.</p>
-        ) : (
-          <div className="space-y-2">
-            {companyRoles.map(r => (
-              <div key={r.id} className="flex items-center justify-between text-sm">
-                <span className="font-medium">{r.name}</span>
-                <span className="text-muted-foreground">{r.risks?.length || 0} rischi · {r.required_exams?.length || 0} accert.</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      {/* Listino prezzi aziendale */}
-      <div className="mt-6">
-        <CompanyPriceListPanel company={company} />
-      </div>
-
       {/* Archivio DVR + Piano di sorveglianza (solo admin, medico, segreteria) */}
       {canSeeDVR && (
         <div className="mt-6 space-y-6">
@@ -220,11 +182,10 @@ export default function CompanyDetail() {
         </div>
       )}
 
-      <CompanyJobRolesDialog
-        open={jobRolesDialog}
-        onOpenChange={setJobRolesDialog}
-        company={company}
-      />
+      {/* Listino prezzi aziendale */}
+      <div className="mt-6">
+        <CompanyPriceListPanel company={company} />
+      </div>
 
       <DocumentPreviewDialog
         open={!!previewDoc}
