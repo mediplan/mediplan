@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, Mail, MapPin, Printer, FileText, ClipboardList, MapPinned } from 'lucide-react';
+import ScheduleAppointmentDialog from '@/components/appointments/ScheduleAppointmentDialog';
 import CompanyPriceListPanel from '@/components/companies/CompanyPriceListPanel';
 import CompanyDocumentsPanel from '@/components/companies/CompanyDocumentsPanel';
 import SurveillancePlanPanel from '@/components/companies/SurveillancePlanPanel';
@@ -27,6 +28,8 @@ export default function CompanyDetail() {
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
   const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [scheduleDialogType, setScheduleDialogType] = useState('visita_medica');
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies'],
@@ -180,14 +183,27 @@ export default function CompanyDetail() {
       </div>
 
       {/* Workers list */}
-      <div className="mb-6">
-        <CompanyWorkers company={company} />
-      </div>
+       <div className="mb-6">
+         <CompanyWorkers 
+           company={company} 
+           onScheduleVisit={() => {
+             setScheduleDialogType('visita_medica');
+             setScheduleDialogOpen(true);
+           }}
+         />
+       </div>
 
-      {/* Sopralluoghi */}
-      <div className="mb-6">
-        <SopralluoghiPanel company={company} doctor={getDoctor(company)} />
-      </div>
+       {/* Sopralluoghi */}
+       <div className="mb-6">
+         <SopralluoghiPanel 
+           company={company} 
+           doctor={getDoctor(company)}
+           onScheduleSopralluogo={() => {
+             setScheduleDialogType('sopralluogo');
+             setScheduleDialogOpen(true);
+           }}
+         />
+       </div>
 
       {/* Archivio DVR + Piano di sorveglianza (solo admin, medico, segreteria) */}
       {canSeeDVR && (
@@ -203,13 +219,21 @@ export default function CompanyDetail() {
       </div>
 
       <DocumentPreviewDialog
-        open={!!previewDoc}
-        onOpenChange={v => !v && setPreviewDoc(null)}
-        title={previewDoc?.title}
-        html={previewDoc?.html}
-        defaultEmails={company?.email ? [{ label: 'Invia ad azienda', email: company.email }] : []}
-      />
-      </div>{/* fine mt-6 */}
-    </div>
-  );
-}
+         open={!!previewDoc}
+         onOpenChange={v => !v && setPreviewDoc(null)}
+         title={previewDoc?.title}
+         html={previewDoc?.html}
+         defaultEmails={company?.email ? [{ label: 'Invia ad azienda', email: company.email }] : []}
+       />
+
+      <ScheduleAppointmentDialog
+         open={scheduleDialogOpen}
+         onOpenChange={setScheduleDialogOpen}
+         appointmentType={scheduleDialogType}
+         companyId={company.id}
+         companyName={company.name}
+       />
+       </div>{/* fine mt-6 */}
+      </div>
+      );
+      }

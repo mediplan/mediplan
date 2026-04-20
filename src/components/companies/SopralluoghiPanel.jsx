@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPinned, Plus, Printer, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPinned, Plus, Printer, Trash2, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { buildVerbaleHTML } from '@/lib/printCompany';
 import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 
@@ -57,7 +57,7 @@ function RadioGroup3({ label, value, onChange, options }) {
   );
 }
 
-export default function SopralluoghiPanel({ company, doctor }) {
+export default function SopralluoghiPanel({ company, doctor, onScheduleSopralluogo }) {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState(null); // null = nuovo
@@ -95,9 +95,17 @@ export default function SopralluoghiPanel({ company, doctor }) {
             <MapPinned className="h-4 w-4 text-chart-4" />
             Sopralluoghi ({sopralluoghi.length})
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={openNew}>
-            <Plus className="h-4 w-4 mr-1" /> Nuovo sopralluogo
-          </Button>
+          <div className="flex items-center gap-2">
+            {onScheduleSopralluogo && (
+              <Button size="sm" variant="outline" onClick={onScheduleSopralluogo} className="h-8 text-xs gap-1">
+                <Calendar className="h-3 w-3" />
+                Programma sopralluogo
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={openNew} className="h-8 text-xs gap-1">
+              <Plus className="h-3 w-3" /> Nuovo
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

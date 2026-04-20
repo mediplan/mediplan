@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { Plus, Search, Users, MoreHorizontal, Pencil, Trash2, Stethoscope, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { Plus, Search, Users, MoreHorizontal, Pencil, Trash2, Stethoscope, AlertTriangle, Clock, CheckCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -54,7 +54,7 @@ function getExpiryInfo(patient, visits) {
   }
 }
 
-export default function CompanyWorkers({ company }) {
+export default function CompanyWorkers({ company, onScheduleVisit }) {
   const companyId = String(company.id);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -115,25 +115,31 @@ export default function CompanyWorkers({ company }) {
   return (
     <Card className="p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold">Lavoratori ({companyPatients.length})</h2>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Cerca..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-8 h-8 text-sm w-44"
-            />
-          </div>
-          <Button size="sm" onClick={() => { setEditPatient(null); setFormOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1" /> Nuovo
-          </Button>
-        </div>
-      </div>
+         <div className="flex items-center gap-2">
+           <Users className="h-4 w-4 text-primary" />
+           <h2 className="text-sm font-semibold">Lavoratori ({companyPatients.length})</h2>
+         </div>
+         <div className="flex items-center gap-2">
+           <div className="relative">
+             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+             <Input
+               placeholder="Cerca..."
+               value={search}
+               onChange={e => setSearch(e.target.value)}
+               className="pl-8 h-8 text-sm w-44"
+             />
+           </div>
+           {onScheduleVisit && (
+             <Button size="sm" variant="outline" onClick={onScheduleVisit} className="h-8 text-xs gap-1">
+               <Calendar className="h-3 w-3" />
+               Programma visite
+             </Button>
+           )}
+           <Button size="sm" onClick={() => { setEditPatient(null); setFormOpen(true); }}>
+             <Plus className="h-4 w-4 mr-1" /> Nuovo
+           </Button>
+         </div>
+       </div>
 
       {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4 text-center">
