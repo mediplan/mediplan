@@ -55,16 +55,19 @@ export default function AppointmentCalendar() {
   const today = new Date();
   const baseWeekStart = startOfWeek(today, { weekStartsOn: 1 });
 
-  // scroll del mouse sul calendario
+  // Navigazione tastiera (frecce)
   useEffect(() => {
-    const el = calendarRef.current;
-    if (!el) return;
-    const handleWheel = (e) => {
-      e.preventDefault();
-      setWeekOffset(o => o + (e.deltaY > 0 ? 1 : -1));
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setWeekOffset(o => o - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setWeekOffset(o => o + 1);
+      }
     };
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // 3 settimane centrate sull'offset corrente
