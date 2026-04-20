@@ -381,7 +381,9 @@ export default function Dashboard() {
                         <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">
                           {format(parseISO(item.date), 'dd/MM/yyyy')}
                         </Badge>
-                        {item.visit_type && <span className="text-xs text-muted-foreground capitalize">{item.visit_type.replace(/_/g, ' ')}</span>}
+                        <Badge className={`text-xs ${item.appointment_type === 'sopralluogo' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                          {item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica'}
+                        </Badge>
                       </div>
                     </div>
                   );
