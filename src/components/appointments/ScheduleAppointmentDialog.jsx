@@ -30,8 +30,16 @@ export default function ScheduleAppointmentDialog({
   companyName,
   appointmentType = 'visita_medica',
 }) {
+  const generateDefaultTitle = () => {
+    if (appointmentType === 'sopralluogo') {
+      return companyName ? `Sopralluogo — ${companyName}` : 'Sopralluogo';
+    } else {
+      return companyName ? `Visita medica — ${companyName}` : 'Visita medica';
+    }
+  };
+
   const [formData, setFormData] = useState({
-    title: '',
+    title: generateDefaultTitle(),
     date: '',
     time: '',
     visit_type: 'periodica',
@@ -59,7 +67,7 @@ export default function ScheduleAppointmentDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       setFormData({
-        title: '',
+        title: generateDefaultTitle(),
         date: '',
         time: '',
         visit_type: 'periodica',
