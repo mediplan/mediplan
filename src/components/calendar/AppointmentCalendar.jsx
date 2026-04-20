@@ -64,6 +64,12 @@ export default function AppointmentCalendar() {
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         setWeekOffset(o => o + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setWeekOffset(o => o - 4);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setWeekOffset(o => o + 4);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
