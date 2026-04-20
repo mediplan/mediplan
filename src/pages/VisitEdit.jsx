@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
-import { ArrowLeft, Save, CheckCircle2, Calendar, Printer, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Save, CheckCircle2, Calendar, Printer, CheckCheck, PauseCircle } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -250,9 +250,13 @@ export default function VisitEdit() {
   };
 
   const buildData = (extraFields = {}) => {
+    const now = new Date().toISOString();
+    const modifiedBy = user?.full_name || user?.email || 'Utente';
     const data = {
       ...form,
       ...extraFields,
+      last_modified_by: modifiedBy,
+      last_modified_date: now,
       patient_id: String(form.patient_id),
       company_id: String(form.company_id),
       height_cm: form.height_cm ? Number(form.height_cm) : undefined,
@@ -273,6 +277,10 @@ export default function VisitEdit() {
   const handleSubmit = (e) => {
     e.preventDefault();
     saveMutation.mutate(buildData());
+  };
+
+  const handleSaveStandby = () => {
+    saveMutation.mutate(buildData({ visit_status: 'sospesa' }));
   };
 
   const handleConcludiConfirm = () => {
@@ -336,18 +344,23 @@ export default function VisitEdit() {
             <CheckCheck className="h-3 w-3" /> Visita conclusa
           </Badge>
         )}
+        {form.visit_status === 'sospesa' && (
+          <Badge className="bg-yellow-100 text-yellow-700 border border-yellow-300 gap-1">
+            <PauseCircle className="h-3 w-3" /> In sospeso
+          </Badge>
+        )}
+        {form.last_modified_by && form.last_modified_date && (
+          <span className="text-xs text-muted-foreground">
+            Modificato da <span className="font-medium">{form.last_modified_by}</span> il {new Date(form.last_modified_date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
         {!isNew && (
           <Button type="button" variant="outline" onClick={handlePrint} className="gap-2">
             <Printer className="h-4 w-4" /> Stampa / PDF
           </Button>
         )}
 
-        {!isNew && (
-          <Button onClick={handleSubmit} disabled={saveMutation.isPending} className="gap-2">
-            <Save className="h-4 w-4" />
-            {saveMutation.isPending ? 'Salvataggio...' : 'Salva modifiche'}
-          </Button>
-        )}
+
       </div>
 
       <div className="space-y-4">
@@ -515,10 +528,27 @@ export default function VisitEdit() {
               Scheda successiva →
             </Button>
           ) : (
-            <Button type="button" onClick={() => saveMutation.mutate(buildData())} disabled={saveMutation.isPending} className="gap-2">
-              <Save className="h-4 w-4" />
-              {saveMutation.isPending ? 'Salvataggio...' : isNew ? 'Salva visita' : 'Salva modifiche'}
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSaveStandby}
+                disabled={saveMutation.isPending}
+                className="gap-2 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+              >
+                <PauseCircle className="h-4 w-4" />
+                {saveMutation.isPending ? 'Salvataggio...' : 'Salva e Stand-by'}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setShowConcludiDialog(true)}
+                disabled={saveMutation.isPending}
+                className="gap-2 bg-accent hover:bg-accent/90"
+              >
+                <CheckCheck className="h-4 w-4" />
+                {saveMutation.isPending ? 'Salvataggio...' : 'Salva e Concludi'}
+              </Button>
+            </>
           )}
         </div>
       </div>
