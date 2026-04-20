@@ -27,8 +27,21 @@ export default function AppointmentCalendar() {
   const queryClient = useQueryClient();
 
   const { data: appointments = [] } = useQuery({
-    queryKey: ['appointments'],
-    queryFn: () => base44.entities.Appointment.list('-date', 500),
+    queryKey: ['appointments', weekOffset],
+    queryFn: async () => {
+      // Calcola l'intervallo di date da recuperare (4 settimane di buffer)
+      const bufferWeeks = 4;
+      const rangeStart = addWeeks(addWeeks(baseWeekStart, weekOffset), -bufferWeeks);
+      const rangeEnd = addWeeks(addWeeks(baseWeekStart, weekOffset + 1), bufferWeeks);
+      
+      // Recupera tutti gli appuntamenti e filtra per l'intervallo
+      const allAppts = await base44.entities.Appointment.list('-date', 1000);
+      return allAppts.filter(a => {
+        if (!a.date) return false;
+        const apptDate = parseISO(a.date);
+        return isWithinInterval(apptDate, { start: rangeStart, end: rangeEnd });
+      });
+    },
   });
 
   const { data: companies = [] } = useQuery({
@@ -66,10 +79,10 @@ export default function AppointmentCalendar() {
         setWeekOffset(o => o + 1);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setWeekOffset(o => o - 4);
+        setWeekOffset(o => o - 1);
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setWeekOffset(o => o + 4);
+        setWeekOffset(o => o + 1);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -124,7 +137,7 @@ export default function AppointmentCalendar() {
       <CardContent className="p-0 relative flex flex-row-reverse">
         {/* Scrollbar area - DESTRA */}
         <div className="flex flex-col items-center justify-between py-4 px-2 bg-muted/30 w-10 shrink-0">
-          <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimane precedenti (↑)" onClick={() => setWeekOffset(o => o - 4)}>
+          <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimana precedente (↑)" onClick={() => setWeekOffset(o => o - 1)}>
             <ChevronLeft className="h-3.5 w-3.5 rotate-90" />
           </Button>
           
@@ -132,7 +145,7 @@ export default function AppointmentCalendar() {
             <div className="w-1 bg-muted-foreground rounded-full" style={{ height: '80px' }}></div>
           </div>
           
-          <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimane successive (↓)" onClick={() => setWeekOffset(o => o + 4)}>
+          <Button size="icon" variant="ghost" className="h-6 w-6 p-0" title="Settimana successiva (↓)" onClick={() => setWeekOffset(o => o + 1)}>
             <ChevronRight className="h-3.5 w-3.5 rotate-90" />
           </Button>
         </div>
