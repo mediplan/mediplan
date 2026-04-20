@@ -66,7 +66,8 @@ export default function Dashboard() {
     [visits]
   );
 
-  // Visite scadute + in scadenza entro 30 giorni (ultima visita per paziente) + appuntamenti programmati
+  // Visite scadute + in scadenza entro 30 giorni (ultima visita per paziente)
+  // Se programmato un appuntamento, mostra il badge sull'elemento visita
   const visiteScaduteEInScadenza = useMemo(() => {
     const latestVisitPerPatient = {};
     for (const v of visits) {
@@ -77,23 +78,24 @@ export default function Dashboard() {
       }
     }
     
-    // Visite scadute/in scadenza
-    const visitItems = Object.values(latestVisitPerPatient)
+    // Visite scadute/in scadenza con appuntamenti programmati associati
+    return Object.values(latestVisitPerPatient)
       .filter(v => {
         const d = parseISO(v.next_visit_date);
         return isBefore(d, in30Days);
       })
-      .map(v => ({ ...v, source: 'visit' }));
-
-    // Appuntamenti programmati per visite mediche
-    const appointmentItems = appointments
-      .filter(a => a.appointment_type === 'visita_medica' && a.status === 'schedulato')
-      .map(a => ({ ...a, source: 'appointment' }));
-
-    return [...visitItems, ...appointmentItems]
+      .map(v => {
+        // Cerca appuntamento programmato per questo paziente
+        const scheduledAppt = appointments.find(a => 
+          String(a.patient_id) === String(v.patient_id) && 
+          a.appointment_type === 'visita_medica' && 
+          a.status === 'schedulato'
+        );
+        return { ...v, source: 'visit', scheduledAppt };
+      })
       .sort((a, b) => {
-        const dateA = a.source === 'visit' ? new Date(a.next_visit_date) : new Date(a.date);
-        const dateB = b.source === 'visit' ? new Date(b.next_visit_date) : new Date(b.date);
+        const dateA = new Date(a.next_visit_date);
+        const dateB = new Date(b.next_visit_date);
         return dateA - dateB;
       });
   }, [visits, appointments, in30Days]);
@@ -217,24 +219,23 @@ export default function Dashboard() {
             {visiteScaduteEInScadenza.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Nessuna visita scaduta o in scadenza</p>
             ) : visiteScaduteEInScadenza.map(v => {
-              const isAppointment = v.source === 'appointment';
-              const d = isAppointment ? parseISO(v.date) : parseISO(v.next_visit_date);
+              const d = parseISO(v.next_visit_date);
               const isExpired = isBefore(d, today);
               
               return (
                 <div
-                  key={`${v.source}-${v.id}`}
+                  key={v.id}
                   className={`flex items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${isExpired ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}
                 >
                   <Link
-                    to={`/pazienti/${v.patient_id || v.patient_id}`}
+                    to={`/pazienti/${v.patient_id}`}
                     className="min-w-0 hover:opacity-75"
                   >
                     <p className="text-sm font-medium truncate">{v.patient_name || '—'}</p>
                     <p className="text-xs text-muted-foreground truncate">{v.company_name || '—'}</p>
                   </Link>
                   <div className="flex items-center gap-2 shrink-0">
-                    {!isAppointment && (
+                    {!v.scheduledAppt && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -254,7 +255,13 @@ export default function Dashboard() {
                         Programma
                       </Button>
                     )}
-                    {isAppointment && <Badge className="text-xs bg-green-100 text-green-700 border border-green-300">Programmato</Badge>}
+                    {v.scheduledAppt && (
+                      <Link to="/dashboard">
+                        <Badge className="text-xs bg-green-100 text-green-700 border border-green-300 cursor-pointer hover:bg-green-200">
+                          Programmato {parseISO(v.scheduledAppt.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </Badge>
+                      </Link>
+                    )}
                     <Badge className={`text-xs ${isExpired ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
                       {isExpired ? 'Scaduta' : 'Scad.'} {d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </Badge>
