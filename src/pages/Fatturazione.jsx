@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
 import AccessDenied from '@/components/shared/AccessDenied';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, parseISO, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
-import { Receipt, Building2, Download, FileCode } from 'lucide-react';
+import { Receipt, Building2, Download, FileCode, FileText, BarChart3 } from 'lucide-react';
+import RiepilogoFatturazioneDialog from '@/components/fatturazione/RiepilogoFatturazioneDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,8 @@ export default function Fatturazione() {
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(today), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(endOfMonth(today), 'yyyy-MM-dd'));
   const [groupBy, setGroupBy] = useState('company');
+  const [showRiepilogo, setShowRiepilogo] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: visits = [], isLoading } = useQuery({
     queryKey: ['medicalVisits'],
@@ -61,6 +64,10 @@ export default function Fatturazione() {
       return true;
     });
   }, [visits, dateFrom, dateTo]);
+
+  // Visite non ancora fatturate nel periodo
+  const unbilled = useMemo(() => filtered.filter(v => !v.billed), [filtered]);
+  const billedCount = filtered.length - unbilled.length;
 
   // Totali accertamenti per tipo
   const examTotals = useMemo(() => {
@@ -274,6 +281,14 @@ export default function Fatturazione() {
         </div>
       )}
 
+      {/* Badge già fatturate */}
+      {billedCount > 0 && (
+        <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <Badge variant="outline" className="text-green-600 border-green-300">{billedCount} già fatturate</Badge>
+          <span>escluse dalla visualizzazione sotto</span>
+        </div>
+      )}
+
       {/* Tabella */}
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground text-sm">Caricamento...</div>
@@ -311,6 +326,34 @@ export default function Fatturazione() {
           </CardContent>
         </Card>
       )}
+
+      {/* Azioni fatturazione */}
+      {!isLoading && unbilled.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">{unbilled.length}</span> prestazioni non ancora fatturate nel periodo
+          </p>
+          <div className="flex gap-3">
+            <Button variant="outline" className="gap-2" onClick={() => setShowRiepilogo(true)}>
+              <BarChart3 className="h-4 w-4" />
+              Genera riepilogo
+            </Button>
+            <Button className="gap-2" onClick={() => setShowRiepilogo(true)}>
+              <FileText className="h-4 w-4" />
+              Emetti fatture proforma
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <RiepilogoFatturazioneDialog
+        open={showRiepilogo}
+        onClose={() => setShowRiepilogo(false)}
+        visits={unbilled}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onBilled={() => queryClient.invalidateQueries({ queryKey: ['medicalVisits'] })}
+      />
     </div>
   );
 }
