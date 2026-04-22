@@ -1,0 +1,103 @@
+{
+  "name": "License",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID univoco tenant (uguale all'ID utente admin principale)"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "base",
+        "standard",
+        "professional"
+      ],
+      "description": "Piano licenza"
+    },
+    "billing_cycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual"
+      ],
+      "default": "monthly",
+      "description": "Ciclo di fatturazione"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "active",
+        "past_due",
+        "canceled",
+        "suspended"
+      ],
+      "default": "trial",
+      "description": "Stato licenza"
+    },
+    "admin_name": {
+      "type": "string",
+      "description": "Nome intestatario licenza"
+    },
+    "admin_email": {
+      "type": "string",
+      "description": "Email amministratore principale"
+    },
+    "admin_user_id": {
+      "type": "string",
+      "description": "User ID dell'amministratore principale"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Ragione sociale / studio"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "Partita IVA / CF intestatario"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefono"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe Subscription ID"
+    },
+    "stripe_price_id": {
+      "type": "string",
+      "description": "Stripe Price ID associato"
+    },
+    "current_period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Inizio periodo corrente"
+    },
+    "current_period_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Scadenza periodo corrente"
+    },
+    "trial_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Fine periodo di prova"
+    },
+    "max_users": {
+      "type": "number",
+      "description": "Numero massimo utenti consentiti (1, 3, -1 per illimitati)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note interne"
+    }
+  },
+  "required": [
+    "plan",
+    "admin_email"
+  ]
+}

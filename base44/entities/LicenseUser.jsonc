@@ -1,0 +1,60 @@
+{
+  "name": "LicenseUser",
+  "type": "object",
+  "properties": {
+    "license_id": {
+      "type": "string",
+      "description": "ID licenza di appartenenza"
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant (replica per filtro rapido)"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID Base44 dell'utente"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email utente"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Nome completo"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "amministratore",
+        "medico",
+        "segreteria"
+      ],
+      "description": "Ruolo nell'organizzazione"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "invited"
+      ],
+      "default": "invited",
+      "description": "Stato utente"
+    },
+    "invited_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data invito"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data attivazione"
+    }
+  },
+  "required": [
+    "license_id",
+    "email",
+    "role"
+  ]
+}
