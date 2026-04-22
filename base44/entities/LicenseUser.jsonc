@@ -27,7 +27,8 @@
       "enum": [
         "amministratore",
         "medico",
-        "segreteria"
+        "segreteria",
+        "operatore_sanitario"
       ],
       "description": "Ruolo nell'organizzazione"
     },

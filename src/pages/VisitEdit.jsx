@@ -290,8 +290,11 @@ export default function VisitEdit() {
 
   const isNew = !currentVisitId;
 
-  const TAB_ORDER = ['lavorativa', 'fisiologica', 'patologica', 'obiettivo', 'accertamenti', 'giudizio'];
-  const [activeTab, setActiveTab] = useState('lavorativa');
+  const isOperatore = user?.role === 'operatore' || user?.role === 'operatore_sanitario';
+  const TAB_ORDER = isOperatore
+    ? ['accertamenti']
+    : ['lavorativa', 'fisiologica', 'patologica', 'obiettivo', 'accertamenti', 'giudizio'];
+  const [activeTab, setActiveTab] = useState(isOperatore ? 'accertamenti' : 'lavorativa');
   const currentTabIndex = TAB_ORDER.indexOf(activeTab);
   const isLastTab = currentTabIndex === TAB_ORDER.length - 1;
 
@@ -395,17 +398,17 @@ export default function VisitEdit() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
           <TabsList className="flex flex-wrap h-auto gap-1 mb-2">
-            <TabsTrigger value="lavorativa">Anamn. Lavorativa</TabsTrigger>
-            <TabsTrigger value="fisiologica">Anamn. Fisiologica</TabsTrigger>
-            <TabsTrigger value="patologica">Anamn. Patologica</TabsTrigger>
-            <TabsTrigger value="obiettivo">Esame Obiettivo</TabsTrigger>
+            {!isOperatore && <TabsTrigger value="lavorativa">Anamn. Lavorativa</TabsTrigger>}
+            {!isOperatore && <TabsTrigger value="fisiologica">Anamn. Fisiologica</TabsTrigger>}
+            {!isOperatore && <TabsTrigger value="patologica">Anamn. Patologica</TabsTrigger>}
+            {!isOperatore && <TabsTrigger value="obiettivo">Esame Obiettivo</TabsTrigger>}
             <TabsTrigger value="accertamenti" className="relative">
               Accertamenti
               {doneCount > 0 && (
                 <Badge className="ml-1 h-4 px-1 text-[10px] bg-accent text-white">{doneCount}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="giudizio">Giudizio</TabsTrigger>
+            {!isOperatore && <TabsTrigger value="giudizio">Giudizio</TabsTrigger>}
           </TabsList>
 
           {/* ANAMNESI LAVORATIVA */}
@@ -523,7 +526,17 @@ export default function VisitEdit() {
 
         <div className="flex justify-end gap-3 pt-2 pb-6">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>Annulla</Button>
-          {!isLastTab ? (
+          {isOperatore ? (
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saveMutation.isPending}
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {saveMutation.isPending ? 'Salvataggio...' : 'Salva accertamenti'}
+            </Button>
+          ) : !isLastTab ? (
             <Button type="button" onClick={goToNextTab} className="gap-2">
               Scheda successiva →
             </Button>

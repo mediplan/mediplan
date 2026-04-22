@@ -9,9 +9,10 @@ import { Trash2, Plus, UserCheck } from 'lucide-react';
 
 const MAX_USERS = { base: 1, standard: 3, professional: Infinity };
 const ROLE_COLORS = {
-  amministratore: 'bg-primary/10 text-primary border-primary/30',
-  medico:         'bg-teal-100 text-teal-700 border-teal-300',
-  segreteria:     'bg-amber-100 text-amber-700 border-amber-300',
+  amministratore:     'bg-primary/10 text-primary border-primary/30',
+  medico:             'bg-teal-100 text-teal-700 border-teal-300',
+  segreteria:         'bg-amber-100 text-amber-700 border-amber-300',
+  operatore_sanitario: 'bg-rose-100 text-rose-700 border-rose-300',
 };
 const STATUS_COLOR = {
   active:    'bg-green-100 text-green-700',
@@ -136,6 +137,7 @@ export default function LicenseUsersPanel({ licenseId, plan, maxUsers }) {
               <SelectItem value="amministratore">Amministratore</SelectItem>
               <SelectItem value="medico">Medico</SelectItem>
               <SelectItem value="segreteria">Segreteria</SelectItem>
+              <SelectItem value="operatore_sanitario">Operatore sanitario</SelectItem>
             </SelectContent>
           </Select>
           <Button

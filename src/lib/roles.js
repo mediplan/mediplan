@@ -8,18 +8,20 @@
  */
 
 export const ROLES = {
-  AMMINISTRATORE: 'amministratore',
-  MEDICO:         'medico',
-  OPERATORE:      'operatore',
-  SEGRETERIA:     'segreteria',
+  AMMINISTRATORE:      'amministratore',
+  MEDICO:              'medico',
+  OPERATORE:           'operatore',
+  OPERATORE_SANITARIO: 'operatore_sanitario',
+  SEGRETERIA:          'segreteria',
 };
 
 export const ROLE_LABELS = {
-  admin:          'Amministratore',
-  amministratore: 'Amministratore',
-  medico:         'Medico Incaricato',
-  operatore:      'Operatore Sanitario',
-  segreteria:     'Segreteria',
+  admin:               'Amministratore',
+  amministratore:      'Amministratore',
+  medico:              'Medico Incaricato',
+  operatore:           'Operatore Sanitario',
+  operatore_sanitario: 'Operatore Sanitario',
+  segreteria:          'Segreteria',
 };
 
 /**
@@ -27,7 +29,9 @@ export const ROLE_LABELS = {
  */
 export function canAccess(user, section) {
   // Retrocompatibilità: il ruolo piattaforma 'admin' equivale ad 'amministratore'
-  const role = user?.role === 'admin' ? 'amministratore' : user?.role;
+  // 'operatore_sanitario' è sinonimo di 'operatore'
+  const rawRole = user?.role === 'admin' ? 'amministratore' : user?.role;
+  const role = rawRole === 'operatore_sanitario' ? 'operatore' : rawRole;
   const permissions = {
     dashboard:          ['amministratore', 'medico', 'operatore', 'segreteria'],
     statistiche:        ['amministratore', 'medico', 'operatore', 'segreteria'],
