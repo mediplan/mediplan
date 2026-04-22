@@ -2,6 +2,10 @@
   "name": "Sopralluogo",
   "type": "object",
   "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
     "company_id": {
       "type": "string"
     },

@@ -11,7 +11,9 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [appPublicSettings, setAppPublicSettings] = useState(null);
+  const [tenantId, setTenantId] = useState(null);
+  const [licenseRole, setLicenseRole] = useState(null);
 
   useEffect(() => {
     checkAppState();
@@ -89,11 +91,23 @@ export const AuthProvider = ({ children }) => {
 
   const checkUserAuth = async () => {
     try {
-      // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
+
+      // Carica LicenseUser per questo utente (cerca per email)
+      try {
+        const licenseUsers = await base44.entities.LicenseUser.filter({ email: currentUser.email });
+        if (licenseUsers && licenseUsers.length > 0) {
+          const lu = licenseUsers[0];
+          setTenantId(lu.tenant_id || null);
+          setLicenseRole(lu.role || null);
+        }
+      } catch {
+        // Se non trovato, l'utente potrebbe essere il platform admin — nessun tenant
+      }
+
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('User auth check failed:', error);
@@ -136,6 +150,8 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
+      tenantId,
+      licenseRole,
       logout,
       navigateToLogin,
       checkAppState

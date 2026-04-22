@@ -2,6 +2,10 @@
   "name": "MedicalVisit",
   "type": "object",
   "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
     "patient_id": {
       "type": "string"
     },

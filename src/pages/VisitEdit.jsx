@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { useTenant } from '@/lib/useTenant';
 import { canAccess } from '@/lib/roles';
 import { ArrowLeft, Save, CheckCircle2, Calendar, Printer, CheckCheck, PauseCircle } from 'lucide-react';
 import {
@@ -127,6 +128,7 @@ export default function VisitEdit() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { tenantId } = useTenant();
   const canConclude = canAccess(user, 'visite_write');
 
   const [form, setForm] = useState({});
@@ -134,9 +136,20 @@ export default function VisitEdit() {
   const [showConcludiDialog, setShowConcludiDialog] = useState(false);
   const [currentVisitId, setCurrentVisitId] = useState(visitId);
 
-  const { data: patients = [] } = useQuery({ queryKey: ['patients'], queryFn: () => base44.entities.Patient.list() });
-  const { data: visits = [] } = useQuery({ queryKey: ['visits'], queryFn: () => base44.entities.MedicalVisit.list() });
-  const { data: jobRoles = [] } = useQuery({ queryKey: ['jobRoles'], queryFn: () => base44.entities.JobRole.list() });
+  const tenantFilter = tenantId ? { tenant_id: tenantId } : null;
+
+  const { data: patients = [] } = useQuery({
+    queryKey: ['patients', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Patient.filter(tenantFilter) : base44.entities.Patient.list(),
+  });
+  const { data: visits = [] } = useQuery({
+    queryKey: ['visits', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.MedicalVisit.filter(tenantFilter) : base44.entities.MedicalVisit.list(),
+  });
+  const { data: jobRoles = [] } = useQuery({
+    queryKey: ['jobRoles', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.JobRole.filter(tenantFilter) : base44.entities.JobRole.list(),
+  });
 
   const patient = patients.find(p => String(p.id) === String(patientId || form.patient_id));
   const visit = visits.find(v => String(v.id) === visitId);
@@ -255,6 +268,7 @@ export default function VisitEdit() {
     const data = {
       ...form,
       ...extraFields,
+      ...(tenantId && !form.tenant_id ? { tenant_id: tenantId } : {}),
       last_modified_by: modifiedBy,
       last_modified_date: now,
       patient_id: String(form.patient_id),

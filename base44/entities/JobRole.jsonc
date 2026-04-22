@@ -2,6 +2,10 @@
   "name": "JobRole",
   "type": "object",
   "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
     "name": {
       "type": "string",
       "description": "Nome della mansione"

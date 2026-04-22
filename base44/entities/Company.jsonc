@@ -1,0 +1,109 @@
+{
+  "name": "Company",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
+    "name": {
+      "type": "string",
+      "description": "Ragione sociale dell'azienda"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "Partita IVA"
+    },
+    "fiscal_code": {
+      "type": "string",
+      "description": "Codice fiscale azienda"
+    },
+    "address": {
+      "type": "string",
+      "description": "Indirizzo sede legale"
+    },
+    "city": {
+      "type": "string",
+      "description": "Citt\u00e0"
+    },
+    "province": {
+      "type": "string",
+      "description": "Provincia"
+    },
+    "zip_code": {
+      "type": "string",
+      "description": "CAP"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefono"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email aziendale"
+    },
+    "pec": {
+      "type": "string",
+      "description": "PEC"
+    },
+    "ateco_code": {
+      "type": "string",
+      "description": "Codice ATECO"
+    },
+    "sector": {
+      "type": "string",
+      "description": "Settore di attivit\u00e0"
+    },
+    "legal_representative": {
+      "type": "string",
+      "description": "Rappresentante legale"
+    },
+    "rspp": {
+      "type": "string",
+      "description": "Responsabile SPP"
+    },
+    "rls": {
+      "type": "string",
+      "description": "Rappresentante dei lavoratori per la sicurezza"
+    },
+    "employee_count": {
+      "type": "number",
+      "description": "Numero dipendenti"
+    },
+    "contract_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Inizio contratto"
+    },
+    "contract_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Fine contratto"
+    },
+    "assigned_doctor_id": {
+      "type": "string",
+      "description": "ID del medico incaricato (DoctorProfile)"
+    },
+    "assigned_doctor_name": {
+      "type": "string",
+      "description": "Nome del medico incaricato"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active",
+      "description": "Stato del contratto"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

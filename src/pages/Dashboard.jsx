@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus } from 'lucide-react';
+import { useTenant } from '@/lib/useTenant';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -13,6 +14,7 @@ import AppointmentCalendar from '@/components/calendar/AppointmentCalendar';
 import ScheduleAppointmentDialog from '@/components/appointments/ScheduleAppointmentDialog';
 
 export default function Dashboard() {
+  const { tenantId, isPlatformAdmin } = useTenant();
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [scheduleDialogContext, setScheduleDialogContext] = useState({
     type: 'visita_medica',
@@ -25,25 +27,33 @@ export default function Dashboard() {
   const [expandedSopralluoghi, setExpandedSopralluoghi] = useState(false);
   const [expandedActivities, setExpandedActivities] = useState(false);
 
+  const tenantFilter = tenantId ? { tenant_id: tenantId } : null;
+  const tenantEnabled = isPlatformAdmin || !!tenantId;
+
   const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
+    queryKey: ['companies', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Company.filter(tenantFilter) : base44.entities.Company.list(),
+    enabled: tenantEnabled,
   });
   const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => base44.entities.Patient.list(),
+    queryKey: ['patients', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Patient.filter(tenantFilter, '-created_date', 1000) : base44.entities.Patient.list('-created_date', 1000),
+    enabled: tenantEnabled,
   });
   const { data: visits = [] } = useQuery({
-    queryKey: ['visits'],
-    queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 1000),
+    queryKey: ['visits', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.MedicalVisit.filter(tenantFilter, '-visit_date', 1000) : base44.entities.MedicalVisit.list('-visit_date', 1000),
+    enabled: tenantEnabled,
   });
   const { data: sopralluoghi = [] } = useQuery({
-    queryKey: ['sopralluoghi_all'],
-    queryFn: () => base44.entities.Sopralluogo.list('-date', 1000),
+    queryKey: ['sopralluoghi_all', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Sopralluogo.filter(tenantFilter, '-date', 1000) : base44.entities.Sopralluogo.list('-date', 1000),
+    enabled: tenantEnabled,
   });
   const { data: appointments = [] } = useQuery({
-    queryKey: ['appointments'],
-    queryFn: () => base44.entities.Appointment.list(),
+    queryKey: ['appointments', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Appointment.filter(tenantFilter) : base44.entities.Appointment.list(),
+    enabled: tenantEnabled,
   });
 
   const today = new Date();

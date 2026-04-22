@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTenant } from '@/lib/useTenant';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate, Link } from 'react-router-dom';
@@ -209,6 +210,7 @@ export default function PatientDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { tenantId } = useTenant();
   const canSeeClinic = canAccess(user, 'dati_clinici');
   const canWriteVisit = canAccess(user, 'visite_write');
   const canSeeAttachments = canAccess(user, 'allegati_accertamenti');
@@ -216,15 +218,19 @@ export default function PatientDetail() {
   const [deletingVisit, setDeletingVisit] = useState(null);
   const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
 
+  const tenantFilter = tenantId ? { tenant_id: tenantId } : null;
+
   const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => base44.entities.Patient.list(),
+    queryKey: ['patients', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Patient.filter(tenantFilter) : base44.entities.Patient.list(),
   });
   const patient = patients.find(p => String(p.id) === patientId);
 
   const { data: visits = [] } = useQuery({
-    queryKey: ['visits'],
-    queryFn: () => base44.entities.MedicalVisit.list('-visit_date'),
+    queryKey: ['visits', tenantId],
+    queryFn: () => tenantFilter
+      ? base44.entities.MedicalVisit.filter({ ...tenantFilter, patient_id: patientId }, '-visit_date')
+      : base44.entities.MedicalVisit.filter({ patient_id: patientId }, '-visit_date'),
   });
   const patientVisits = visits.filter(v => String(v.patient_id) === patientId);
 
@@ -245,8 +251,8 @@ export default function PatientDetail() {
   };
 
   const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
+    queryKey: ['companies', tenantId],
+    queryFn: () => tenantFilter ? base44.entities.Company.filter(tenantFilter) : base44.entities.Company.list(),
   });
 
   const { data: doctors = [] } = useQuery({

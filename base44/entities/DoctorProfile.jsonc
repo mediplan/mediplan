@@ -1,0 +1,42 @@
+{
+  "name": "DoctorProfile",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Nome completo del medico"
+    },
+    "specialization": {
+      "type": "string",
+      "description": "Specializzazione (es. Medicina del Lavoro)"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID utente associato (se ha accesso al sistema)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email utente associato"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefono"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Medico attivo",
+      "default": true
+    }
+  },
+  "required": [
+    "full_name"
+  ]
+}

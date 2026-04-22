@@ -2,6 +2,10 @@
   "name": "Appointment",
   "type": "object",
   "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
     "title": {
       "type": "string",
       "description": "Titolo dell'appuntamento"

@@ -1,0 +1,279 @@
+{
+  "name": "Patient",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Nome"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Cognome"
+    },
+    "fiscal_code": {
+      "type": "string",
+      "description": "Codice fiscale"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data di nascita"
+    },
+    "birth_place": {
+      "type": "string",
+      "description": "Comune di nascita"
+    },
+    "birth_province": {
+      "type": "string",
+      "description": "Provincia di nascita"
+    },
+    "nationality": {
+      "type": "string",
+      "description": "Nazionalit\u00e0"
+    },
+    "ethnicity": {
+      "type": "string",
+      "description": "Etnia"
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "M",
+        "F"
+      ],
+      "description": "Sesso"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda"
+    },
+    "job_role_id": {
+      "type": "string",
+      "description": "ID mansione principale"
+    },
+    "job_role_name": {
+      "type": "string",
+      "description": "Nome mansione principale"
+    },
+    "job_role_secondary1_id": {
+      "type": "string",
+      "description": "ID mansione secondaria 1"
+    },
+    "job_role_secondary1_name": {
+      "type": "string",
+      "description": "Nome mansione secondaria 1"
+    },
+    "job_role_secondary2_id": {
+      "type": "string",
+      "description": "ID mansione secondaria 2"
+    },
+    "job_role_secondary2_name": {
+      "type": "string",
+      "description": "Nome mansione secondaria 2"
+    },
+    "job_role_notes": {
+      "type": "string",
+      "description": "Ulteriori info mansione"
+    },
+    "hire_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data assunzione"
+    },
+    "termination_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data fine rapporto/licenzia"
+    },
+    "record_delivery_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data consegna cartella"
+    },
+    "employee_number": {
+      "type": "string",
+      "description": "Matricola"
+    },
+    "disabled_employee": {
+      "type": "boolean",
+      "description": "Assunto come invalido",
+      "default": false
+    },
+    "military_service": {
+      "type": "string",
+      "description": "Servizio militare"
+    },
+    "subject_to_surveillance": {
+      "type": "boolean",
+      "description": "Soggetto a Sorveglianza Sanitaria",
+      "default": true
+    },
+    "privacy_delivered": {
+      "type": "boolean",
+      "description": "Consegnata informativa privacy",
+      "default": false
+    },
+    "to_revisit": {
+      "type": "boolean",
+      "description": "Da Rivisitare",
+      "default": false
+    },
+    "first_visit_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "Data scadenza 1a visita"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "on_leave"
+      ],
+      "default": "active",
+      "description": "Stato lavoratore"
+    },
+    "residence_city": {
+      "type": "string",
+      "description": "Comune di residenza"
+    },
+    "residence_province": {
+      "type": "string",
+      "description": "Provincia di residenza"
+    },
+    "residence_zip": {
+      "type": "string",
+      "description": "CAP residenza"
+    },
+    "residence_address": {
+      "type": "string",
+      "description": "Indirizzo residenza"
+    },
+    "residence_phone": {
+      "type": "string",
+      "description": "Telefono residenza"
+    },
+    "domicile_city": {
+      "type": "string",
+      "description": "Comune di domicilio"
+    },
+    "domicile_province": {
+      "type": "string",
+      "description": "Provincia di domicilio"
+    },
+    "domicile_zip": {
+      "type": "string",
+      "description": "CAP domicilio"
+    },
+    "domicile_address": {
+      "type": "string",
+      "description": "Indirizzo domicilio"
+    },
+    "doc_type": {
+      "type": "string",
+      "description": "Tipologia documento"
+    },
+    "doc_number": {
+      "type": "string",
+      "description": "Numero documento"
+    },
+    "doc_issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data rilascio documento"
+    },
+    "doc_expiry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data scadenza documento"
+    },
+    "doc_issued_by": {
+      "type": "string",
+      "description": "Rilasciato da"
+    },
+    "contract_type": {
+      "type": "string",
+      "description": "Tipo contratto"
+    },
+    "contract_detail": {
+      "type": "string",
+      "description": "Dettaglio contratto"
+    },
+    "marital_status": {
+      "type": "string",
+      "description": "Stato civile"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefono"
+    },
+    "gp_name": {
+      "type": "string",
+      "description": "Nome medico curante"
+    },
+    "gp_city": {
+      "type": "string",
+      "description": "Comune medico curante"
+    },
+    "gp_province": {
+      "type": "string",
+      "description": "Provincia medico curante"
+    },
+    "gp_address": {
+      "type": "string",
+      "description": "Indirizzo medico curante"
+    },
+    "gp_phone": {
+      "type": "string",
+      "description": "Telefono medico curante"
+    },
+    "blood_type": {
+      "type": "string",
+      "enum": [
+        "A+",
+        "A-",
+        "B+",
+        "B-",
+        "AB+",
+        "AB-",
+        "0+",
+        "0-",
+        "unknown"
+      ],
+      "description": "Gruppo sanguigno"
+    },
+    "allergies": {
+      "type": "string",
+      "description": "Allergie note"
+    },
+    "chronic_conditions": {
+      "type": "string",
+      "description": "Patologie croniche"
+    },
+    "current_medications": {
+      "type": "string",
+      "description": "Terapie in corso"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Annotazioni"
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name",
+    "company_id"
+  ]
+}

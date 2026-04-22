@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { useTenant } from '@/lib/useTenant';
 import { filterCompaniesByRole } from '@/lib/roles';
 import { Plus, Search, Building2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { Link } from 'react-router-dom';
 
 export default function Companies() {
   const { user } = useAuth();
+  const { tenantId, isPlatformAdmin } = useTenant();
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editCompany, setEditCompany] = useState(null);
@@ -25,8 +27,13 @@ export default function Companies() {
   const queryClient = useQueryClient();
 
   const { data: companies = [], isLoading } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list('-created_date'),
+    queryKey: ['companies', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.Company.filter({ tenant_id: tenantId }, '-created_date')
+      : isPlatformAdmin
+        ? base44.entities.Company.list('-created_date')
+        : [],
+    enabled: isPlatformAdmin || !!tenantId,
   });
 
   // Per i medici: carica il proprio profilo e filtra le aziende
@@ -41,7 +48,7 @@ export default function Companies() {
   const visibleCompanies = filterCompaniesByRole(user, companies, myDoctorProfile);
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Company.create(data),
+    mutationFn: (data) => base44.entities.Company.create({ ...data, tenant_id: tenantId }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['companies'] }); setFormOpen(false); },
   });
 
