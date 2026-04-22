@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import { useTenant } from '@/lib/useTenant';
 import { canAccess } from '@/lib/roles';
 import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -283,13 +284,17 @@ function MansionarioTab() {
   const [editRole, setEditRole] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
+  const { tenantId } = useTenant();
+
   const { data: jobRoles = [], isLoading } = useQuery({
-    queryKey: ['jobRoles'],
-    queryFn: () => base44.entities.JobRole.list('-created_date'),
+    queryKey: ['jobRoles', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.JobRole.filter({ tenant_id: tenantId }, '-created_date')
+      : base44.entities.JobRole.list('-created_date'),
   });
 
   const createMutation = useMutation({
-    mutationFn: data => base44.entities.JobRole.create(data),
+    mutationFn: data => base44.entities.JobRole.create(tenantId ? { ...data, tenant_id: tenantId } : data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['jobRoles'] }); setFormOpen(false); },
   });
   const updateMutation = useMutation({
@@ -447,13 +452,17 @@ function MediciTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
+  const { tenantId: doctorTenantId } = useTenant();
+
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctorProfiles'],
-    queryFn: () => base44.entities.DoctorProfile.list('full_name'),
+    queryKey: ['doctorProfiles', doctorTenantId],
+    queryFn: () => doctorTenantId
+      ? base44.entities.DoctorProfile.filter({ tenant_id: doctorTenantId }, 'full_name')
+      : base44.entities.DoctorProfile.list('full_name'),
   });
 
   const createMutation = useMutation({
-    mutationFn: data => base44.entities.DoctorProfile.create(data),
+    mutationFn: data => base44.entities.DoctorProfile.create(doctorTenantId ? { ...data, tenant_id: doctorTenantId } : data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['doctorProfiles'] }); setDialogOpen(false); },
   });
   const updateMutation = useMutation({

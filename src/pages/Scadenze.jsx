@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess, filterCompaniesByRole } from '@/lib/roles';
+import { useTenant } from '@/lib/useTenant';
 import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -69,21 +70,29 @@ export default function Scadenze() {
     ? allDoctors.find(d => d.user_email === user.email)
     : null;
 
+  const { tenantId } = useTenant();
+
   const { data: allCompanies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list('name'),
+    queryKey: ['companies', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.Company.filter({ tenant_id: tenantId }, 'name')
+      : base44.entities.Company.list('name'),
   });
 
   const companies = filterCompaniesByRole(user, allCompanies, myDoctorProfile);
 
   const { data: visits = [], isFetching } = useQuery({
-    queryKey: ['visits-all'],
-    queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 500),
+    queryKey: ['visits-all', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.MedicalVisit.filter({ tenant_id: tenantId }, '-visit_date', 500)
+      : base44.entities.MedicalVisit.list('-visit_date', 500),
   });
 
   const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => base44.entities.Patient.list(),
+    queryKey: ['patients', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.Patient.filter({ tenant_id: tenantId })
+      : base44.entities.Patient.list(),
   });
 
   const results = useMemo(() => {

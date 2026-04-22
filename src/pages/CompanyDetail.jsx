@@ -11,6 +11,7 @@ import SurveillancePlanPanel from '@/components/companies/SurveillancePlanPanel'
 import SopralluoghiPanel from '@/components/companies/SopralluoghiPanel';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
+import { useTenant } from '@/lib/useTenant';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -25,6 +26,7 @@ export default function CompanyDetail() {
   const companyId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { tenantId } = useTenant();
   const canSeeDVR = user && canAccess(user, 'dvr_sorveglianza');
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
@@ -34,20 +36,22 @@ export default function CompanyDetail() {
   const [scheduleVisitsDialogOpen, setScheduleVisitsDialogOpen] = useState(false);
 
   const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
+    queryKey: ['companies', tenantId],
+    queryFn: () => tenantId ? base44.entities.Company.filter({ tenant_id: tenantId }) : base44.entities.Company.list(),
   });
   const company = companies.find(c => String(c.id) === companyId);
 
   const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => base44.entities.Patient.list(),
+    queryKey: ['patients', companyId],
+    queryFn: () => base44.entities.Patient.filter({ company_id: companyId }),
+    enabled: !!companyId,
   });
-  const companyPatients = patients.filter(p => String(p.company_id) === companyId);
+  const companyPatients = patients;
 
   const { data: visits = [] } = useQuery({
-    queryKey: ['visits'],
-    queryFn: () => base44.entities.MedicalVisit.list(),
+    queryKey: ['visits', companyId],
+    queryFn: () => base44.entities.MedicalVisit.filter({ company_id: companyId }),
+    enabled: !!companyId,
   });
 
   const { data: doctors = [] } = useQuery({

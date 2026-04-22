@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useTenant } from '@/lib/useTenant';
 import { Building2, Users, Stethoscope, CheckCircle2, Clock, AlertTriangle, TrendingUp, MapPinned } from 'lucide-react';
 import { parseISO, format, startOfMonth, subMonths } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -35,21 +36,23 @@ const JUDGMENT_COLORS = {
 };
 
 export default function Statistiche() {
+  const { tenantId } = useTenant();
+
   const { data: companies = [] } = useQuery({
-    queryKey: ['companies'],
-    queryFn: () => base44.entities.Company.list(),
+    queryKey: ['companies', tenantId],
+    queryFn: () => tenantId ? base44.entities.Company.filter({ tenant_id: tenantId }) : base44.entities.Company.list(),
   });
   const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => base44.entities.Patient.list(),
+    queryKey: ['patients', tenantId],
+    queryFn: () => tenantId ? base44.entities.Patient.filter({ tenant_id: tenantId }) : base44.entities.Patient.list(),
   });
   const { data: visits = [] } = useQuery({
-    queryKey: ['visits'],
-    queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 1000),
+    queryKey: ['visits', tenantId],
+    queryFn: () => tenantId ? base44.entities.MedicalVisit.filter({ tenant_id: tenantId }, '-visit_date', 1000) : base44.entities.MedicalVisit.list('-visit_date', 1000),
   });
   const { data: sopralluoghi = [] } = useQuery({
-    queryKey: ['sopralluoghi_all'],
-    queryFn: () => base44.entities.Sopralluogo.list('-date', 1000),
+    queryKey: ['sopralluoghi_all', tenantId],
+    queryFn: () => tenantId ? base44.entities.Sopralluogo.filter({ tenant_id: tenantId }, '-date', 1000) : base44.entities.Sopralluogo.list('-date', 1000),
   });
 
   // KPI base
