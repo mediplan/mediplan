@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus, PlayCircle } from 'lucide-react';
+import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus, PlayCircle, CheckCircle2 } from 'lucide-react';
 import { useTenant } from '@/lib/useTenant';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -27,8 +28,14 @@ export default function Dashboard() {
   const [expandedSopralluoghi, setExpandedSopralluoghi] = useState(false);
   const [expandedActivities, setExpandedActivities] = useState(false);
 
+  const queryClient = useQueryClient();
   const tenantFilter = tenantId ? { tenant_id: tenantId } : null;
   const tenantEnabled = isPlatformAdmin || !!tenantId;
+
+  const markCompletedMutation = useMutation({
+    mutationFn: (appointmentId) => base44.entities.Appointment.update(appointmentId, { status: 'completato' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['appointments'] }),
+  });
 
   const { data: companies = [] } = useQuery({
     queryKey: ['companies', tenantId],
@@ -527,15 +534,27 @@ export default function Dashboard() {
                            </Badge>
                          </div>
                          {!isCompleted && (
-                           <Link to={item.appointment_type === 'sopralluogo'
-                             ? `/aziende/${item.company_id}`
-                             : `/visita?patientId=${item.patient_id}&appointmentId=${item.id}`
-                           }>
-                             <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
-                               <PlayCircle className="h-3 w-3" />
-                               Esegui ora
+                           <div className="flex gap-1">
+                             <Link to={item.appointment_type === 'sopralluogo'
+                               ? `/aziende/${item.company_id}`
+                               : `/visita?patientId=${item.patient_id}&appointmentId=${item.id}`
+                             }>
+                               <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
+                                 <PlayCircle className="h-3 w-3" />
+                                 Esegui ora
+                               </Button>
+                             </Link>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               className="h-8 px-2 text-xs gap-1 border-emerald-400 text-emerald-700 hover:bg-emerald-50"
+                               onClick={() => markCompletedMutation.mutate(item.id)}
+                               disabled={markCompletedMutation.isPending}
+                             >
+                               <CheckCircle2 className="h-3 w-3" />
+                               Eseguito
                              </Button>
-                           </Link>
+                           </div>
                          )}
                        </div>
                      </div>
@@ -575,15 +594,27 @@ export default function Dashboard() {
                              </Badge>
                            </div>
                            {!isCompleted && (
-                             <Link to={item.appointment_type === 'sopralluogo'
-                               ? `/aziende/${item.company_id}`
-                               : `/visita?patientId=${item.patient_id}&appointmentId=${item.id}`
-                             }>
-                               <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
-                                 <PlayCircle className="h-3 w-3" />
-                                 Esegui ora
+                             <div className="flex gap-1">
+                               <Link to={item.appointment_type === 'sopralluogo'
+                                 ? `/aziende/${item.company_id}`
+                                 : `/visita?patientId=${item.patient_id}&appointmentId=${item.id}`
+                               }>
+                                 <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
+                                   <PlayCircle className="h-3 w-3" />
+                                   Esegui ora
+                                 </Button>
+                               </Link>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 className="h-8 px-2 text-xs gap-1 border-emerald-400 text-emerald-700 hover:bg-emerald-50"
+                                 onClick={() => markCompletedMutation.mutate(item.id)}
+                                 disabled={markCompletedMutation.isPending}
+                               >
+                                 <CheckCircle2 className="h-3 w-3" />
+                                 Eseguito
                                </Button>
-                             </Link>
+                             </div>
                            )}
                          </div>
                        </div>
