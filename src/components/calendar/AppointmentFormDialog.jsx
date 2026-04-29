@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 const MOTIVI = [
-  { value: 'visite_mediche', label: 'Svolgere visite mediche' },
+  { value: 'visite_mediche', label: 'Visite Mediche' },
   { value: 'sopralluogo', label: 'Sopralluogo in azienda' },
   { value: 'riunione_periodica', label: 'Riunione periodica' },
 ];
