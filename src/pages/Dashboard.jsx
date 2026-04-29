@@ -526,8 +526,11 @@ export default function Dashboard() {
                              {isCompleted ? '✓ Eseguita' : (item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')}
                            </Badge>
                          </div>
-                         {!isCompleted && item.appointment_type === 'visita_medica' && item.patient_id && (
-                           <Link to={`/visita?patientId=${item.patient_id}&appointmentId=${item.id}`}>
+                         {!isCompleted && (
+                           <Link to={item.appointment_type === 'sopralluogo'
+                             ? `/aziende/${item.company_id}`
+                             : `/visita?patientId=${item.patient_id}&appointmentId=${item.id}`
+                           }>
                              <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
                                <PlayCircle className="h-3 w-3" />
                                Esegui ora
@@ -571,8 +574,11 @@ export default function Dashboard() {
                                {isCompleted ? '✓ Eseguita' : (item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')}
                              </Badge>
                            </div>
-                           {!isCompleted && item.appointment_type === 'visita_medica' && item.patient_id && (
-                             <Link to={`/visita?patientId=${item.patient_id}&appointmentId=${item.id}`}>
+                           {!isCompleted && (
+                             <Link to={item.appointment_type === 'sopralluogo'
+                               ? `/aziende/${item.company_id}`
+                               : `/visita?patientId=${item.patient_id}&appointmentId=${item.id}`
+                             }>
                                <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
                                  <PlayCircle className="h-3 w-3" />
                                  Esegui ora
