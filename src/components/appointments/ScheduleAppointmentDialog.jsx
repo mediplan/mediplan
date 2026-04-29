@@ -42,7 +42,7 @@ export default function ScheduleAppointmentDialog({
     title: generateDefaultTitle(),
     date: '',
     time: '',
-    visit_type: 'periodica',
+    motivo: 'visite_mediche',
     notes: '',
   });
 
@@ -61,12 +61,9 @@ export default function ScheduleAppointmentDialog({
         title: data.title,
         date: data.date,
         time: data.time,
-        patient_id: patientId || null,
-        patient_name: patientName || '',
         company_id: companyId || null,
         company_name: companyName || '',
         appointment_type: appointmentType,
-        visit_type: data.visit_type,
         notes: data.notes,
         status: 'schedulato',
       });
@@ -77,7 +74,7 @@ export default function ScheduleAppointmentDialog({
         title: generateDefaultTitle(),
         date: '',
         time: '',
-        visit_type: 'periodica',
+        motivo: 'visite_mediche',
         notes: '',
       });
       onOpenChange(false);
@@ -102,7 +99,6 @@ export default function ScheduleAppointmentDialog({
               : 'Programma Visita'}
           </DialogTitle>
           <DialogDescription>
-            {patientName && `Paziente: ${patientName}`}
             {companyName && `Azienda: ${companyName}`}
           </DialogDescription>
         </DialogHeader>
@@ -151,29 +147,24 @@ export default function ScheduleAppointmentDialog({
             </div>
           </div>
 
-          {appointmentType === 'visita_medica' && (
-            <div>
-              <Label htmlFor="visit_type">Tipo Visita</Label>
-              <Select
-                value={formData.visit_type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, visit_type: value })
-                }
-              >
-                <SelectTrigger id="visit_type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="preventiva">Preventiva</SelectItem>
-                  <SelectItem value="periodica">Periodica</SelectItem>
-                  <SelectItem value="su_richiesta">Su richiesta</SelectItem>
-                  <SelectItem value="cambio_mansione">Cambio mansione</SelectItem>
-                  <SelectItem value="rientro_malattia">Rientro malattia</SelectItem>
-                  <SelectItem value="cessazione">Cessazione</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div>
+            <Label htmlFor="motivo">Motivo</Label>
+            <Select
+              value={formData.motivo}
+              onValueChange={(value) =>
+                setFormData({ ...formData, motivo: value })
+              }
+            >
+              <SelectTrigger id="motivo">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="visite_mediche">Svolgere visite mediche</SelectItem>
+                <SelectItem value="sopralluogo">Sopralluogo in azienda</SelectItem>
+                <SelectItem value="riunione_periodica">Riunione periodica</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div>
             <Label htmlFor="notes">Note</Label>
