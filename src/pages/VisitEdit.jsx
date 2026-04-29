@@ -125,6 +125,7 @@ export default function VisitEdit() {
   const urlParams = new URLSearchParams(window.location.search);
   const visitId = urlParams.get('visitId');
   const patientId = urlParams.get('patientId');
+  const appointmentId = urlParams.get('appointmentId');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -297,8 +298,13 @@ export default function VisitEdit() {
     saveMutation.mutate(buildData({ visit_status: 'sospesa' }));
   };
 
-  const handleConcludiConfirm = () => {
+  const handleConcludiConfirm = async () => {
     setShowConcludiDialog(false);
+    // Se siamo arrivati da un appuntamento programmato, lo segniamo come completato
+    if (appointmentId) {
+      await base44.entities.Appointment.update(appointmentId, { status: 'completato' });
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+    }
     saveMutation.mutate(buildData({ visit_status: 'conclusa' }));
   };
 

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus } from 'lucide-react';
+import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus, PlayCircle } from 'lucide-react';
 import { useTenant } from '@/lib/useTenant';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -491,101 +491,107 @@ export default function Dashboard() {
               <CalendarDays className="h-4 w-4 text-primary" />
               Attività programmate
               <Badge variant="secondary" className="ml-auto">
-                {appointments.filter(a => a.status === 'schedulato').length}
+                {appointments.filter(a => a.status === 'schedulato').length} da eseguire
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
-           {appointments.filter(a => a.status === 'schedulato').length === 0 ? (
+           {appointments.filter(a => a.status === 'schedulato' || a.status === 'completato').length === 0 ? (
              <p className="text-sm text-muted-foreground text-center py-4">Nessuna attività programmata</p>
            ) : (
              <>
                <div className="space-y-2">
-                 {appointments.filter(a => a.status === 'schedulato').sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 3).map((item) => {
-                  const typeLabel = item.appointment_type === 'visita_medica' 
-                    ? (item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')
-                    : 'Sopralluogo';
-                  return (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200 gap-3">
-                      <div className="min-w-0 flex-1">
-                        {item.patient_name && (
-                          <Link to={`/pazienti/${item.patient_id}`} className="text-base font-semibold hover:text-primary hover:underline truncate block">
-                            {item.patient_name}
-                          </Link>
-                        )}
-                        {item.company_name && (
-                          <Link to={`/aziende/${item.company_id}`} className="text-sm text-muted-foreground hover:text-primary hover:underline truncate block">
-                            {item.company_name}
-                          </Link>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">
-                          {format(parseISO(item.date), 'dd/MM/yyyy')}
-                        </Badge>
-                        <Badge className={`text-xs ${item.appointment_type === 'sopralluogo' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-                          {item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica'}
-                        </Badge>
-                      </div>
-                    </div>
-                  );
-                  })}
-                  </div>
-                  {appointments.filter(a => a.status === 'schedulato').length > 3 && !expandedActivities && (
-                  <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setExpandedActivities(true)}
-                  className="w-full text-xs"
-                  >
-                  Vedi altre {appointments.filter(a => a.status === 'schedulato').length - 3}
-                  </Button>
-                  )}
-                  {expandedActivities && (
-                  <div className="space-y-2">
-                  {appointments.filter(a => a.status === 'schedulato').sort((a, b) => new Date(a.date) - new Date(b.date)).slice(3).map((item) => {
-                    const typeLabel = item.appointment_type === 'visita_medica' 
-                      ? (item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')
-                      : 'Sopralluogo';
-                    return (
-                      <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200 gap-3">
-                        <div className="min-w-0 flex-1">
-                          {item.patient_name && (
-                            <Link to={`/pazienti/${item.patient_id}`} className="text-base font-semibold hover:text-primary hover:underline truncate block">
-                              {item.patient_name}
-                            </Link>
-                          )}
-                          {item.company_name && (
-                            <Link to={`/aziende/${item.company_id}`} className="text-sm text-muted-foreground hover:text-primary hover:underline truncate block">
-                              {item.company_name}
-                            </Link>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-300">
-                            {format(parseISO(item.date), 'dd/MM/yyyy')}
-                          </Badge>
-                          <Badge className={`text-xs ${item.appointment_type === 'sopralluogo' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
-                            {item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica'}
-                          </Badge>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  </div>
-                  )}
-                  {expandedActivities && (
-                  <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setExpandedActivities(false)}
-                  className="w-full text-xs"
-                  >
-                  Nascondi
-                  </Button>
-                  )}
-                  </>
-                  )}
+                 {appointments.filter(a => a.status === 'schedulato' || a.status === 'completato').sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5).map((item) => {
+                   const isCompleted = item.status === 'completato';
+                   return (
+                     <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border gap-3 ${isCompleted ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-emerald-50 border-emerald-200'}`}>
+                       <div className="min-w-0 flex-1">
+                         {item.patient_name && (
+                           <Link to={`/pazienti/${item.patient_id}`} className={`text-base font-semibold hover:text-primary hover:underline truncate block ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+                             {item.patient_name}
+                           </Link>
+                         )}
+                         {item.company_name && (
+                           <Link to={`/aziende/${item.company_id}`} className="text-sm text-muted-foreground hover:text-primary hover:underline truncate block">
+                             {item.company_name}
+                           </Link>
+                         )}
+                       </div>
+                       <div className="flex items-center gap-2 shrink-0">
+                         <div className="flex flex-col items-end gap-1">
+                           <Badge className={`text-xs ${isCompleted ? 'bg-slate-100 text-slate-500 border border-slate-300' : 'bg-amber-100 text-amber-700 border border-amber-300'}`}>
+                             {format(parseISO(item.date), 'dd/MM/yyyy')}
+                           </Badge>
+                           <Badge className={`text-xs ${isCompleted ? 'bg-slate-100 text-slate-500 border border-slate-300' : item.appointment_type === 'sopralluogo' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                             {isCompleted ? '✓ Eseguita' : (item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')}
+                           </Badge>
+                         </div>
+                         {!isCompleted && item.appointment_type === 'visita_medica' && item.patient_id && (
+                           <Link to={`/visita?patientId=${item.patient_id}&appointmentId=${item.id}`}>
+                             <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
+                               <PlayCircle className="h-3 w-3" />
+                               Esegui ora
+                             </Button>
+                           </Link>
+                         )}
+                       </div>
+                     </div>
+                   );
+                 })}
+               </div>
+               {appointments.filter(a => a.status === 'schedulato' || a.status === 'completato').length > 5 && !expandedActivities && (
+                 <Button variant="outline" size="sm" onClick={() => setExpandedActivities(true)} className="w-full text-xs mt-2">
+                   Vedi altre {appointments.filter(a => a.status === 'schedulato' || a.status === 'completato').length - 5}
+                 </Button>
+               )}
+               {expandedActivities && (
+                 <div className="space-y-2 mt-2">
+                   {appointments.filter(a => a.status === 'schedulato' || a.status === 'completato').sort((a, b) => new Date(a.date) - new Date(b.date)).slice(5).map((item) => {
+                     const isCompleted = item.status === 'completato';
+                     return (
+                       <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border gap-3 ${isCompleted ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-emerald-50 border-emerald-200'}`}>
+                         <div className="min-w-0 flex-1">
+                           {item.patient_name && (
+                             <Link to={`/pazienti/${item.patient_id}`} className={`text-base font-semibold hover:text-primary hover:underline truncate block ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+                               {item.patient_name}
+                             </Link>
+                           )}
+                           {item.company_name && (
+                             <Link to={`/aziende/${item.company_id}`} className="text-sm text-muted-foreground hover:text-primary hover:underline truncate block">
+                               {item.company_name}
+                             </Link>
+                           )}
+                         </div>
+                         <div className="flex items-center gap-2 shrink-0">
+                           <div className="flex flex-col items-end gap-1">
+                             <Badge className={`text-xs ${isCompleted ? 'bg-slate-100 text-slate-500 border border-slate-300' : 'bg-amber-100 text-amber-700 border border-amber-300'}`}>
+                               {format(parseISO(item.date), 'dd/MM/yyyy')}
+                             </Badge>
+                             <Badge className={`text-xs ${isCompleted ? 'bg-slate-100 text-slate-500 border border-slate-300' : item.appointment_type === 'sopralluogo' ? 'bg-purple-100 text-purple-700 border border-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-300'}`}>
+                               {isCompleted ? '✓ Eseguita' : (item.appointment_type === 'sopralluogo' ? 'Sopralluogo' : item.visit_type ? item.visit_type.replace(/_/g, ' ') : 'Visita medica')}
+                             </Badge>
+                           </div>
+                           {!isCompleted && item.appointment_type === 'visita_medica' && item.patient_id && (
+                             <Link to={`/visita?patientId=${item.patient_id}&appointmentId=${item.id}`}>
+                               <Button size="sm" className="h-8 px-2 text-xs gap-1 bg-primary hover:bg-primary/90">
+                                 <PlayCircle className="h-3 w-3" />
+                                 Esegui ora
+                               </Button>
+                             </Link>
+                           )}
+                         </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+               )}
+               {expandedActivities && (
+                 <Button variant="outline" size="sm" onClick={() => setExpandedActivities(false)} className="w-full text-xs mt-2">
+                   Nascondi
+                 </Button>
+               )}
+             </>
+           )}
                   </CardContent>
                   </Card>
                   </div>
