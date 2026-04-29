@@ -8,14 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const VISIT_TYPES = [
-  { value: 'preventiva', label: 'Preventiva' },
-  { value: 'periodica', label: 'Periodica' },
-  { value: 'su_richiesta', label: 'Su richiesta' },
-  { value: 'cambio_mansione', label: 'Cambio mansione' },
-  { value: 'rientro_malattia', label: 'Rientro da malattia' },
-  { value: 'cessazione', label: 'Cessazione' },
-  { value: 'altro', label: 'Altro' },
+const MOTIVI = [
+  { value: 'visite_mediche', label: 'Svolgere visite mediche' },
+  { value: 'sopralluogo', label: 'Sopralluogo in azienda' },
+  { value: 'riunione_periodica', label: 'Riunione periodica' },
 ];
 
 export default function AppointmentFormDialog({ open, onOpenChange, appointment, initialDate, onSave }) {
@@ -27,7 +23,7 @@ export default function AppointmentFormDialog({ open, onOpenChange, appointment,
     patient_name: '',
     company_id: '',
     company_name: '',
-    visit_type: '',
+    motivo: '',
     notes: '',
     status: 'schedulato',
   });
@@ -55,7 +51,7 @@ export default function AppointmentFormDialog({ open, onOpenChange, appointment,
         patient_name: '',
         company_id: '',
         company_name: '',
-        visit_type: '',
+        motivo: '',
         notes: '',
         status: 'schedulato',
       });
@@ -127,11 +123,11 @@ export default function AppointmentFormDialog({ open, onOpenChange, appointment,
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Tipo visita</Label>
-            <Select value={form.visit_type} onValueChange={val => setForm(f => ({ ...f, visit_type: val }))}>
-              <SelectTrigger><SelectValue placeholder="Seleziona tipo..." /></SelectTrigger>
+            <Label>Motivo</Label>
+            <Select value={form.motivo} onValueChange={val => setForm(f => ({ ...f, motivo: val }))}>
+              <SelectTrigger><SelectValue placeholder="Seleziona motivo..." /></SelectTrigger>
               <SelectContent>
-                {VISIT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                {MOTIVI.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -144,17 +140,7 @@ export default function AppointmentFormDialog({ open, onOpenChange, appointment,
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
-            <Label>Lavoratore</Label>
-            <Select value={form.patient_id} onValueChange={handlePatientChange}>
-              <SelectTrigger><SelectValue placeholder="Seleziona lavoratore..." /></SelectTrigger>
-              <SelectContent>
-                {filteredPatients.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.last_name} {p.first_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+
           <div className="space-y-1">
             <Label>Stato</Label>
             <Select value={form.status} onValueChange={val => setForm(f => ({ ...f, status: val }))}>
