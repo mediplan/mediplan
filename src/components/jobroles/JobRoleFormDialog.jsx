@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
+import ExamCatalogCombobox from '@/components/shared/ExamCatalogCombobox';
 
 
 const FREQUENCY_OPTIONS = [
@@ -165,7 +166,7 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
               </div>
               {form.required_exams.map((exam, i) => (
                 <div key={i} className="flex gap-2 mb-2 items-center">
-                  <Input placeholder="Nome esame" value={exam.exam_name} onChange={e => updateExam(i, 'exam_name', e.target.value)} className="flex-1" />
+                  <ExamCatalogCombobox value={exam.exam_name} onChange={v => updateExam(i, 'exam_name', v)} placeholder="Nome esame" />
                   <Select
                     value={String(exam.frequency_months)}
                     onValueChange={v => updateExam(i, 'frequency_months', Number(v))}

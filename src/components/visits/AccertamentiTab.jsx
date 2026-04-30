@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, Paperclip, Briefcase, Plus, X } from 'lucide-react';
+import ExamCatalogCombobox from '@/components/shared/ExamCatalogCombobox';
 import { cn } from '@/lib/utils';
 import PdfExamUpload from '@/components/visits/PdfExamUpload';
 import DianaIntegration from '@/components/visits/DianaIntegration';
@@ -351,12 +352,10 @@ export default function AccertamentiTab({ form, onChange, onAttachment, patient,
       {/* Aggiungi accertamento custom */}
       {showAddCustom ? (
         <div className="flex items-center gap-2 p-3 border border-dashed border-primary/40 rounded-lg bg-primary/5">
-          <Input
-            autoFocus
-            placeholder="Nome accertamento..."
+          <ExamCatalogCombobox
             value={customLabel}
-            onChange={e => setCustomLabel(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomExam(); } if (e.key === 'Escape') { setShowAddCustom(false); setCustomLabel(''); } }}
+            onChange={setCustomLabel}
+            placeholder="Nome accertamento..."
             className="h-8 text-sm"
           />
           <Button type="button" size="sm" onClick={addCustomExam} disabled={!customLabel.trim()}>Aggiungi</Button>
