@@ -526,11 +526,8 @@ export default function Settings() {
   return (
     <div>
       <PageHeader title="Impostazioni" description="Configurazioni e dati di riferimento" />
-      <Tabs defaultValue="modulistica">
+      <Tabs defaultValue="mansionario">
         <TabsList className="mb-6 flex-wrap">
-          <TabsTrigger value="modulistica" className="gap-2">
-            <FileText className="h-4 w-4" /> Modulistica
-          </TabsTrigger>
           <TabsTrigger value="mansionario" className="gap-2">
             <Briefcase className="h-4 w-4" /> Mansionario
           </TabsTrigger>
@@ -556,9 +553,6 @@ export default function Settings() {
             </TabsTrigger>
           )}
         </TabsList>
-        <TabsContent value="modulistica">
-          <ModulisticaTab />
-        </TabsContent>
         <TabsContent value="mansionario">
           <MansionarioTab />
         </TabsContent>
