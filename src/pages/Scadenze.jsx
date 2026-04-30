@@ -165,38 +165,59 @@ export default function Scadenze() {
       />
 
       {/* Filters Card */}
-      <Card className="p-5 mb-4 space-y-4">
-        {/* Date + Company + Exams row */}
-        <div className="flex flex-wrap gap-4 items-end">
-          <div>
-            <Label className="text-xs mb-1 block">Da Data</Label>
-            <Input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); resetElaborated(); }} className="w-36" />
-          </div>
-          <div>
-            <Label className="text-xs mb-1 block">A Data</Label>
-            <Input type="date" value={toDate} onChange={e => { setToDate(e.target.value); resetElaborated(); }} className="w-36" />
-          </div>
-          <div className="min-w-[200px]">
-            <Label className="text-xs mb-1 block">Azienda</Label>
-            <Select value={selectedCompany} onValueChange={v => { setSelectedCompany(v); resetElaborated(); }}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Tutte le aziende" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tutte le aziende</SelectItem>
-                {companies.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <Card className="p-5 mb-4 space-y-0">
 
+        {/* Sezione 1: Periodo e Azienda */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Periodo e Azienda</p>
+          <div className="flex flex-wrap gap-3 items-end">
+            <div>
+              <Label className="text-xs mb-1 block">Da Data</Label>
+              <Input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); resetElaborated(); }} className="w-36" />
+            </div>
+            <div>
+              <Label className="text-xs mb-1 block">A Data</Label>
+              <Input type="date" value={toDate} onChange={e => { setToDate(e.target.value); resetElaborated(); }} className="w-36" />
+            </div>
+            <div className="min-w-[220px]">
+              <Label className="text-xs mb-1 block">Azienda</Label>
+              <Select value={selectedCompany} onValueChange={v => { setSelectedCompany(v); resetElaborated(); }}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Tutte le aziende" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tutte le aziende</SelectItem>
+                  {companies.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
-        {/* Filtra per esame */}
+        <div className="border-t border-border my-4" />
+
+        {/* Sezione 2: Filtra per accertamento */}
         {activeExams.length > 0 && (
           <div>
-            <Label className="text-xs mb-2 block">Filtra per accertamento</Label>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Filtra per accertamento
+                {selectedExams.length > 0 && (
+                  <span className="ml-2 normal-case font-normal text-primary">({selectedExams.length} selezionati)</span>
+                )}
+              </p>
+              {selectedExams.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { setSelectedExams([]); resetElaborated(); }}
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                >
+                  Rimuovi tutti
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {activeExams.map(exam => {
                 const selected = selectedExams.includes(exam.name);
@@ -208,7 +229,7 @@ export default function Scadenze() {
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                       selected
                         ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background text-foreground border-border hover:bg-muted'
+                        : 'bg-muted/50 text-foreground border-border hover:bg-muted'
                     }`}
                   >
                     {exam.name}
@@ -217,52 +238,55 @@ export default function Scadenze() {
                 );
               })}
             </div>
-            {selectedExams.length > 0 && (
-              <button
-                type="button"
-                onClick={() => { setSelectedExams([]); resetElaborated(); }}
-                className="mt-1.5 text-xs text-muted-foreground hover:text-foreground underline"
-              >
-                Rimuovi filtri esame
-              </button>
-            )}
           </div>
         )}
 
-        {/* Checkboxes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
-          {[
-            [inclNoVisit, setInclNoVisit, 'Considera anche i dipendenti che non hanno MAI effettuato nessuna visita'],
-            [inclDaRivisitare, setInclDaRivisitare, 'Considera anche i dipendenti da Rivisitare (che NON si sono presentati o a cui mancano accertamenti)'],
-            [inclSospesi, setInclSospesi, 'Considera anche i dipendenti sospesi'],
-            [showCompanyData, setShowCompanyData, 'Visualizza solo i dati dell\'azienda'],
-            [showPhone, setShowPhone, 'Visualizza telefono ed email azienda'],
-            [showBirthDate, setShowBirthDate, 'Stampa data nascita dipendente'],
-            [showMansione, setShowMansione, 'Stampa la mansione'],
-          ].map(([val, setter, label]) => (
-            <label key={label} className="flex items-start gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-3.5 w-3.5 accent-primary flex-shrink-0"
-                checked={val}
-                onChange={e => { setter(e.target.checked); resetElaborated(); }}
-              />
-              <span className="text-xs text-muted-foreground leading-tight">{label}</span>
-            </label>
-          ))}
+        <div className="border-t border-border my-4" />
+
+        {/* Sezione 3: Opzioni */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Opzioni</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-6">
+            <p className="text-[10px] font-medium text-muted-foreground col-span-full mb-0.5">Includi nel risultato</p>
+            {[
+              [inclNoVisit, setInclNoVisit, 'Dipendenti senza nessuna visita'],
+              [inclDaRivisitare, setInclDaRivisitare, 'Dipendenti da rivisitare (assenti o con accertamenti mancanti)'],
+              [inclSospesi, setInclSospesi, 'Dipendenti sospesi'],
+            ].map(([val, setter, label]) => (
+              <label key={label} className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" className="mt-0.5 h-3.5 w-3.5 accent-primary flex-shrink-0" checked={val} onChange={e => { setter(e.target.checked); resetElaborated(); }} />
+                <span className="text-xs text-muted-foreground leading-tight">{label}</span>
+              </label>
+            ))}
+            <p className="text-[10px] font-medium text-muted-foreground col-span-full mt-2 mb-0.5">Visualizza in stampa</p>
+            {[
+              [showCompanyData, setShowCompanyData, 'Solo dati azienda'],
+              [showPhone, setShowPhone, 'Telefono ed email azienda'],
+              [showBirthDate, setShowBirthDate, 'Data nascita dipendente'],
+              [showMansione, setShowMansione, 'Mansione'],
+            ].map(([val, setter, label]) => (
+              <label key={label} className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" className="mt-0.5 h-3.5 w-3.5 accent-primary flex-shrink-0" checked={val} onChange={e => { setter(e.target.checked); resetElaborated(); }} />
+                <span className="text-xs text-muted-foreground leading-tight">{label}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button onClick={handleElabora} disabled={isFetching} className="gap-2">
-            <Search className="h-4 w-4" />
-            Elabora
-          </Button>
-          {elaborated && (
-            <Badge variant="outline" className="self-center">
-              {results.length} risultati
-            </Badge>
-          )}
+        <div className="border-t border-border mt-4 pt-4">
+          <div className="flex gap-2 items-center">
+            <Button onClick={handleElabora} disabled={isFetching} className="gap-2">
+              <Search className="h-4 w-4" />
+              Elabora
+            </Button>
+            {elaborated && (
+              <Badge variant="outline" className="self-center">
+                {results.length} risultati
+              </Badge>
+            )}
+          </div>
         </div>
+
       </Card>
 
       {/* Results Table */}
