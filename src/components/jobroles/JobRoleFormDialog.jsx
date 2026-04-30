@@ -43,38 +43,6 @@ const PREDEFINED_RISKS = [
   'Videoterminali (VDT)',
 ];
 
-const PREDEFINED_EXAMS = [
-  'Titmus',
-  'Visiotest',
-  'Stampa Verbale Prelievo Liquidi Biologici',
-  'Test Droghe 1° Liv.',
-  'Visita Spec. Tossicologica',
-  'Audit',
-  'Audit-C',
-  'Questionario Disturbi Nasali',
-  'Questionario Videoterminali',
-  'Rachide',
-  'Arti superiori',
-  'Questionario addetti gestione emergenze',
-  'Questionario Lavoro Notturno',
-  'Audiometria',
-  'Questionario App. Muscholo-Scheletrico',
-  'Elettrocardiogramma',
-  'Matrice di West',
-  'Sonno - OSAS',
-  'Rientro da trasferta estero',
-  'CECA',
-  'Covid',
-  'Covid (Test Antigenico)',
-  'Esegui Monitoraggio Biologico',
-  'Esame urine / sangue',
-  'Vestibolare',
-  'Radiazioni Ionizzanti',
-  'Campi Elettromagnetici',
-  'Tetan Test',
-  "E' un Test Alcol",
-  "E' un Test Droghe",
-];
 
 const FREQUENCY_OPTIONS = [
   { label: 'Annuale', value: 12 },
@@ -299,92 +267,32 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
           {/* Accertamenti previsti */}
           <div>
             <Label className="text-sm font-semibold mb-3 block">Accertamenti previsti</Label>
-
-            {/* Lista predefinita */}
-            <div className="border rounded-lg p-3 max-h-52 overflow-y-auto bg-muted/20 grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
-              {PREDEFINED_EXAMS.map(name => {
-                const selected = form.required_exams.find(e => e.exam_name === name && !e._custom);
-                return (
-                  <label key={name} className="flex items-center gap-2 cursor-pointer text-sm text-foreground/80 hover:text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={!!selected}
-                      onChange={() => {
-                        if (selected) {
-                          setForm(prev => ({ ...prev, required_exams: prev.required_exams.filter(e => !(e.exam_name === name && !e._custom)) }));
-                        } else {
-                          setForm(prev => ({ ...prev, required_exams: [...prev.required_exams, { exam_name: name, frequency_months: 12, _custom: false }] }));
-                        }
-                      }}
-                      className="h-4 w-4 accent-primary rounded"
-                    />
-                    {name}
-                  </label>
-                );
-              })}
-            </div>
-
-            {/* Frequenza per esami selezionati */}
-            {form.required_exams.filter(e => !e._custom).length > 0 && (
-              <div className="mt-3 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Frequenza accertamenti selezionati</p>
-                {form.required_exams.filter(e => !e._custom).map((exam, i) => {
-                  const realIndex = form.required_exams.indexOf(exam);
-                  return (
-                    <div key={i} className="flex items-center gap-3 p-2 border rounded-lg bg-muted/10">
-                      <span className="text-sm font-medium flex-1">{exam.exam_name}</span>
-                      <Select
-                        value={String(exam.frequency_months)}
-                        onValueChange={v => {
-                          const newExams = [...form.required_exams];
-                          newExams[realIndex] = { ...newExams[realIndex], frequency_months: Number(v) };
-                          setForm(prev => ({ ...prev, required_exams: newExams }));
-                        }}
-                      >
-                        <SelectTrigger className="w-40 h-8 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {FREQUENCY_OPTIONS.map(opt => (
-                            <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Accertamenti personalizzati */}
-            <div className="mt-3">
+            <div className="mt-1">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Accertamenti aggiuntivi</p>
-                <Button type="button" variant="outline" size="sm" onClick={() => setForm(prev => ({ ...prev, required_exams: [...prev.required_exams, { ...emptyExam, _custom: true }] }))}>
+                <p className="text-xs text-muted-foreground">Aggiungi gli accertamenti sanitari previsti per questa mansione</p>
+                <Button type="button" variant="outline" size="sm" onClick={() => setForm(prev => ({ ...prev, required_exams: [...prev.required_exams, { ...emptyExam }] }))}>
                   <Plus className="h-3 w-3 mr-1" /> Aggiungi
                 </Button>
               </div>
-              {form.required_exams.filter(e => e._custom).map((exam, i) => {
-                const customIndexes = form.required_exams.reduce((acc, e, idx) => { if (e._custom) acc.push(idx); return acc; }, []);
-                const realIndex = customIndexes[i];
-                return (
-                  <div key={i} className="flex gap-2 mb-2 items-center">
-                    <Input placeholder="Nome esame" value={exam.exam_name} onChange={e => updateExam(realIndex, 'exam_name', e.target.value)} className="flex-1" />
-                    <Select
-                      value={String(exam.frequency_months)}
-                      onValueChange={v => updateExam(realIndex, 'frequency_months', Number(v))}
-                    >
-                      <SelectTrigger className="w-40 h-9 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {FREQUENCY_OPTIONS.map(opt => (
-                          <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => setForm(prev => ({ ...prev, required_exams: prev.required_exams.filter((_, idx) => idx !== realIndex) }))}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                );
-              })}
+              {form.required_exams.map((exam, i) => (
+                <div key={i} className="flex gap-2 mb-2 items-center">
+                  <Input placeholder="Nome esame" value={exam.exam_name} onChange={e => updateExam(i, 'exam_name', e.target.value)} className="flex-1" />
+                  <Select
+                    value={String(exam.frequency_months)}
+                    onValueChange={v => updateExam(i, 'frequency_months', Number(v))}
+                  >
+                    <SelectTrigger className="w-40 h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {FREQUENCY_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setForm(prev => ({ ...prev, required_exams: prev.required_exams.filter((_, idx) => idx !== i) }))}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
 
