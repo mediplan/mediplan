@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   ShieldCheck, Sparkles, CheckCircle2, Clock, Pencil, Plus, Trash2,
-  ChevronDown, ChevronUp, Loader2, History, Save, ThumbsUp, Search
+  ChevronDown, ChevronUp, Loader2, History, Save, ThumbsUp, Search, Building2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -169,10 +169,12 @@ export default function SurveillancePlanPanel({ company }) {
   const qc = useQueryClient();
   const [analyzing, setAnalyzing] = useState(false);
   const [aiError, setAiError] = useState('');
-  const [editingPlan, setEditingPlan] = useState(null); // piano in editing
+  const [editingPlan, setEditingPlan] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [approveTarget, setApproveTarget] = useState(null);
+  const [atecoDialogOpen, setAtecoDialogOpen] = useState(false);
+  const [atecoWorkers, setAtecoWorkers] = useState('');
 
   const { data: plans = [] } = useQuery({
     queryKey: ['surveillance_plans', company?.id],
@@ -251,6 +253,37 @@ export default function SurveillancePlanPanel({ company }) {
     setApproveTarget(null);
   };
 
+  const handleGenerateFromAteco = async () => {
+    setAtecoDialogOpen(false);
+    setAnalyzing(true);
+    setAiError('');
+    try {
+      const res = await base44.functions.invoke('generateProtocolFromAteco', {
+        company_name: company.name,
+        ateco_code: company.ateco_code || '',
+        sector: company.sector || '',
+        workers: atecoWorkers,
+      });
+      const plan = res.data.plan;
+      const riskLevel = res.data.risk_level;
+      const nextVersion = `v${plans.length + 1}-AI`;
+      const created = await createMutation.mutateAsync({
+        company_id: company.id,
+        company_name: company.name,
+        version_label: nextVersion,
+        is_ai_generated: true,
+        status: 'bozza_ai',
+        roles: plan.roles || [],
+        ai_summary: `[Rischio ATECO: ${riskLevel}] ${plan.summary || ''}`,
+      });
+      window.open(`/piano-sorveglianza?plan_id=${created.id}&company_id=${company.id}`, '_blank');
+    } catch (e) {
+      setAiError(e.message || 'Errore durante la generazione AI');
+    }
+    setAnalyzing(false);
+    setAtecoWorkers('');
+  };
+
   const handleNewManualPlan = async () => {
     const nextVersion = `v${plans.length + 1}`;
     const created = await createMutation.mutateAsync({
@@ -283,6 +316,17 @@ export default function SurveillancePlanPanel({ company }) {
             <Button size="sm" variant="outline" onClick={handleNewManualPlan}>
               <Plus className="h-4 w-4 mr-1" /> Nuovo piano
             </Button>
+            {!analyzing && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-violet-300 text-violet-700 hover:bg-violet-50 gap-1.5"
+                onClick={() => { setAtecoWorkers(''); setAtecoDialogOpen(true); }}
+              >
+                <Building2 className="h-4 w-4" />
+                Genera da ATECO
+              </Button>
+            )}
             {dvrs.length > 0 && !analyzing && (
               <div className="relative group">
                 <Button
@@ -421,6 +465,49 @@ export default function SurveillancePlanPanel({ company }) {
           </div>
         )}
       </CardContent>
+
+      {/* Dialog genera da ATECO */}
+      <Dialog open={atecoDialogOpen} onOpenChange={setAtecoDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-violet-600" />
+              Genera protocollo da codice ATECO
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="bg-muted/40 rounded-lg p-3 space-y-1 text-sm">
+              <div><span className="text-muted-foreground">Azienda:</span> <strong>{company.name}</strong></div>
+              {company.ateco_code && <div><span className="text-muted-foreground">Codice ATECO:</span> <strong>{company.ateco_code}</strong></div>}
+              {company.sector && <div><span className="text-muted-foreground">Settore:</span> <strong>{company.sector}</strong></div>}
+              {!company.ateco_code && (
+                <p className="text-amber-600 text-xs mt-1">⚠ Codice ATECO non impostato per questa azienda. L'AI userà il settore per determinare il rischio.</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-sm">Mansioni presenti (opzionale)</Label>
+              <Textarea
+                value={atecoWorkers}
+                onChange={e => setAtecoWorkers(e.target.value)}
+                placeholder="Es: 3 operai addetti alla produzione, 2 magazzinieri con muletto, 1 impiegato VDT...&#10;Se vuoto, l'AI deduce le mansioni dal settore ATECO."
+                rows={3}
+                className="mt-1 text-sm"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Specifica le mansioni per un protocollo più preciso. Se lasci vuoto, l'AI le deduce automaticamente dal codice ATECO.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAtecoDialogOpen(false)}>Annulla</Button>
+            <Button
+              className="bg-gradient-to-r from-violet-600 to-blue-500 hover:from-violet-700 hover:to-blue-600 text-white gap-1.5"
+              onClick={handleGenerateFromAteco}
+            >
+              <Sparkles className="h-4 w-4" />
+              Genera protocollo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Storico versioni */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
