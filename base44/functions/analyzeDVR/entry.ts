@@ -47,9 +47,13 @@ Deno.serve(async (req) => {
 Ti viene fornito un DVR (Documento di Valutazione dei Rischi) dell'azienda${company_name ? ` "${company_name}"` : ''}.
 
 IL TUO COMPITO:
-1. Leggi il DVR e identifica TUTTE le mansioni/figure professionali presenti nell'azienda (cercale nelle sezioni dedicate alla valutazione dei rischi per mansione, negli organigrammi, nelle tabelle del personale, ecc.)
+1. Leggi l'INTERO DVR pagina per pagina e identifica TUTTE le mansioni/figure professionali presenti
+   - Cerca in: tabelle "Lavoratori, Mansioni e Ambienti/Reparti", organigrammi, sezioni di valutazione rischi per mansione, capitoli dedicati alla sorveglianza sanitaria
+   - ATTENZIONE: nelle tabelle le mansioni possono essere scritte come "Mansione A – Mansione B" o "Mansione A / Mansione B": in questo caso TRATTALE COME MANSIONI SEPARATE (es. "Cuoco – Aiuto Cuoco" → estrai "Cuoco" E "Aiuto Cuoco" come righe distinte)
+   - Considera anche i numeri di lavoratori per reparto: se ci sono più reparti (SALA, CUCINA, BAR, ecc.) assicurati di estrarre le mansioni di TUTTI i reparti
 2. Per ogni mansione trovata nel DVR, abbinala alla mansione più simile del CATALOGO MANSIONI CONFIGURATO nel sistema
 3. Per ogni mansione, assegna gli accertamenti sanitari appropriati scegliendo ESCLUSIVAMENTE tra quelli del CATALOGO ACCERTAMENTI
+4. Ricava i rischi specifici per ogni mansione leggendo le sezioni del DVR dedicate (schede mansione, tabelle rischi, capitoli valutazione rischi): rumore, movimentazione manuale carichi, microclima, uso videoterminali, agenti biologici/chimici, posture, ecc.
 
 CATALOGO MANSIONI CONFIGURATO NEL SISTEMA (usa questi come riferimento per l'abbinamento):
 ${jobRolesCatalogStr}
@@ -58,11 +62,13 @@ CATALOGO ACCERTAMENTI DISPONIBILI (usa SOLO questi nomi negli accertamenti):
 ${examCatalogStr}
 
 REGOLE GENERALI:
-- Estrai TUTTE le mansioni presenti nel DVR, anche se non sono nel catalogo mansioni
+- Estrai TUTTE le mansioni presenti nel DVR come voci SEPARATE (non accorpare mansioni diverse)
+- Se nel DVR trovi "Mansione A – Mansione B", crea DUE voci distinte nel JSON
 - Se una mansione del DVR corrisponde (anche parzialmente) a una del catalogo, usa il nome del catalogo e il suo ID
 - Se non c'è corrispondenza, usa il nome trovato nel DVR (catalog_match_status = "none")
 - Per gli accertamenti, scegli SOLO nomi presenti nel CATALOGO ACCERTAMENTI (adatta la nomenclatura se necessario)
 - Includi SEMPRE "Visita Medica" come PRIMO accertamento di ogni mansione
+- Ogni mansione DEVE avere almeno 2-3 accertamenti oltre alla Visita Medica (scegli quelli pertinenti ai rischi rilevati)
 
 REGOLE FREQUENZA ACCERTAMENTI (D.Lgs. 81/2008 + Accordo CSR):
 - Visita Medica: 12 mesi se rischio alto, 24 mesi se rischio medio, 48 mesi se rischio basso
