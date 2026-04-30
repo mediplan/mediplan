@@ -57,13 +57,25 @@ ${jobRolesCatalogStr}
 CATALOGO ACCERTAMENTI DISPONIBILI (usa SOLO questi nomi negli accertamenti):
 ${examCatalogStr}
 
-REGOLE:
+REGOLE GENERALI:
 - Estrai TUTTE le mansioni presenti nel DVR, anche se non sono nel catalogo mansioni
-- Se una mansione del DVR corrisponde (anche parzialmente) a una del catalogo, usa il nome del catalogo e il suo ID (catalog_match_id, catalog_match_name)
+- Se una mansione del DVR corrisponde (anche parzialmente) a una del catalogo, usa il nome del catalogo e il suo ID
 - Se non c'è corrispondenza, usa il nome trovato nel DVR (catalog_match_status = "none")
 - Per gli accertamenti, scegli SOLO nomi presenti nel CATALOGO ACCERTAMENTI (adatta la nomenclatura se necessario)
-- La periodicità della visita medica: 12 mesi per rischi alti, 24 mesi per rischi medi/bassi
-- Includi SEMPRE "Visita Medica" come primo accertamento
+- Includi SEMPRE "Visita Medica" come PRIMO accertamento di ogni mansione
+
+REGOLE FREQUENZA ACCERTAMENTI (D.Lgs. 81/2008 + Accordo CSR):
+- Visita Medica: 12 mesi se rischio alto, 24 mesi se rischio medio, 48 mesi se rischio basso
+- Audiometria: 12 mesi se rumore ≥85 dB(A), 24 mesi se rumore 80-85 dB(A)
+- Spirometria: 12-24 mesi per rischi respiratori (polveri, agenti chimici, fumi)
+- Visiotest / Test Visivo: 24 mesi per VDT under 50 anni, 12 mesi per over 50
+- Valutazione Arti Superiori: 12-24 mesi per movimenti ripetitivi o vibrazioni mano-braccio
+- Valutazione Funzionale Rachide: 12-24 mesi per MMC, posture, vibrazioni corpo intero
+- Esami ematochimici / laboratorio: 12-24 mesi per agenti chimici, biologici
+- ECG: 24-48 mesi per rischio cardiovascolare o lavoro in ambienti particolari
+- AUDIT-C / Droga Test: 12 mesi per categorie a rischio (autisti, carrellisti, addetti macchinari)
+- Se la frequenza è indicata nel DVR, usa quella; altrimenti applica le regole sopra
+- frequency_months = 0 solo per accertamenti "secondo protocollo" (es. vaccinazioni)
 
 Nel "summary" descrivi: tipo azienda, mansioni principali trovate nel DVR, note rilevanti.`;
 
