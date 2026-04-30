@@ -13,15 +13,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/shared/PageHeader';
-import { Search, AlertTriangle } from 'lucide-react';
+import { Search, AlertTriangle, X } from 'lucide-react';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
 
-const ESAMI = [
-  'AUDIOMETRIA', 'AUDIT', 'AUDIT-C', 'AZOTEMIA', 'CROMO URINARIO', 'DRUG TEST',
-  'ECOCARDIODOPPLER', 'ELETTROCARDIOGRAMMA', 'EMOCROMO', 'ENZIMI EPATICI',
-  'ESAME URINE', 'GLICEMIA', 'PIOMBEMIA', 'RADIOGRAFIA TORACE', 'SPIROMETRIA',
-  'VISIOTEST', 'VISITA MEDICA'
-];
 
 const VISIT_TYPE_LABELS = {
   preventiva: 'Preventiva',
@@ -69,6 +63,12 @@ export default function Scadenze() {
   const myDoctorProfile = user?.role === 'medico'
     ? allDoctors.find(d => d.user_email === user.email)
     : null;
+
+  const { data: examCatalog = [] } = useQuery({
+    queryKey: ['medicalExamCatalog'],
+    queryFn: () => base44.entities.MedicalExamCatalog.list('name'),
+  });
+  const activeExams = examCatalog.filter(e => e.active !== false);
 
   const { tenantId } = useTenant();
 
@@ -191,24 +191,43 @@ export default function Scadenze() {
             </Select>
           </div>
 
-          {/* Esami multi-select */}
-          <div className="flex-1 min-w-[200px]">
-            <Label className="text-xs mb-1 block">Esame/i</Label>
-            <div className="border border-input rounded-md p-2 max-h-28 overflow-y-auto bg-background text-sm space-y-1">
-              {ESAMI.map(exam => (
-                <label key={exam} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-1 rounded">
-                  <input
-                    type="checkbox"
-                    className="h-3.5 w-3.5 accent-primary"
-                    checked={selectedExams.includes(exam)}
-                    onChange={() => { toggleExam(exam); resetElaborated(); }}
-                  />
-                  <span className="text-xs">{exam}</span>
-                </label>
-              ))}
-            </div>
-          </div>
         </div>
+
+        {/* Filtra per esame */}
+        {activeExams.length > 0 && (
+          <div>
+            <Label className="text-xs mb-2 block">Filtra per accertamento</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {activeExams.map(exam => {
+                const selected = selectedExams.includes(exam.name);
+                return (
+                  <button
+                    key={exam.id}
+                    type="button"
+                    onClick={() => { toggleExam(exam.name); resetElaborated(); }}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      selected
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-foreground border-border hover:bg-muted'
+                    }`}
+                  >
+                    {exam.name}
+                    {selected && <X className="h-3 w-3" />}
+                  </button>
+                );
+              })}
+            </div>
+            {selectedExams.length > 0 && (
+              <button
+                type="button"
+                onClick={() => { setSelectedExams([]); resetElaborated(); }}
+                className="mt-1.5 text-xs text-muted-foreground hover:text-foreground underline"
+              >
+                Rimuovi filtri esame
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Checkboxes */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
