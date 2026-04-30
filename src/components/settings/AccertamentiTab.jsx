@@ -11,7 +11,7 @@ import { Plus, Pencil, Trash2, Search, Stethoscope, Activity, FlaskConical } fro
 const CATEGORIES = [
   {
     key: 'prestazione_medica',
-    label: 'Prestazioni Mediche',
+    label: 'Accertamenti Integrativi',
     icon: Stethoscope,
     color: 'text-primary',
     badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
