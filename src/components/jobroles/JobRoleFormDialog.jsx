@@ -9,40 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 
-const PREDEFINED_RISKS = [
-  'Agenti Biologici',
-  'Agenti Cancerogeni',
-  'Agenti Chimici',
-  'Agenti Mutageni',
-  'Alcoldipendenza',
-  'Amianto',
-  'Atmosfere Iperbariche',
-  'Attività in quota sup. 2 m',
-  'Autista Patente B',
-  'Campi Elettromagnetici',
-  'Infrasuoni',
-  'Lavoro Notturno',
-  'Lavoro in altezza',
-  'Microclima Severo',
-  'Movimentazione Manuale dei Carichi',
-  'Movimentazione Ripetitiva Arti Superiori',
-  'Polvere Legno Duro',
-  'Polveri miste',
-  'Posture Incongrue',
-  'Prova rischio',
-  'Radiazioni Ionizzanti',
-  'Radiazioni Ottiche Artificiali',
-  'Raggi U.V e IR',
-  'Rumore',
-  'Sovraccarico Biomeccanico Arti Superiori',
-  'Stress Lavoro Correlato',
-  'Tossicodipendenza',
-  'Ultrasuoni',
-  'Vibrazioni Corpo Intero',
-  'Vibrazioni Mano Braccio',
-  'Videoterminali (VDT)',
-];
-
 
 const FREQUENCY_OPTIONS = [
   { label: 'Annuale', value: 12 },
@@ -75,19 +41,6 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  // Rischi predefiniti: toggle checkbox
-  const isPredefinedSelected = (name) =>
-    form.risks.some(r => r.risk_name === name && !r._custom);
-
-  const togglePredefined = (name) => {
-    const already = form.risks.some(r => r.risk_name === name && !r._custom);
-    if (already) {
-      setForm(prev => ({ ...prev, risks: prev.risks.filter(r => !(r.risk_name === name && !r._custom)) }));
-    } else {
-      setForm(prev => ({ ...prev, risks: [...prev.risks, { risk_name: name, risk_category: '', risk_level: '', description: '', _custom: false }] }));
-    }
   };
 
   // Rischi personalizzati
@@ -156,73 +109,9 @@ export default function JobRoleFormDialog({ open, onOpenChange, jobRole, onSave 
             </div>
           </div>
 
-          {/* Rischi predefiniti */}
+          {/* Rischi */}
           <div>
             <Label className="text-sm font-semibold mb-3 block">Rischi</Label>
-            <div className="border rounded-lg p-3 max-h-52 overflow-y-auto bg-muted/20 grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
-              {PREDEFINED_RISKS.map(name => (
-                <label key={name} className="flex items-center gap-2 cursor-pointer hover:text-foreground text-sm text-foreground/80">
-                  <input
-                    type="checkbox"
-                    checked={isPredefinedSelected(name)}
-                    onChange={() => togglePredefined(name)}
-                    className="h-4 w-4 accent-primary rounded"
-                  />
-                  {name}
-                </label>
-              ))}
-            </div>
-
-            {/* Dettagli per i rischi predefiniti selezionati */}
-            {form.risks.filter(r => !r._custom).length > 0 && (
-              <div className="mt-3 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Dettagli rischi selezionati</p>
-                {form.risks.filter(r => !r._custom).map((risk, i) => {
-                  const realIndex = form.risks.indexOf(risk);
-                  return (
-                    <div key={i} className="grid grid-cols-3 gap-2 p-2 border rounded-lg bg-muted/10">
-                      <span className="text-sm font-medium col-span-3 text-foreground">{risk.risk_name}</span>
-                      <Select value={risk.risk_category} onValueChange={v => {
-                        const newRisks = [...form.risks];
-                        newRisks[realIndex] = { ...newRisks[realIndex], risk_category: v };
-                        setForm(prev => ({ ...prev, risks: newRisks }));
-                      }}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Categoria" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="chimico">Chimico</SelectItem>
-                          <SelectItem value="fisico">Fisico</SelectItem>
-                          <SelectItem value="biologico">Biologico</SelectItem>
-                          <SelectItem value="ergonomico">Ergonomico</SelectItem>
-                          <SelectItem value="psicosociale">Psicosociale</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Select value={risk.risk_level} onValueChange={v => {
-                        const newRisks = [...form.risks];
-                        newRisks[realIndex] = { ...newRisks[realIndex], risk_level: v };
-                        setForm(prev => ({ ...prev, risks: newRisks }));
-                      }}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Livello" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="basso">Basso</SelectItem>
-                          <SelectItem value="medio">Medio</SelectItem>
-                          <SelectItem value="alto">Alto</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        placeholder="Descrizione"
-                        value={risk.description}
-                        onChange={e => {
-                          const newRisks = [...form.risks];
-                          newRisks[realIndex] = { ...newRisks[realIndex], description: e.target.value };
-                          setForm(prev => ({ ...prev, risks: newRisks }));
-                        }}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
 
             {/* Rischi personalizzati */}
             <div className="mt-3">
