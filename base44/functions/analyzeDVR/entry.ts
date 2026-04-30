@@ -14,45 +14,58 @@ Deno.serve(async (req) => {
     const { file_url, company_name } = await req.json();
     if (!file_url) return Response.json({ error: 'file_url mancante' }, { status: 400 });
 
-    // Carica il mansionario globale per contestualizzare le mansioni
-    let jobRolesContext = '';
+    // Carica il catalogo JobRole (mansionario configurato)
+    let jobRoles = [];
     try {
-      const jobRoles = await base44.asServiceRole.entities.JobRole.filter({});
-      if (jobRoles.length > 0) {
-        const catalogoStr = jobRoles.map(r => {
-          const examsStr = (r.required_exams || []).map(e => `${e.exam_name} (${e.frequency_months} mesi)`).join(', ');
+      jobRoles = await base44.asServiceRole.entities.JobRole.filter({});
+    } catch (_) {}
+
+    // Carica il catalogo accertamenti (MedicalExamCatalog)
+    let examCatalog = [];
+    try {
+      examCatalog = await base44.asServiceRole.entities.MedicalExamCatalog.filter({ active: true });
+    } catch (_) {}
+
+    // Costruisci il testo del catalogo mansioni
+    const jobRolesCatalogStr = jobRoles.length > 0
+      ? jobRoles.map(r => {
           const risksStr = (r.risks || []).map(e => e.risk_name).join(', ');
-          return `- ${r.name}${risksStr ? ` | Rischi: ${risksStr}` : ''}${examsStr ? ` | Esami standard: ${examsStr}` : ''}${r.surveillance_frequency_months ? ` | Periodicità standard: ${r.surveillance_frequency_months} mesi` : ''}`;
-        }).join('\n');
-        jobRolesContext = `\n\nMANSIONARIO AZIENDALE (catalogo mansioni configurato nel sistema):\n${catalogoStr}\n\nUsa queste informazioni come RIFERIMENTO per completare/integrare i dati mancanti nel documento, ma dai sempre PRIORITÀ a quanto scritto nel documento stesso.`;
-      }
-    } catch (_) { /* ignora se non disponibile */ }
+          const examsStr = (r.required_exams || []).map(e => `${e.exam_name} (${e.frequency_months || 12} mesi)`).join(', ');
+          return `- ID:"${r.id}" | Nome:"${r.name}"${risksStr ? ` | Rischi tipici: ${risksStr}` : ''}${examsStr ? ` | Accertamenti standard: ${examsStr}` : ''}${r.surveillance_frequency_months ? ` | Periodicità: ${r.surveillance_frequency_months} mesi` : ''}`;
+        }).join('\n')
+      : 'Nessuna mansione nel catalogo.';
 
-    const prompt = `Sei un esperto di medicina del lavoro (Medico Competente) ai sensi del D.Lgs. 81/2008.
-Ti viene fornito un Protocollo Sanitario o DVR di un'azienda${company_name ? ` chiamata "${company_name}"` : ''}.
+    // Costruisci il testo del catalogo accertamenti
+    const examCatalogStr = examCatalog.length > 0
+      ? examCatalog.map(e => {
+          const catLabel = e.category === 'prestazione_medica' ? 'Prestazione Medica' : e.category === 'accertamento_strumentale' ? 'Accertamento Strumentale' : 'Esame di Laboratorio';
+          return `- "${e.name}" [${catLabel}]`;
+        }).join('\n')
+      : 'Nessun accertamento nel catalogo.';
 
-Il documento è strutturato per MANSIONI. Per ogni mansione è presente una tabella con:
-- Colonna FATTORI DI RISCHIO (con X se presente/applicabile): MMC, Movimenti Ripetitivi, Posture, Microclima, Polveri Miste, Vibrazioni (Mano-Braccio o Corpo Intero), Rumore, Lavoro Notturno, Lavoro in Altezza, Stress, Utilizzo VDT, Agenti Chimici, Agenti Biologici, Altro
-- Colonna ACCERTAMENTI: gli esami sanitari previsti (es. Visita Medica, Audiometria, Spirometria, Test Visivo, Esame Ematochimico, ECG, Valutazione Arti Superiori, Val. Fun. Rachide, Glicemia + HB Glicata, Droga Test Urinario, AUDIT C, Vaccinazione Antitetano, RX Torace, VDT, Urine, Escreato, ecc.)
-- Colonna PERIODICITA': la frequenza in mesi (es. 12 MESI, 24 MESI, 48 MESI) oppure "SECONDO PROTOCOLLO" per le vaccinazioni
+    const prompt = `Sei un Medico Competente esperto in medicina del lavoro (D.Lgs. 81/2008).
+Ti viene fornito un DVR (Documento di Valutazione dei Rischi) dell'azienda${company_name ? ` "${company_name}"` : ''}.
 
-ISTRUZIONI:
-1. Estrai TUTTE le mansioni presenti nel documento (incluse quelle nelle pagine finali, nelle tabelle riassuntive, negli allegati).
-2. Per ogni mansione, elenca tutti i fattori di rischio marcati con X.
-3. Per ogni mansione, elenca TUTTI gli accertamenti con la loro periodicità in mesi:
-   - Se la periodicità è "SECONDO PROTOCOLLO" usa 0 come valore numerico
-   - Se non è indicata una periodicità esplicita, deduci dalla logica del protocollo (di solito la stessa della visita medica per quella mansione) oppure usa null
-   - La visita medica periodica ha sempre una periodicità indicata: usala come "frequency_months" principale della mansione
-4. Nel campo "risks" elenca i fattori di rischio attivi (con X) separati da virgola.
-5. Nel campo "notes" inserisci qualsiasi indicazione speciale (es. "Magazziniere con uso carrelli elevatori - non applicabile il protocollo standard", ecc.)
-6. Nel "summary" descrivi sinteticamente il tipo di azienda/attività e le mansioni principali trovate.
-7. RICONCILIAZIONE CATALOGO: Per ogni mansione trovata nel documento, verifica se il suo nome (anche con leggere varianti linguistiche, abbreviazioni, o denominazioni diverse) corrisponde o è molto simile a una mansione del MANSIONARIO AZIENDALE riportato sotto. 
-   - Se trovi una corrispondenza certa (stesso ruolo, nome identico o quasi identico): imposta catalog_match_status = "exact"
-   - Se trovi una corrispondenza probabile (stesso ruolo ma nome diverso, es. "Addetto Magazzino" vs "Magazziniere", "Operatore VDT" vs "Addetto VDT"): imposta catalog_match_status = "suggested" e indica il nome dal catalogo in catalog_match_name
-   - Se non trovi corrispondenze nel catalogo: imposta catalog_match_status = "none"
+IL TUO COMPITO:
+1. Leggi il DVR e identifica TUTTE le mansioni/figure professionali presenti nell'azienda (cercale nelle sezioni dedicate alla valutazione dei rischi per mansione, negli organigrammi, nelle tabelle del personale, ecc.)
+2. Per ogni mansione trovata nel DVR, abbinala alla mansione più simile del CATALOGO MANSIONI CONFIGURATO nel sistema
+3. Per ogni mansione, assegna gli accertamenti sanitari appropriati scegliendo ESCLUSIVAMENTE tra quelli del CATALOGO ACCERTAMENTI
 
-Sii PRECISO ed ESAUSTIVO: non omettere alcuna mansione né alcun accertamento presente nel documento.
-Usa la terminologia italiana corretta della medicina del lavoro.${jobRolesContext}`;
+CATALOGO MANSIONI CONFIGURATO NEL SISTEMA (usa questi come riferimento per l'abbinamento):
+${jobRolesCatalogStr}
+
+CATALOGO ACCERTAMENTI DISPONIBILI (usa SOLO questi nomi negli accertamenti):
+${examCatalogStr}
+
+REGOLE:
+- Estrai TUTTE le mansioni presenti nel DVR, anche se non sono nel catalogo mansioni
+- Se una mansione del DVR corrisponde (anche parzialmente) a una del catalogo, usa il nome del catalogo e il suo ID (catalog_match_id, catalog_match_name)
+- Se non c'è corrispondenza, usa il nome trovato nel DVR (catalog_match_status = "none")
+- Per gli accertamenti, scegli SOLO nomi presenti nel CATALOGO ACCERTAMENTI (adatta la nomenclatura se necessario)
+- La periodicità della visita medica: 12 mesi per rischi alti, 24 mesi per rischi medi/bassi
+- Includi SEMPRE "Visita Medica" come primo accertamento
+
+Nel "summary" descrivi: tipo azienda, mansioni principali trovate nel DVR, note rilevanti.`;
 
     const result = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -63,51 +76,55 @@ Usa la terminologia italiana corretta della medicina del lavoro.${jobRolesContex
         properties: {
           summary: {
             type: 'string',
-            description: 'Sommario del protocollo: tipo azienda, numero mansioni trovate, caratteristiche principali (max 400 caratteri)'
+            description: 'Sommario: tipo azienda, mansioni trovate, rischi principali (max 400 caratteri)'
           },
           roles: {
             type: 'array',
-            description: 'Una voce per ogni mansione trovata nel documento',
+            description: 'Una voce per ogni mansione trovata nel DVR',
             items: {
               type: 'object',
               properties: {
                 role_name: {
                   type: 'string',
-                  description: 'Nome della mansione esatto come nel documento (es. "Bagnino", "Cameriere/a ai Piani", "Cuoco/Aiuto Cuoco")'
+                  description: 'Nome mansione: usa il nome del catalogo se trovata corrispondenza, altrimenti il nome dal DVR'
                 },
                 catalog_match_status: {
                   type: 'string',
-                  description: '"exact" se il nome corrisponde esattamente a una mansione del catalogo, "suggested" se c\'è una corrispondenza probabile con nome diverso, "none" se non c\'è corrispondenza'
+                  description: '"exact" = corrisponde esattamente a una mansione del catalogo; "suggested" = corrispondenza probabile con nome diverso; "none" = nessuna corrispondenza nel catalogo'
                 },
                 catalog_match_name: {
                   type: 'string',
-                  description: 'Nome della mansione del catalogo suggerita come corrispondente (solo se catalog_match_status = "suggested")'
+                  description: 'Nome della mansione del catalogo (solo se catalog_match_status è "suggested")'
+                },
+                catalog_match_id: {
+                  type: 'string',
+                  description: 'ID della mansione del catalogo abbinata (solo se catalog_match_status è "exact" o "suggested")'
                 },
                 risks: {
                   type: 'string',
-                  description: 'Fattori di rischio attivi (con X nel documento) separati da virgola (es. "MMC, Movimenti Ripetitivi, Posture, Microclima")'
+                  description: 'Fattori di rischio identificati nel DVR per questa mansione, separati da virgola'
                 },
                 frequency_months: {
                   type: 'number',
-                  description: 'Periodicità della visita medica periodica in mesi (es. 12, 24, 48). Desumila dall\'accertamento "Visita Medica" del protocollo.'
+                  description: 'Periodicità visita medica in mesi (12, 24 o 48)'
                 },
                 notes: {
                   type: 'string',
-                  description: 'Note speciali, avvertenze, annotazioni presenti nel documento per questa mansione'
+                  description: 'Note specifiche dal DVR per questa mansione'
                 },
                 exams: {
                   type: 'array',
-                  description: 'Lista completa di tutti gli accertamenti previsti per questa mansione',
+                  description: 'Lista accertamenti sanitari scelti ESCLUSIVAMENTE dal catalogo accertamenti disponibili',
                   items: {
                     type: 'object',
                     properties: {
                       exam_name: {
                         type: 'string',
-                        description: 'Nome esatto dell\'accertamento (es. "Visita Medica", "Audiometria", "Spirometria", "Test Visivo", "Esame Ematochimico", "ECG", "Valutazione Arti Superiori", "Val. Fun. Rachide", "Glicemia + HB Glicata", "Droga Test Urinario", "AUDIT C", "Vaccinazione Antitetano", "RX Torace", "VDT", "Urine", "Escreato")'
+                        description: 'Nome esatto dell\'accertamento come appare nel catalogo'
                       },
                       frequency_months: {
                         type: 'number',
-                        description: 'Periodicità in mesi. Usa 0 per "Secondo Protocollo" (vaccinazioni). Se non specificata ma è logicamente la stessa della visita medica, usa quella.'
+                        description: 'Periodicità in mesi (0 = secondo protocollo)'
                       }
                     }
                   }
