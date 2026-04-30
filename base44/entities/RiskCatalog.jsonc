@@ -1,0 +1,26 @@
+{
+  "name": "RiskCatalog",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome del rischio"
+    },
+    "category": {
+      "type": "string",
+      "description": "Categoria del rischio (es. chimico, fisico, biologico...)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Voce attiva"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

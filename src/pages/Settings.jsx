@@ -19,11 +19,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag, ClipboardList } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag, ClipboardList, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import UtentiTab from '@/components/settings/UtentiTab';
 import PriceListsTab from '@/components/settings/PriceListsTab';
 import AccertamentiTab from '@/components/settings/AccertamentiTab';
+import RischiTab from '@/components/settings/RischiTab';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
 
@@ -534,6 +535,9 @@ export default function Settings() {
           <TabsTrigger value="accertamenti" className="gap-2">
             <ClipboardList className="h-4 w-4" /> Accertamenti
           </TabsTrigger>
+          <TabsTrigger value="rischi" className="gap-2">
+            <AlertTriangle className="h-4 w-4" /> Elenco Rischi
+          </TabsTrigger>
           <TabsTrigger value="integrazioni" className="gap-2">
             <Plug className="h-4 w-4" /> Integrazioni Strumenti
           </TabsTrigger>
@@ -558,6 +562,9 @@ export default function Settings() {
         </TabsContent>
         <TabsContent value="accertamenti">
           <AccertamentiTab />
+        </TabsContent>
+        <TabsContent value="rischi">
+          <RischiTab />
         </TabsContent>
         <TabsContent value="integrazioni">
           <IntegrazioniTab />
