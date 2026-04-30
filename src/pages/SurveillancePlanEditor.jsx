@@ -146,15 +146,25 @@ export default function SurveillancePlanEditor() {
   const { data: plan, isLoading } = useQuery({
     queryKey: ['surveillance_plan', planId],
     queryFn: async () => {
-      const all = await base44.entities.SurveillancePlan.filter({ company_id: companyId });
-      return all.find(p => p.id === planId) || null;
+      // Riprova fino a 5 volte con delay crescente (il tab si apre prima che il salvataggio sia completato)
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 800 * attempt));
+        try {
+          const all = await base44.entities.SurveillancePlan.filter({ company_id: companyId });
+          const found = all.find(p => p.id === planId);
+          if (found) return found;
+        } catch (_) {}
+      }
+      return null;
     },
     enabled: !!planId && !!companyId,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   useEffect(() => {
-    if (plan && !localPlan) setLocalPlan(plan);
-  }, [plan]);
+    if (plan) setLocalPlan(plan);
+  }, [plan?.id]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.SurveillancePlan.update(id, data),
