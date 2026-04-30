@@ -13,9 +13,33 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/shared/PageHeader';
-import { Search, AlertTriangle, X } from 'lucide-react';
+import { Search, AlertTriangle, X, Stethoscope, Activity, FlaskConical, Printer } from 'lucide-react';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
 
+
+const EXAM_CATEGORIES = [
+  {
+    key: 'prestazione_medica',
+    label: 'Accertamenti Integrativi',
+    icon: Stethoscope,
+    tagSelected: 'bg-blue-600 text-white border-blue-600',
+    tagUnselected: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
+  },
+  {
+    key: 'accertamento_strumentale',
+    label: 'Accertamenti Strumentali',
+    icon: Activity,
+    tagSelected: 'bg-teal-600 text-white border-teal-600',
+    tagUnselected: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100',
+  },
+  {
+    key: 'esame_laboratorio',
+    label: 'Esami di Laboratorio',
+    icon: FlaskConical,
+    tagSelected: 'bg-violet-600 text-white border-violet-600',
+    tagUnselected: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100',
+  },
+];
 
 const VISIT_TYPE_LABELS = {
   preventiva: 'Preventiva',
@@ -201,7 +225,7 @@ export default function Scadenze() {
         {/* Sezione 2: Filtra per accertamento */}
         {activeExams.length > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Filtra per accertamento
                 {selectedExams.length > 0 && (
@@ -214,27 +238,39 @@ export default function Scadenze() {
                   onClick={() => { setSelectedExams([]); resetElaborated(); }}
                   className="text-xs text-muted-foreground hover:text-foreground underline"
                 >
-                  Rimuovi tutti
+                  Deseleziona tutti
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {activeExams.map(exam => {
-                const selected = selectedExams.includes(exam.name);
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {EXAM_CATEGORIES.map(cat => {
+                const catExams = activeExams.filter(e => e.category === cat.key);
+                if (catExams.length === 0) return null;
+                const Icon = cat.icon;
                 return (
-                  <button
-                    key={exam.id}
-                    type="button"
-                    onClick={() => { toggleExam(exam.name); resetElaborated(); }}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      selected
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-muted/50 text-foreground border-border hover:bg-muted'
-                    }`}
-                  >
-                    {exam.name}
-                    {selected && <X className="h-3 w-3" />}
-                  </button>
+                  <div key={cat.key} className="border rounded-lg overflow-hidden">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 border-b">
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs font-semibold text-foreground">{cat.label}</span>
+                      <span className="ml-auto text-[10px] text-muted-foreground">{catExams.filter(e => selectedExams.includes(e.name)).length}/{catExams.length}</span>
+                    </div>
+                    <div className="p-2 flex flex-wrap gap-1.5">
+                      {catExams.map(exam => {
+                        const selected = selectedExams.includes(exam.name);
+                        return (
+                          <button
+                            key={exam.id}
+                            type="button"
+                            onClick={() => { toggleExam(exam.name); resetElaborated(); }}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${selected ? cat.tagSelected : cat.tagUnselected}`}
+                          >
+                            {exam.name}
+                            {selected && <X className="h-2.5 w-2.5" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -292,6 +328,15 @@ export default function Scadenze() {
       {/* Results Table */}
       {elaborated && (
         <Card className="overflow-hidden">
+          {results.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/20">
+              <span className="text-sm font-medium">{results.length} risultati</span>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs print:hidden" onClick={() => window.print()}>
+                <Printer className="h-3.5 w-3.5" />
+                Stampa
+              </Button>
+            </div>
+          )}
           {results.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
               Nessuna scadenza trovata per i filtri selezionati
