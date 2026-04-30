@@ -19,10 +19,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import UtentiTab from '@/components/settings/UtentiTab';
 import PriceListsTab from '@/components/settings/PriceListsTab';
+import AccertamentiTab from '@/components/settings/AccertamentiTab';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
 
@@ -533,6 +534,9 @@ export default function Settings() {
           <TabsTrigger value="mansionario" className="gap-2">
             <Briefcase className="h-4 w-4" /> Mansionario
           </TabsTrigger>
+          <TabsTrigger value="accertamenti" className="gap-2">
+            <ClipboardList className="h-4 w-4" /> Accertamenti
+          </TabsTrigger>
           <TabsTrigger value="integrazioni" className="gap-2">
             <Plug className="h-4 w-4" /> Integrazioni Strumenti
           </TabsTrigger>
@@ -557,6 +561,9 @@ export default function Settings() {
         </TabsContent>
         <TabsContent value="mansionario">
           <MansionarioTab />
+        </TabsContent>
+        <TabsContent value="accertamenti">
+          <AccertamentiTab />
         </TabsContent>
         <TabsContent value="integrazioni">
           <IntegrazioniTab />

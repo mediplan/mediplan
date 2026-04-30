@@ -1,0 +1,32 @@
+{
+  "name": "MedicalExamCatalog",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome dell'accertamento"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "prestazione_medica",
+        "accertamento_strumentale",
+        "esame_laboratorio"
+      ],
+      "description": "Categoria dell'accertamento"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Voce attiva"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}
