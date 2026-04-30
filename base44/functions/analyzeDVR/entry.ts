@@ -37,7 +37,7 @@ Il documento è strutturato per MANSIONI. Per ogni mansione è presente una tabe
 - Colonna PERIODICITA': la frequenza in mesi (es. 12 MESI, 24 MESI, 48 MESI) oppure "SECONDO PROTOCOLLO" per le vaccinazioni
 
 ISTRUZIONI:
-1. Estrai TUTTE le mansioni presenti nel documento.
+1. Estrai TUTTE le mansioni presenti nel documento (incluse quelle nelle pagine finali, nelle tabelle riassuntive, negli allegati).
 2. Per ogni mansione, elenca tutti i fattori di rischio marcati con X.
 3. Per ogni mansione, elenca TUTTI gli accertamenti con la loro periodicità in mesi:
    - Se la periodicità è "SECONDO PROTOCOLLO" usa 0 come valore numerico
@@ -46,6 +46,10 @@ ISTRUZIONI:
 4. Nel campo "risks" elenca i fattori di rischio attivi (con X) separati da virgola.
 5. Nel campo "notes" inserisci qualsiasi indicazione speciale (es. "Magazziniere con uso carrelli elevatori - non applicabile il protocollo standard", ecc.)
 6. Nel "summary" descrivi sinteticamente il tipo di azienda/attività e le mansioni principali trovate.
+7. RICONCILIAZIONE CATALOGO: Per ogni mansione trovata nel documento, verifica se il suo nome (anche con leggere varianti linguistiche, abbreviazioni, o denominazioni diverse) corrisponde o è molto simile a una mansione del MANSIONARIO AZIENDALE riportato sotto. 
+   - Se trovi una corrispondenza certa (stesso ruolo, nome identico o quasi identico): imposta catalog_match_status = "exact"
+   - Se trovi una corrispondenza probabile (stesso ruolo ma nome diverso, es. "Addetto Magazzino" vs "Magazziniere", "Operatore VDT" vs "Addetto VDT"): imposta catalog_match_status = "suggested" e indica il nome dal catalogo in catalog_match_name
+   - Se non trovi corrispondenze nel catalogo: imposta catalog_match_status = "none"
 
 Sii PRECISO ed ESAUSTIVO: non omettere alcuna mansione né alcun accertamento presente nel documento.
 Usa la terminologia italiana corretta della medicina del lavoro.${jobRolesContext}`;
@@ -70,6 +74,14 @@ Usa la terminologia italiana corretta della medicina del lavoro.${jobRolesContex
                 role_name: {
                   type: 'string',
                   description: 'Nome della mansione esatto come nel documento (es. "Bagnino", "Cameriere/a ai Piani", "Cuoco/Aiuto Cuoco")'
+                },
+                catalog_match_status: {
+                  type: 'string',
+                  description: '"exact" se il nome corrisponde esattamente a una mansione del catalogo, "suggested" se c\'è una corrispondenza probabile con nome diverso, "none" se non c\'è corrispondenza'
+                },
+                catalog_match_name: {
+                  type: 'string',
+                  description: 'Nome della mansione del catalogo suggerita come corrispondente (solo se catalog_match_status = "suggested")'
                 },
                 risks: {
                   type: 'string',

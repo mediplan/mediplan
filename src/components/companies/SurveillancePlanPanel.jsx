@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   ShieldCheck, Sparkles, CheckCircle2, Clock, Pencil, Plus, Trash2,
-  ChevronDown, ChevronUp, Loader2, History, Save, ThumbsUp, Search
+  ChevronDown, ChevronUp, Loader2, History, Save, ThumbsUp, Search, AlertTriangle, Check, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -173,6 +173,7 @@ export default function SurveillancePlanPanel({ company }) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [approveTarget, setApproveTarget] = useState(null);
+  const [reconciliationPlan, setReconciliationPlan] = useState(null); // piano in attesa di riconciliazione mansioni
 
 
   const { data: plans = [] } = useQuery({
@@ -216,24 +217,45 @@ export default function SurveillancePlanPanel({ company }) {
     try {
       const res = await base44.functions.invoke('analyzeDVR', { file_url: doc.file_url, company_name: company.name });
       const plan = res.data.plan;
-      const nextVersion = `v${plans.length + 1}-AI`;
-      const created = await createMutation.mutateAsync({
-        company_id: company.id,
-        company_name: company.name,
-        version_label: nextVersion,
-        source_document_id: doc.id,
-        source_document_title: doc.title,
-        is_ai_generated: true,
-        status: 'bozza_ai',
-        roles: plan.roles || [],
-        ai_summary: plan.summary || '',
-      });
-      // Apri la scheda di revisione/approvazione
-      window.open(`/piano-sorveglianza?plan_id=${created.id}&company_id=${company.id}`, '_blank');
+      const roles = plan.roles || [];
+
+      // Controlla se ci sono mansioni con corrispondenza "suggested" nel catalogo
+      const suggestedRoles = roles.filter(r => r.catalog_match_status === 'suggested');
+      if (suggestedRoles.length > 0) {
+        // Mostra dialog di riconciliazione prima di salvare
+        setReconciliationPlan({ doc, plan, roles: roles.map(r => ({ ...r, _reconciled: r.catalog_match_status !== 'suggested' })) });
+        setAnalyzing(false);
+        return;
+      }
+
+      await saveAnalyzedPlan(doc, plan, roles);
     } catch (e) {
       setAiError(e.message || 'Errore durante l\'analisi AI');
     }
     setAnalyzing(false);
+  };
+
+  const saveAnalyzedPlan = async (doc, plan, roles) => {
+    const nextVersion = `v${plans.length + 1}-AI`;
+    const created = await createMutation.mutateAsync({
+      company_id: company.id,
+      company_name: company.name,
+      version_label: nextVersion,
+      source_document_id: doc.id,
+      source_document_title: doc.title,
+      is_ai_generated: true,
+      status: 'bozza_ai',
+      roles: roles.map(({ catalog_match_status, catalog_match_name, _reconciled, ...rest }) => rest),
+      ai_summary: plan.summary || '',
+    });
+    window.open(`/piano-sorveglianza?plan_id=${created.id}&company_id=${company.id}`, '_blank');
+  };
+
+  const handleReconciliationConfirm = async () => {
+    if (!reconciliationPlan) return;
+    const { doc, plan, roles } = reconciliationPlan;
+    await saveAnalyzedPlan(doc, plan, roles);
+    setReconciliationPlan(null);
   };
 
   const handleSaveEdit = () => {
@@ -422,6 +444,104 @@ export default function SurveillancePlanPanel({ company }) {
           </div>
         )}
       </CardContent>
+
+      {/* Dialog riconciliazione mansioni */}
+      <Dialog open={!!reconciliationPlan} onOpenChange={(open) => { if (!open) setReconciliationPlan(null); }}>
+        <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-700">
+              <AlertTriangle className="h-5 w-5" />
+              Verifica corrispondenza mansioni
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            L'AI ha trovato alcune mansioni nel DVR con nomi diversi da quelli nel tuo catalogo, ma potenzialmente assimilabili.
+            Conferma o modifica l'abbinamento per ciascuna.
+          </p>
+          <div className="space-y-3 mt-2">
+            {reconciliationPlan?.roles.map((role, idx) => {
+              if (role.catalog_match_status !== 'suggested') return null;
+              const isReconciled = role._reconciled;
+              return (
+                <div key={idx} className={`border rounded-lg p-3 space-y-2 ${isReconciled ? 'border-green-300 bg-green-50' : 'border-amber-300 bg-amber-50'}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-sm">
+                      <p className="font-medium">Trovata nel DVR: <span className="text-amber-800">"{role.role_name}"</span></p>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        L'AI suggerisce che potrebbe corrispondere a: <strong>{role.catalog_match_name}</strong>
+                      </p>
+                    </div>
+                    {isReconciled && <Check className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />}
+                  </div>
+                  {!isReconciled && (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs text-amber-700 font-medium">Come vuoi procedere?</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => {
+                            // Usa il nome del catalogo
+                            const updated = [...reconciliationPlan.roles];
+                            updated[idx] = { ...role, role_name: role.catalog_match_name, _reconciled: true };
+                            setReconciliationPlan({ ...reconciliationPlan, roles: updated });
+                          }}>
+                          <Check className="h-3 w-3 mr-1" />
+                          Sì, usa "{role.catalog_match_name}"
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 text-xs"
+                          onClick={() => {
+                            // Mantieni il nome del DVR
+                            const updated = [...reconciliationPlan.roles];
+                            updated[idx] = { ...role, _reconciled: true };
+                            setReconciliationPlan({ ...reconciliationPlan, roles: updated });
+                          }}>
+                          Mantieni "{role.role_name}"
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs text-muted-foreground">O scrivi il nome corretto:</p>
+                        <Input
+                          className="h-6 text-xs flex-1"
+                          placeholder="Nome personalizzato..."
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target.value.trim()) {
+                              const updated = [...reconciliationPlan.roles];
+                              updated[idx] = { ...role, role_name: e.target.value.trim(), _reconciled: true };
+                              setReconciliationPlan({ ...reconciliationPlan, roles: updated });
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {isReconciled && (
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-green-700">Mansione: <strong>"{role.role_name}"</strong></p>
+                      <Button size="sm" variant="ghost" className="h-5 text-xs px-1 text-muted-foreground"
+                        onClick={() => {
+                          const updated = [...reconciliationPlan.roles];
+                          updated[idx] = { ...role, _reconciled: false };
+                          setReconciliationPlan({ ...reconciliationPlan, roles: updated });
+                        }}>
+                        <X className="h-3 w-3 mr-0.5" /> Modifica
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setReconciliationPlan(null)}>Annulla</Button>
+            <Button
+              className="bg-primary text-white"
+              disabled={reconciliationPlan?.roles.some(r => r.catalog_match_status === 'suggested' && !r._reconciled)}
+              onClick={handleReconciliationConfirm}
+            >
+              <Check className="h-4 w-4 mr-1" /> Conferma e salva piano
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Storico versioni */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
