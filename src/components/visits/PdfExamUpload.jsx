@@ -47,49 +47,19 @@ export default function PdfExamUpload({
     setFileName(file.name);
     setStatus('uploading');
 
-    // 1. Carica il file
+    // Carica il file e salva nell'archivio allegati
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-    // Salva nell'archivio allegati subito dopo l'upload
     const dateStr = examDate ? ` (${examDate.split('-').reverse().join('/')})` : '';
     if (onAttachment) onAttachment(file_url, `${label}${dateStr}`);
 
-    // 2. Estrai testo dal PDF
-    setStatus('analyzing');
-    const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
-      file_url,
-      json_schema: {
-        type: 'object',
-        properties: {
-          testo_completo: { type: 'string', description: 'Tutto il testo contenuto nel documento' },
-        },
-      },
-    });
-
-    const testoGrezzo = extracted?.output?.testo_completo || '';
-
-    // 3. Chiedi all'AI di riassumere il risultato clinico
-    const summary = await base44.integrations.Core.InvokeLLM({
-      prompt: `Sei un assistente medico. Analizza il seguente referto di ${label} ed estrai in modo sintetico e chiaro:
-- Il risultato principale (normale / alterato / patologico)
-- I valori principali con le relative unità di misura
-- Eventuali note cliniche rilevanti
-
-Rispondi SOLO con un testo conciso di 2-5 righe adatto ad essere inserito nella cartella clinica di una visita medica del lavoro, in italiano, senza intestazioni markdown.
-
-Testo del referto:
-${testoGrezzo || '(contenuto non estraibile automaticamente)'}`,
-    });
-
     setStatus('done');
-    if (onResult) onResult(`${label}:\n${summary}`);
     e.target.value = '';
   };
 
   const statusLabel = {
     uploading: 'Caricamento...',
-    analyzing: 'Analisi AI in corso...',
-    done: 'Risultato inserito nella visita.',
+    done: 'File salvato negli allegati.',
     error: errorMsg,
   };
 
@@ -114,13 +84,13 @@ ${testoGrezzo || '(contenuto non estraibile automaticamente)'}`,
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          disabled={status === 'uploading' || status === 'analyzing'}
+          disabled={status === 'uploading'}
           className="gap-2"
         >
-          {(status === 'uploading' || status === 'analyzing')
+          {status === 'uploading'
             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
             : <Upload className="h-3.5 w-3.5" />}
-          {status === 'uploading' || status === 'analyzing' ? statusLabel[status] : 'Carica referto PDF'}
+          {status === 'uploading' ? statusLabel[status] : 'Carica referto PDF'}
         </Button>
         <input
           ref={fileInputRef}
@@ -129,7 +99,7 @@ ${testoGrezzo || '(contenuto non estraibile automaticamente)'}`,
           className="hidden"
           onChange={handleFileChange}
         />
-        {fileName && status !== 'uploading' && status !== 'analyzing' && (
+        {fileName && status !== 'uploading' && (
           <span className="text-xs text-muted-foreground truncate max-w-[200px]">{fileName}</span>
         )}
       </div>
@@ -142,7 +112,7 @@ ${testoGrezzo || '(contenuto non estraibile automaticamente)'}`,
 
       {status === 'done' && (
         <p className="text-xs text-accent flex items-center gap-1">
-          <CheckCircle className="h-3.5 w-3.5" /> Referto analizzato e salvato nell'archivio allegati.
+          <CheckCircle className="h-3.5 w-3.5" /> Referto salvato nell'archivio allegati.
         </p>
       )}
 
