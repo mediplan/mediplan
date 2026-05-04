@@ -399,14 +399,25 @@ function MansionarioTab() {
 
 // ─── Medici Incaricati ────────────────────────────────────────────────────────
 
-const emptyDoctor = { full_name: '', specialization: '', user_email: '', phone: '', notes: '', active: true };
+const emptyDoctor = { full_name: '', specialization: '', user_email: '', phone: '', notes: '', signature_url: '', active: true };
 
 function DoctorDialog({ open, onOpenChange, doctor, onSave }) {
   const [form, setForm] = useState(emptyDoctor);
+  const [uploading, setUploading] = useState(false);
 
   React.useEffect(() => {
     setForm(doctor ? { ...emptyDoctor, ...doctor } : emptyDoctor);
+    setUploading(false);
   }, [doctor, open]);
+
+  const handleSignatureUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(p => ({ ...p, signature_url: file_url }));
+    setUploading(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -435,13 +446,51 @@ function DoctorDialog({ open, onOpenChange, doctor, onSave }) {
             <Label>Note</Label>
             <Textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} />
           </div>
+
+          {/* Firma */}
+          <div>
+            <Label>Firma</Label>
+            <div className="mt-1.5 space-y-2">
+              {form.signature_url && (
+                <div className="relative inline-block border border-border rounded-lg p-2 bg-muted/20">
+                  <img
+                    src={form.signature_url}
+                    alt="Firma"
+                    className="max-h-20 max-w-full object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, signature_url: '' }))}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-5 w-5 flex items-center justify-center text-xs hover:opacity-90"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              <label className={`flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border border-dashed border-border text-sm text-muted-foreground hover:bg-muted/40 transition-colors w-full ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleSignatureUpload}
+                  disabled={uploading}
+                />
+                {uploading ? (
+                  <span className="flex items-center gap-2"><div className="h-3.5 w-3.5 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" /> Caricamento...</span>
+                ) : (
+                  <span>{form.signature_url ? 'Sostituisci immagine firma' : 'Carica immagine firma (JPG, PNG…)'}</span>
+                )}
+              </label>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <input type="checkbox" id="doc-active" checked={!!form.active} onChange={e => setForm(p => ({ ...p, active: e.target.checked }))} className="h-4 w-4 accent-primary" />
             <Label htmlFor="doc-active" className="font-normal cursor-pointer">Medico attivo</Label>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Annulla</Button>
-            <Button type="submit">{doctor ? 'Salva' : 'Crea'}</Button>
+            <Button type="submit" disabled={uploading}>{doctor ? 'Salva' : 'Crea'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

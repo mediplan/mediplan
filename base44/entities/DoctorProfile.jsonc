@@ -30,6 +30,10 @@
       "type": "string",
       "description": "Note"
     },
+    "signature_url": {
+      "type": "string",
+      "description": "URL immagine firma del medico"
+    },
     "active": {
       "type": "boolean",
       "description": "Medico attivo",
