@@ -76,8 +76,17 @@ export function canAccess(user, section, licenseRole) {
  * Accetta la lista delle aziende e il profilo medico (DoctorProfile).
  * Gli altri ruoli vedono tutte le aziende.
  */
-export function filterCompaniesByRole(user, companies, doctorProfile) {
-  if (user?.role !== 'medico') return companies;
+export function filterCompaniesByRole(user, companies, doctorProfile, licenseRole) {
+  // Determina il ruolo effettivo (stesso schema di canAccess)
+  let effectiveRole;
+  if (user?.role === 'admin') {
+    effectiveRole = 'amministratore';
+  } else if (user?.role === 'user' && licenseRole) {
+    effectiveRole = licenseRole;
+  } else {
+    effectiveRole = user?.role;
+  }
+  if (effectiveRole !== 'medico') return companies;
   if (!doctorProfile) return [];
   return companies.filter(c => c.assigned_doctor_id === doctorProfile.id);
 }

@@ -79,12 +79,15 @@ export default function Scadenze() {
   const [elaborated, setElaborated] = useState(false);
 
   // Carica il profilo medico dell'utente corrente (se ruolo = medico)
+  const effectiveRole = user?.role === 'admin' ? 'amministratore' : (user?.role === 'user' && licenseRole ? licenseRole : user?.role);
+  const isMedico = effectiveRole === 'medico';
+
   const { data: allDoctors = [] } = useQuery({
     queryKey: ['doctorProfiles'],
     queryFn: () => base44.entities.DoctorProfile.list(),
-    enabled: user?.role === 'medico',
+    enabled: isMedico,
   });
-  const myDoctorProfile = user?.role === 'medico'
+  const myDoctorProfile = isMedico
     ? allDoctors.find(d => d.user_email === user.email)
     : null;
 
@@ -103,7 +106,7 @@ export default function Scadenze() {
       : base44.entities.Company.list('name'),
   });
 
-  const companies = filterCompaniesByRole(user, allCompanies, myDoctorProfile);
+  const companies = filterCompaniesByRole(user, allCompanies, myDoctorProfile, licenseRole);
 
   const { data: visits = [], isFetching } = useQuery({
     queryKey: ['visits-all', tenantId],
