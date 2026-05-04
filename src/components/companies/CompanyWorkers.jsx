@@ -58,10 +58,10 @@ export default function CompanyWorkers({ company, onScheduleVisit }) {
   const companyId = String(company.id);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const canSeeClinic = canAccess(user, 'dati_clinici');
-  const canWriteVisit = canAccess(user, 'visite_write');
-  const canWriteAccertamenti = canAccess(user, 'accertamenti_write');
+  const { user, licenseRole, tenantId } = useAuth();
+  const canSeeClinic = canAccess(user, 'dati_clinici', licenseRole);
+  const canWriteVisit = canAccess(user, 'visite_write', licenseRole);
+  const canWriteAccertamenti = canAccess(user, 'accertamenti_write', licenseRole);
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editPatient, setEditPatient] = useState(null);
@@ -86,11 +86,13 @@ export default function CompanyWorkers({ company, onScheduleVisit }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Patient.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['patients'] }); setFormOpen(false); },
+    onError: (err) => { alert('Errore nella creazione del lavoratore: ' + (err?.message || err)); },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Patient.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['patients'] }); setFormOpen(false); setEditPatient(null); },
+    onError: (err) => { alert('Errore nel salvataggio: ' + (err?.message || err)); },
   });
 
   const deleteMutation = useMutation({
@@ -102,7 +104,7 @@ export default function CompanyWorkers({ company, onScheduleVisit }) {
     if (editPatient) {
       updateMutation.mutate({ id: editPatient.id, data });
     } else {
-      createMutation.mutate({ ...data, company_id: companyId, company_name: company.name });
+      createMutation.mutate({ ...data, company_id: companyId, company_name: company.name, tenant_id: tenantId || undefined });
     }
   };
 

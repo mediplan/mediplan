@@ -518,11 +518,11 @@ function MediciTab() {
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 
 export default function Settings() {
-  const { user } = useAuth();
-  if (!canAccess(user, 'impostazioni')) return <AccessDenied />;
+  const { user, licenseRole } = useAuth();
+  if (!canAccess(user, 'impostazioni', licenseRole)) return <AccessDenied />;
 
-  const isAdmin = canAccess(user, 'medici_incaricati');
-  const canSeePriceLists = canAccess(user, 'listini');
+  const isAdmin = canAccess(user, 'medici_incaricati', licenseRole);
+  const canSeePriceLists = canAccess(user, 'listini', licenseRole);
 
   return (
     <div>

@@ -25,9 +25,9 @@ import DocumentPreviewDialog from '@/components/shared/DocumentPreviewDialog';
 export default function CompanyDetail() {
   const companyId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, licenseRole } = useAuth();
   const { tenantId } = useTenant();
-  const canSeeDVR = user && canAccess(user, 'dvr_sorveglianza');
+  const canSeeDVR = user && canAccess(user, 'dvr_sorveglianza', licenseRole);
   const [relazioneDialog, setRelazioneDialog] = useState(false);
   const [relazioneYear, setRelazioneYear] = useState(String(new Date().getFullYear() - 1));
   const [previewDoc, setPreviewDoc] = useState(null); // { title, html }

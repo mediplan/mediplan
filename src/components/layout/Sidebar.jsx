@@ -20,9 +20,9 @@ const ALL_NAV_ITEMS = [
 
 export default function Sidebar({ isOpen, onToggle }) {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, licenseRole } = useAuth();
 
-  const navItems = ALL_NAV_ITEMS.filter(item => canAccess(user, item.section));
+  const navItems = ALL_NAV_ITEMS.filter(item => canAccess(user, item.section, licenseRole));
 
   return (
     <>
@@ -88,7 +88,7 @@ export default function Sidebar({ isOpen, onToggle }) {
           {user && (
             <div className="px-1">
               <p className="text-xs font-medium text-foreground truncate">{user.full_name || user.email}</p>
-              <p className="text-[10px] text-muted-foreground">{ROLE_LABELS[user.role] || user.role}</p>
+              <p className="text-[10px] text-muted-foreground">{ROLE_LABELS[licenseRole] || ROLE_LABELS[user.role] || user.role}</p>
             </div>
           )}
           <Button

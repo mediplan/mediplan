@@ -59,7 +59,7 @@ const JUDGMENT_COLORS = {
 };
 
 export default function Scadenze() {
-  const { user } = useAuth();
+  const { user, licenseRole } = useAuth();
 
   const today = new Date();
   const defaultFrom = '2025-01-01';
@@ -168,7 +168,7 @@ export default function Scadenze() {
     });
   }, [elaborated, visits, patients, fromDate, toDate, selectedCompany, inclNoVisit, inclSospesi, inclDaRivisitare, companies]);
 
-  if (!canAccess(user, 'scadenze')) return <AccessDenied />;
+  if (!canAccess(user, 'scadenze', licenseRole)) return <AccessDenied />;
 
   const toggleExam = (exam) => {
     setSelectedExams(prev =>

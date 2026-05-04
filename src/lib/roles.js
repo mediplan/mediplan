@@ -27,10 +27,18 @@ export const ROLE_LABELS = {
 /**
  * Ritorna true se l'utente può accedere alla sezione indicata.
  */
-export function canAccess(user, section) {
+export function canAccess(user, section, licenseRole) {
   // Retrocompatibilità: il ruolo piattaforma 'admin' equivale ad 'amministratore'
+  // Se l'utente è un utente normale Base44 (role='user'), usa licenseRole dal tenant
   // 'operatore_sanitario' è sinonimo di 'operatore'
-  const rawRole = user?.role === 'admin' ? 'amministratore' : user?.role;
+  let rawRole;
+  if (user?.role === 'admin') {
+    rawRole = 'amministratore';
+  } else if (user?.role === 'user' && licenseRole) {
+    rawRole = licenseRole;
+  } else {
+    rawRole = user?.role;
+  }
   const role = rawRole === 'operatore_sanitario' ? 'operatore' : rawRole;
   const permissions = {
     dashboard:          ['amministratore', 'medico', 'operatore', 'segreteria'],
