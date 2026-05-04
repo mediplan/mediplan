@@ -89,6 +89,14 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave,
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!form.first_name?.trim() || !form.last_name?.trim()) {
+      alert('Nome e Cognome sono obbligatori');
+      return;
+    }
+    if (!form.company_id) {
+      alert('Seleziona un\'azienda');
+      return;
+    }
     const data = {
       ...form,
       company_id: String(form.company_id),
@@ -146,11 +154,11 @@ export default function PatientFormDialog({ open, onOpenChange, patient, onSave,
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <Label>Cognome *</Label>
-                  <Input value={form.last_name} onChange={e => handleChange('last_name', e.target.value)} required />
+                  <Input value={form.last_name} onChange={e => handleChange('last_name', e.target.value)} />
                 </div>
                 <div>
                   <Label>Nome *</Label>
-                  <Input value={form.first_name} onChange={e => handleChange('first_name', e.target.value)} required />
+                  <Input value={form.first_name} onChange={e => handleChange('first_name', e.target.value)} />
                 </div>
                 <div>
                   <Label>Sesso</Label>
