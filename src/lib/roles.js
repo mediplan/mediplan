@@ -67,6 +67,8 @@ export function canAccess(user, section, licenseRole) {
     listini:            ['amministratore', 'segreteria'],
     // Può vedere archivio DVR e piano di sorveglianza sanitaria
     dvr_sorveglianza:   ['amministratore', 'medico', 'segreteria'],
+    // Può gestire Allegato 3B INAIL
+    allegato3b:         ['amministratore', 'segreteria'],
   };
   return (permissions[section] || []).includes(role);
 }

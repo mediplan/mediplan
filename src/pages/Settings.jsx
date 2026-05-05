@@ -19,12 +19,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import PageHeader from '@/components/shared/PageHeader';
 import EmptyState from '@/components/shared/EmptyState';
 import JobRoleFormDialog from '@/components/jobroles/JobRoleFormDialog';
-import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag, ClipboardList, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Briefcase, Search, ShieldAlert, MoreHorizontal, Plug, Save, Info, FolderOpen, Activity, Ear, Heart, FlaskConical, UserCheck, Users, Tag, ClipboardList, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import UtentiTab from '@/components/settings/UtentiTab';
 import PriceListsTab from '@/components/settings/PriceListsTab';
 import AccertamentiTab from '@/components/settings/AccertamentiTab';
 import RischiTab from '@/components/settings/RischiTab';
+import Allegato3BTab from '@/components/settings/Allegato3BTab';
 
 // ─── Integrazioni Strumenti ───────────────────────────────────────────────────
 
@@ -580,6 +581,7 @@ export default function Settings() {
 
   const isAdmin = canAccess(user, 'medici_incaricati', licenseRole);
   const canSeePriceLists = canAccess(user, 'listini', licenseRole);
+  const canSeeAllegato3B = canAccess(user, 'allegato3b', licenseRole);
 
   return (
     <div>
@@ -608,6 +610,11 @@ export default function Settings() {
               <UserCheck className="h-4 w-4" /> Medici Incaricati
             </TabsTrigger>
           )}
+          {canSeeAllegato3B && (
+            <TabsTrigger value="allegato3b" className="gap-2">
+              <FileSpreadsheet className="h-4 w-4" /> Allegato 3B
+            </TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger value="utenti" className="gap-2">
               <Users className="h-4 w-4" /> Utenti
@@ -634,6 +641,11 @@ export default function Settings() {
         {isAdmin && (
           <TabsContent value="medici">
             <MediciTab />
+          </TabsContent>
+        )}
+        {canSeeAllegato3B && (
+          <TabsContent value="allegato3b">
+            <Allegato3BTab />
           </TabsContent>
         )}
         {isAdmin && (
