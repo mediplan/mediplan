@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FileText, Plus, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Search, FileText, Plus, Eye, Pencil, Trash2, FileSpreadsheet, Download } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Allegato3BDialog from '@/components/allegato3b/Allegato3BDialog';
 import Allegato3BPreview from '@/components/allegato3b/Allegato3BPreview';
+import { generateAllegato3BExcel } from '@/lib/generateAllegato3BExcel';
 
 const STATUS_LABELS = {
   bozza: { label: 'Bozza', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
@@ -29,14 +30,14 @@ export default function Allegato3BTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  const { data: records = [], isLoading } = useQuery({
+  const { data: records = [], isLoading: loadingRecords } = useQuery({
     queryKey: ['allegato3b', tenantId],
     queryFn: () => tenantId
       ? base44.entities.Allegato3B.filter({ tenant_id: tenantId }, '-anno_riferimento')
       : base44.entities.Allegato3B.list('-anno_riferimento'),
   });
 
-  const { data: companies = [] } = useQuery({
+  const { data: companies = [], isLoading: loadingCompanies } = useQuery({
     queryKey: ['companies', tenantId],
     queryFn: () => tenantId
       ? base44.entities.Company.filter({ tenant_id: tenantId, status: 'active' }, 'name')
@@ -77,14 +78,58 @@ export default function Allegato3BTab() {
     return Array.from(set).sort((a, b) => b - a);
   }, [records]);
 
-  const filtered = records.filter(r => {
-    const matchAnno = !filterAnno || filterAnno === 'all' || String(r.anno_riferimento) === filterAnno;
-    const matchSearch = !search || (r.company_name || '').toLowerCase().includes(search.toLowerCase());
-    return matchAnno && matchSearch;
-  });
+  // Mappa company_id -> record allegato per l'anno selezionato
+  const recordsByCompany = useMemo(() => {
+    const map = {};
+    records.forEach(r => {
+      if (!filterAnno || filterAnno === 'all' || String(r.anno_riferimento) === filterAnno) {
+        map[r.company_id] = r;
+      }
+    });
+    return map;
+  }, [records, filterAnno]);
+
+  // Lista aziende filtrate per ricerca
+  const filteredCompanies = useMemo(() => {
+    if (!search) return companies;
+    return companies.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  }, [companies, search]);
+
+  const handleGenerateExcel = (company) => {
+    const existing = recordsByCompany[company.id];
+    const rec = existing || {
+      anno_riferimento: Number(filterAnno) || currentYear,
+      company_id: company.id,
+      company_name: company.name,
+      ragione_sociale: company.name,
+      partita_iva: company.vat_number || '',
+      codice_fiscale_azienda: company.fiscal_code || '',
+      indirizzo_sede_legale: [company.address, company.city].filter(Boolean).join(' '),
+      codice_ateco: company.ateco_code || '',
+      rischi: {},
+    };
+    generateAllegato3BExcel(rec);
+  };
+
+  const handleNewForCompany = (company) => {
+    setEditRecord({
+      company_id: company.id,
+      company_name: company.name,
+      ragione_sociale: company.name,
+      partita_iva: company.vat_number || '',
+      codice_fiscale_azienda: company.fiscal_code || '',
+      indirizzo_sede_legale: [company.address, company.city].filter(Boolean).join(' '),
+      codice_ateco: company.ateco_code || '',
+      anno_riferimento: Number(filterAnno) || currentYear,
+    });
+    setDialogOpen(true);
+  };
+
+  const isLoading = loadingRecords || loadingCompanies;
 
   return (
     <div>
+      {/* Toolbar */}
       <div className="flex flex-wrap gap-3 mb-5 items-center justify-between">
         <div className="flex gap-3 flex-wrap">
           <div className="relative">
@@ -108,41 +153,74 @@ export default function Allegato3BTab() {
 
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Caricamento...</div>
-      ) : filtered.length === 0 ? (
+      ) : filteredCompanies.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="font-medium">Nessun Allegato 3B</p>
-          <p className="text-sm mt-1">Crea il primo record per un'azienda</p>
+          <p className="font-medium">Nessuna azienda attiva trovata</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(rec => (
-            <div key={rec.id} className="flex items-center gap-4 px-4 py-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-foreground">{rec.company_name || rec.ragione_sociale}</span>
-                  <Badge variant="outline" className="text-xs font-mono">{rec.anno_riferimento}</Badge>
-                  <Badge variant="outline" className={`text-xs ${STATUS_LABELS[rec.status]?.className}`}>
-                    {STATUS_LABELS[rec.status]?.label}
-                  </Badge>
+          {filteredCompanies.map(company => {
+            const rec = recordsByCompany[company.id];
+            return (
+              <div key={company.id} className="flex items-center gap-3 px-4 py-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                {/* Info azienda */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-foreground">{company.name}</span>
+                    {company.ateco_code && (
+                      <span className="text-xs text-muted-foreground font-mono">ATECO: {company.ateco_code}</span>
+                    )}
+                    {rec ? (
+                      <Badge variant="outline" className={`text-xs ${STATUS_LABELS[rec.status]?.className}`}>
+                        {STATUS_LABELS[rec.status]?.label}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
+                        Nessun record
+                      </Badge>
+                    )}
+                  </div>
+                  {company.city && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{company.city}</p>
+                  )}
                 </div>
-                {rec.medico_nome && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Medico: {rec.medico_nome}</p>
-                )}
+
+                {/* Azioni */}
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Genera Excel */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-green-700 border-green-300 hover:bg-green-50"
+                    onClick={() => handleGenerateExcel(company)}
+                    title="Genera Excel Allegato 3B"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Genera Excel
+                  </Button>
+
+                  {rec ? (
+                    <>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" title="Anteprima" onClick={() => setPreviewRecord(rec)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" title="Modifica" onClick={() => { setEditRecord(rec); setDialogOpen(true); }}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Elimina" onClick={() => setDeleteId(rec.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary" onClick={() => handleNewForCompany(company)}>
+                      <Plus className="h-3.5 w-3.5" /> Crea record
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-8 w-8" title="Anteprima" onClick={() => setPreviewRecord(rec)}>
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" title="Modifica" onClick={() => { setEditRecord(rec); setDialogOpen(true); }}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Elimina" onClick={() => setDeleteId(rec.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
