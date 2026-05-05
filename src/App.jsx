@@ -19,6 +19,7 @@ import Fatturazione from '@/pages/Fatturazione';
 import SurveillancePlanEditor from '@/pages/SurveillancePlanEditor';
 import Statistiche from '@/pages/Statistiche';
 import Admin from '@/pages/Admin';
+import Allegato3B from '@/pages/Allegato3B';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
         <Route path="/fatturazione" element={<Fatturazione />} />
         <Route path="/statistiche" element={<Statistiche />} />
         <Route path="/impostazioni" element={<Settings />} />
+        <Route path="/allegato-3b" element={<Allegato3B />} />
       </Route>
       <Route path="/piano-sorveglianza" element={<SurveillancePlanEditor />} />
       <Route path="/admin" element={<Admin />} />

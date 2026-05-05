@@ -1,0 +1,255 @@
+{
+  "name": "Allegato3B",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "anno_riferimento": {
+      "type": "number",
+      "description": "1 - Anno di riferimento"
+    },
+    "ragione_sociale": {
+      "type": "string",
+      "description": "2 - Ragione Sociale"
+    },
+    "partita_iva": {
+      "type": "string",
+      "description": "3 - Partita IVA"
+    },
+    "codice_fiscale_azienda": {
+      "type": "string",
+      "description": "4 - Codice Fiscale azienda"
+    },
+    "indirizzo_sede_legale": {
+      "type": "string",
+      "description": "5 - Indirizzo sede legale"
+    },
+    "denominazione_up": {
+      "type": "string",
+      "description": "6 - Denominazione unit\u00e0 produttiva"
+    },
+    "indirizzo_up": {
+      "type": "string",
+      "description": "7 - Indirizzo Unit\u00e0 produttiva"
+    },
+    "codice_ateco": {
+      "type": "string",
+      "description": "8 - Codice ATECO"
+    },
+    "lavoratori_30_6_m": {
+      "type": "number",
+      "description": "9 - N. lavoratori al 30/6 Maschi",
+      "default": 0
+    },
+    "lavoratori_30_6_f": {
+      "type": "number",
+      "description": "9 - N. lavoratori al 30/6 Femmine",
+      "default": 0
+    },
+    "lavoratori_31_12_m": {
+      "type": "number",
+      "description": "10 - N. lavoratori al 31/12 Maschi",
+      "default": 0
+    },
+    "lavoratori_31_12_f": {
+      "type": "number",
+      "description": "10 - N. lavoratori al 31/12 Femmine",
+      "default": 0
+    },
+    "medico_nome": {
+      "type": "string",
+      "description": "11 - Cognome Nome Medico Competente"
+    },
+    "medico_nascita_luogo": {
+      "type": "string",
+      "description": "12 - Luogo di nascita medico"
+    },
+    "medico_nascita_data": {
+      "type": "string",
+      "description": "12 - Data di nascita medico"
+    },
+    "medico_cf": {
+      "type": "string",
+      "description": "13 - Codice Fiscale Medico"
+    },
+    "medico_email": {
+      "type": "string",
+      "description": "14 - Email Medico"
+    },
+    "mp_segnalate_m": {
+      "type": "number",
+      "description": "15 - N. MP segnalate Maschi",
+      "default": 0
+    },
+    "mp_segnalate_f": {
+      "type": "number",
+      "description": "15 - N. MP segnalate Femmine",
+      "default": 0
+    },
+    "mp_tipologia": {
+      "type": "string",
+      "description": "16 - Tipologia MP segnalate"
+    },
+    "sorveglianza_soggetti_m": {
+      "type": "number",
+      "description": "17 - Lavoratori soggetti SS Maschi",
+      "default": 0
+    },
+    "sorveglianza_soggetti_f": {
+      "type": "number",
+      "description": "17 - Lavoratori soggetti SS Femmine",
+      "default": 0
+    },
+    "sorveglianza_visitati_m": {
+      "type": "number",
+      "description": "18 - Lavoratori visitati Maschi",
+      "default": 0
+    },
+    "sorveglianza_visitati_f": {
+      "type": "number",
+      "description": "18 - Lavoratori visitati Femmine",
+      "default": 0
+    },
+    "idonei_m": {
+      "type": "number",
+      "description": "19 - Idonei Maschi",
+      "default": 0
+    },
+    "idonei_f": {
+      "type": "number",
+      "description": "19 - Idonei Femmine",
+      "default": 0
+    },
+    "idonei_parziali_temp_m": {
+      "type": "number",
+      "description": "20 - Idoneit\u00e0 parziali temporanee M",
+      "default": 0
+    },
+    "idonei_parziali_temp_f": {
+      "type": "number",
+      "description": "20 - Idoneit\u00e0 parziali temporanee F",
+      "default": 0
+    },
+    "idonei_parziali_perm_m": {
+      "type": "number",
+      "description": "21 - Idoneit\u00e0 parziali permanenti M",
+      "default": 0
+    },
+    "idonei_parziali_perm_f": {
+      "type": "number",
+      "description": "21 - Idoneit\u00e0 parziali permanenti F",
+      "default": 0
+    },
+    "inidonei_temp_m": {
+      "type": "number",
+      "description": "22 - Inidonei temporanei M",
+      "default": 0
+    },
+    "inidonei_temp_f": {
+      "type": "number",
+      "description": "22 - Inidonei temporanei F",
+      "default": 0
+    },
+    "inidonei_perm_m": {
+      "type": "number",
+      "description": "23 - Inidonei permanenti M",
+      "default": 0
+    },
+    "inidonei_perm_f": {
+      "type": "number",
+      "description": "23 - Inidonei permanenti F",
+      "default": 0
+    },
+    "rischi": {
+      "type": "object",
+      "description": "Rischi lavorativi - coppie soggetti_m, soggetti_f, visitati_m, visitati_f per ogni rischio"
+    },
+    "art41_stupefacenti_sottoposti_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_sottoposti_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_positivi_screening_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_positivi_screening_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_positivi_conferma_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_positivi_conferma_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_inidonei_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_stupefacenti_inidonei_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_sottoposti_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_sottoposti_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_positivi_screening_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_positivi_screening_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_positivi_conferma_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_positivi_conferma_f": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_inidonei_m": {
+      "type": "number",
+      "default": 0
+    },
+    "art41_alcool_inidonei_f": {
+      "type": "number",
+      "default": 0
+    },
+    "note": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "bozza",
+        "completato",
+        "inviato"
+      ],
+      "default": "bozza"
+    }
+  },
+  "required": [
+    "company_id",
+    "anno_riferimento"
+  ]
+}
