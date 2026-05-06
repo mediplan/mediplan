@@ -18,14 +18,14 @@ export const ACCERTAMENTI = [
   { key: 'audiometry_result', label: 'Audiometria', type: 'textarea', pdfKey: 'audiometro', pdfColor: 'text-chart-3', pdfBorder: 'border-chart-3/20', pdfBg: 'bg-chart-3/5' },
   { key: 'spirometry_result', label: 'Spirometria', type: 'textarea', pdfKey: 'spirometro', pdfColor: 'text-chart-2', pdfBorder: 'border-chart-2/20', pdfBg: 'bg-chart-2/5' },
   { key: 'ecg_result', label: 'ECG', type: 'textarea', pdfKey: 'ecg', pdfColor: 'text-destructive', pdfBorder: 'border-destructive/20', pdfBg: 'bg-destructive/5' },
-  { key: 'visiotest_result', label: 'Visiotest', type: 'textarea' },
-  { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori', type: 'textarea' },
-  { key: 'drug_test_result', label: 'Drug Test', type: 'textarea' },
-  { key: 'alcohol_test_result', label: 'Alcol Test', type: 'textarea' },
-  { key: 'audit_c_result', label: 'Questionario AUDIT-C', type: 'textarea' },
-  { key: 'blood_tests_result', label: 'Esami ematochimici', type: 'textarea', placeholder: 'Emocromo, glicemia, creatinina, AST, ALT, GGT...' },
-  { key: 'other_exams', label: 'Esami strumentali aggiuntivi', type: 'textarea' },
-  { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', type: 'textarea' },
+  { key: 'visiotest_result', label: 'Visiotest', type: 'textarea', pdfKey: 'visiotest', pdfColor: 'text-chart-4', pdfBorder: 'border-chart-4/20', pdfBg: 'bg-chart-4/5' },
+  { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori', type: 'textarea', pdfKey: 'arti_superiori', pdfColor: 'text-chart-1', pdfBorder: 'border-chart-1/20', pdfBg: 'bg-chart-1/5' },
+  { key: 'drug_test_result', label: 'Drug Test', type: 'textarea', pdfKey: 'drug_test', pdfColor: 'text-chart-5', pdfBorder: 'border-chart-5/20', pdfBg: 'bg-chart-5/5' },
+  { key: 'alcohol_test_result', label: 'Alcol Test', type: 'textarea', pdfKey: 'alcol_test', pdfColor: 'text-chart-4', pdfBorder: 'border-chart-4/20', pdfBg: 'bg-chart-4/5' },
+  { key: 'audit_c_result', label: 'Questionario AUDIT-C', type: 'textarea', pdfKey: 'audit_c', pdfColor: 'text-chart-3', pdfBorder: 'border-chart-3/20', pdfBg: 'bg-chart-3/5' },
+  { key: 'blood_tests_result', label: 'Esami ematochimici', type: 'textarea', placeholder: 'Emocromo, glicemia, creatinina, AST, ALT, GGT...', pdfKey: 'esami_ematochimici', pdfColor: 'text-chart-2', pdfBorder: 'border-chart-2/20', pdfBg: 'bg-chart-2/5' },
+  { key: 'other_exams', label: 'Esami strumentali aggiuntivi', type: 'textarea', pdfKey: 'altri_esami', pdfColor: 'text-muted-foreground', pdfBorder: 'border-border', pdfBg: 'bg-muted/30' },
+  { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', type: 'textarea', pdfKey: 'visite_specialistiche', pdfColor: 'text-muted-foreground', pdfBorder: 'border-border', pdfBg: 'bg-muted/30' },
 ];
 
 function ExamRow({ exam, form, onChange, extraContent, onAttachment, attachmentsForExam = [], highlighted = false }) {
