@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, FileHeart, Paperclip, ChevronDown, ChevronRight, CheckCircle2, Calendar, Building2 } from 'lucide-react';
+import { ArrowLeft, User, FileHeart, Paperclip, ChevronDown, ChevronRight, CheckCircle2, Calendar, Building2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -113,6 +113,28 @@ function VisitCard({ visit }) {
                   {visit[a.key] && (
                     <p className="text-muted-foreground mt-0.5 line-clamp-2">{visit[a.key]}</p>
                   )}
+                  {(() => {
+                    const examFiles = attachments.filter(att => {
+                      const lbl = typeof att === 'object' ? (att.label || '') : '';
+                      return lbl.startsWith(a.label);
+                    });
+                    return examFiles.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {examFiles.map((att, i) => (
+                          <a
+                            key={i}
+                            href={typeof att === 'object' ? att.url : att}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium hover:bg-primary/20 transition-colors"
+                          >
+                            <FileText className="h-3 w-3 shrink-0" />
+                            Apri referto PDF
+                          </a>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
               </div>
             ))}
