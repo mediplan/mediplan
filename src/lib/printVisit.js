@@ -96,7 +96,6 @@ export function buildPrintHTML(f = {}, pat = null, company = null, doctor = null
     lav += row('Telefono', pat.phone);
     lav += row('Email', pat.email);
     lav += row('Residenza', pat.residence_address ? `${pat.residence_address}, ${pat.residence_zip || ''} ${pat.residence_city || ''} ${pat.residence_province ? `(${pat.residence_province})` : ''}`.trim() : null);
-    lav += row('Codice fiscale', pat.fiscal_code);
     lav += row('Medico curante', pat.gp_name ? `${pat.gp_name}${pat.gp_city ? ` - ${pat.gp_city}` : ''}` : null);
     lav += row('Gruppo sanguigno', pat.blood_type && pat.blood_type !== 'unknown' ? pat.blood_type : null);
     lav += row('Allergie', pat.allergies);

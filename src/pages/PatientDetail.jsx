@@ -28,10 +28,10 @@ const ACCERTAMENTI = [
   { key: 'upper_limbs_eval_result', label: 'Valutazione Arti Superiori', doneKey: 'upper_limbs_eval_result_done', dateKey: 'upper_limbs_eval_result_date', outcomeKey: 'upper_limbs_eval_result_outcome' },
   { key: 'drug_test_result', label: 'Drug Test', doneKey: 'drug_test_result_done', dateKey: 'drug_test_result_date', outcomeKey: 'drug_test_result_outcome' },
   { key: 'alcohol_test_result', label: 'Alcol Test', doneKey: 'alcohol_test_result_done', dateKey: 'alcohol_test_result_date', outcomeKey: 'alcohol_test_result_outcome' },
-  { key: 'audit_c_result', label: 'AUDIT-C', doneKey: 'audit_c_result_done', dateKey: 'audit_c_result_date', outcomeKey: 'audit_c_result_outcome' },
+  { key: 'audit_c_result', label: 'Questionario AUDIT-C', doneKey: 'audit_c_result_done', dateKey: 'audit_c_result_date', outcomeKey: 'audit_c_result_outcome' },
   { key: 'blood_tests_result', label: 'Esami ematochimici', doneKey: 'blood_tests_result_done', dateKey: 'blood_tests_result_date', outcomeKey: 'blood_tests_result_outcome' },
   { key: 'other_exams', label: 'Esami strumentali aggiuntivi', doneKey: 'other_exams_done', dateKey: 'other_exams_date', outcomeKey: 'other_exams_outcome' },
-  { key: 'specialist_visits_result', label: 'Visite specialistiche', doneKey: 'specialist_visits_result_done', dateKey: 'specialist_visits_result_date', outcomeKey: 'specialist_visits_result_outcome' },
+  { key: 'specialist_visits_result', label: 'Visite specialistiche aggiuntive', doneKey: 'specialist_visits_result_done', dateKey: 'specialist_visits_result_date', outcomeKey: 'specialist_visits_result_outcome' },
 ];
 
 const JUDGMENT_LABELS = {
