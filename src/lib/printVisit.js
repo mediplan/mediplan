@@ -4,7 +4,7 @@
  * @param {object} pat - dati del paziente (Patient)
  * @param {object} company - dati dell'azienda (Company)
  */
-export function buildPrintHTML(f = {}, pat = null, company = null) {
+export function buildPrintHTML(f = {}, pat = null, company = null, doctor = null) {
   const visitTypeLabel = {
     preventiva: 'Preventiva', periodica: 'Periodica', su_richiesta: 'Su richiesta',
     cambio_mansione: 'Cambio mansione', rientro_malattia: 'Rientro malattia', cessazione: 'Cessazione',
@@ -348,9 +348,13 @@ export function buildPrintHTML(f = {}, pat = null, company = null) {
   // ── FIRMA ─────────────────────────────────────────────────────────────────
   const today = new Date();
   const todayStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+  const signatureImg = doctor?.signature_url
+    ? `<img src="${doctor.signature_url}" style="max-height:60px;max-width:160px;display:block;margin:0 auto 4px;" />`
+    : '<div style="height:60px;"></div>';
   html += `<div style="margin-top:40px;display:flex;justify-content:flex-end;">
     <div style="text-align:center;min-width:200px;">
-      <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">Firma Medico Competente</div>
+      ${signatureImg}
+      <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">Firma Medico Competente${doctor?.full_name ? `<br/>(${doctor.full_name})` : ''}</div>
     </div>
   </div>`;
   html += `<div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:8px;font-size:9px;color:#9ca3af;text-align:center;">
@@ -517,7 +521,8 @@ export function buildGiudizioHTML(f = {}, pat = null, company = null, doctor = n
       <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">_______________________</div>
     </div>
     <div style="text-align:center;min-width:200px;">
-      <div style="font-size:11px;font-weight:700;margin-bottom:40px;">Il medico competente</div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:8px;">Il medico competente</div>
+      ${doctor?.signature_url ? `<img src="${doctor.signature_url}" style="max-height:60px;max-width:160px;display:block;margin:0 auto 4px;" />` : '<div style="height:50px;"></div>'}
       <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">(${doctorName})</div>
     </div>
   </div>
@@ -537,8 +542,8 @@ export function getGiudizioHTML(f, pat, company, doctor) {
   return buildGiudizioHTML(f, pat, company, doctor);
 }
 
-export function getPrintHTML(f, pat, company) {
-  return buildPrintHTML(f, pat, company);
+export function getPrintHTML(f, pat, company, doctor) {
+  return buildPrintHTML(f, pat, company, doctor);
 }
 
 // Legacy: apre direttamente la stampa (mantenuto per retrocompatibilità)
@@ -553,9 +558,9 @@ export function openGiudizioWindow(f, pat, company, doctor) {
   printWin.document.close();
 }
 
-export function openPrintWindow(f, pat, company) {
+export function openPrintWindow(f, pat, company, doctor) {
   const printWin = window.open('', '_blank');
-  const html = buildPrintHTML(f, pat, company);
+  const html = buildPrintHTML(f, pat, company, doctor);
   printWin.document.write(`<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"/>
     <title>Visita - ${f.patient_name || ''}</title>
     <style>* { box-sizing: border-box; } body { font-family: Arial, sans-serif; font-size: 11px; color: #111827; margin: 0; padding: 24px; background:#fff; }

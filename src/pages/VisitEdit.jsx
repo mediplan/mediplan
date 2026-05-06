@@ -152,6 +152,11 @@ export default function VisitEdit() {
     queryFn: () => tenantFilter ? base44.entities.JobRole.filter(tenantFilter) : base44.entities.JobRole.list(),
   });
 
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctorProfiles'],
+    queryFn: () => base44.entities.DoctorProfile.list(),
+  });
+
   const patient = patients.find(p => String(p.id) === String(patientId || form.patient_id));
   const visit = visits.find(v => String(v.id) === visitId);
 
@@ -330,10 +335,13 @@ export default function VisitEdit() {
     const patientData = patients.find(p => String(p.id) === String(form.patient_id));
     let companyData = null;
     if (form.company_id) {
-      const companies = await base44.entities.Company.list();
-      companyData = companies.find(c => String(c.id) === String(form.company_id));
+      const allCompanies = await base44.entities.Company.list();
+      companyData = allCompanies.find(c => String(c.id) === String(form.company_id));
     }
-    openPrintWindow(form, patientData, companyData);
+    const doctorData = companyData?.assigned_doctor_id
+      ? doctors.find(d => String(d.id) === String(companyData.assigned_doctor_id))
+      : doctors[0] || null;
+    openPrintWindow(form, patientData, companyData, doctorData);
   };
 
   // Numero accertamenti eseguiti

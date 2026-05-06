@@ -41,12 +41,13 @@ const section = (title, content) =>
 const row = (label, value) =>
   value ? `<div style="display:flex;gap:8px;margin-bottom:3px;font-size:10.5px;"><span style="font-weight:600;min-width:160px;color:#374151;">${label}:</span><span style="color:#111827;">${value}</span></div>` : '';
 
-const footerSign = (doctorName) => `
+const footerSign = (doctorName, signatureUrl) => `
   <div style="margin-top:40px;display:flex;justify-content:space-between;">
     <div style="text-align:center;min-width:180px;">
       <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">Firma Datore di Lavoro / Delegato</div>
     </div>
     <div style="text-align:center;min-width:180px;">
+      ${signatureUrl ? `<img src="${signatureUrl}" style="max-height:60px;max-width:160px;display:block;margin:0 auto 4px;" />` : '<div style="height:50px;"></div>'}
       <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;">Il Medico Competente${doctorName ? `<br/>(${doctorName})` : ''}</div>
     </div>
   </div>
@@ -140,13 +141,14 @@ export function buildProtocolloHTML(company, patients, surveillancePlan, doctor)
     html += section('NOTE DEL MEDICO', `<p style="font-size:10px;line-height:1.6;color:#374151;">${surveillancePlan.notes}</p>`);
   }
   html += section('RIFERIMENTI NORMATIVI', `<p style="font-size:10px;line-height:1.6;color:#374151;">Il presente Protocollo Sanitario è redatto ai sensi del D.Lgs. 81/08 e s.m.i., art. 25 comma 1 lettera b).</p>`);
-  html += footerSign(doctorName);
+  html += footerSign(doctorName, doctor?.signature_url);
   html += `</div>`;
   return html;
 }
 
 export function buildRelazioneSanitariaHTML(company, patients, visits, doctor, year) {
   const doctorName = doctor?.full_name || '';
+  const doctorSignature = doctor?.signature_url || '';
   const yr = year || new Date().getFullYear() - 1;
   const companyVisits = visits.filter(v =>
     String(v.company_id) === String(company.id) &&
@@ -227,7 +229,7 @@ export function buildRelazioneSanitariaHTML(company, patients, visits, doctor, y
     html += section('ELENCO DETTAGLIATO PRESTAZIONI', detTable);
   }
 
-  html += footerSign(doctorName);
+  html += footerSign(doctorName, doctorSignature);
   html += `</div>`;
   return html;
 }
@@ -341,7 +343,7 @@ export function buildVerbaleHTML(company, doctor, sopralluogo) {
     </tr>
   </table>`;
 
-  html += footerSign(doctorName);
+  html += footerSign(doctorName, doctor?.signature_url);
   html += `</div>`;
   return html;
 }
@@ -417,7 +419,7 @@ export function openProtocolloSanitario(company, patients, jobRoles, doctor) {
     Gli accertamenti sanitari preventivi e periodici sono finalizzati alla tutela della salute e sicurezza dei lavoratori.
   </p>`);
 
-  html += footerSign(doctorName);
+  html += footerSign(doctorName, doctor?.signature_url);
   html += `</div>`;
 
   openDoc(html, `Protocollo Sanitario - ${company.name}`);
@@ -588,7 +590,7 @@ export function openRelazioneSanitaria(company, patients, visits, doctor, year) 
     html += section('ELENCO DETTAGLIATO PRESTAZIONI', detTable);
   }
 
-  html += footerSign(doctorName);
+  html += footerSign(doctorName, doctor?.signature_url);
   html += `</div>`;
 
   openDoc(html, `Relazione Sanitaria ${yr} - ${company.name}`);
@@ -673,7 +675,7 @@ export function openVerbaleSupralluogo(company, doctor, date) {
     </div>
   `);
 
-  html += footerSign(doctorName);
+  html += footerSign(doctorName, doctor?.signature_url);
   html += `</div>`;
 
   openDoc(html, `Verbale Sopralluogo - ${company.name}`);
