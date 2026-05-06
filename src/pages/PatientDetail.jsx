@@ -106,7 +106,7 @@ function VisitCard({ visit, canWriteVisit, canSeeAttachments, onEdit, onDelete, 
           </Button>
           {canWriteVisit && (
             <>
-              <Button variant="ghost" size="icon" onClick={() => onEdit(visit)}>
+              <Button variant="ghost" size="icon" onClick={() => onEdit(visit)} disabled={visit.visit_status === 'conclusa'} title={visit.visit_status === 'conclusa' ? 'Visita conclusa' : 'Modifica'}>
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
               <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(visit)}>
