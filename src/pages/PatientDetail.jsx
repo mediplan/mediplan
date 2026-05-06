@@ -262,9 +262,12 @@ export default function PatientDetail() {
 
   const handlePrintVisit = (v) => {
     const company = companies.find(c => String(c.id) === String(v.company_id || patient?.company_id));
+    const doctor = company?.assigned_doctor_id
+      ? doctors.find(d => String(d.id) === String(company.assigned_doctor_id))
+      : doctors[0] || null;
     setPreviewDoc({
       title: `Cartella Sanitaria — ${patient?.last_name} ${patient?.first_name}`,
-      html: getPrintHTML(v, patient, company),
+      html: getPrintHTML(v, patient, company, doctor),
     });
   };
 
