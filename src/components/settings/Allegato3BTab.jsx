@@ -145,6 +145,19 @@ export default function Allegato3BTab() {
       jobRoles: allJobRoles,
     });
 
+    // Medico assegnato all'azienda
+    const doctor = company.assigned_doctor_id
+      ? doctors.find(d => d.id === company.assigned_doctor_id)
+      : doctors[0] || null;
+
+    const doctorFields = doctor ? {
+      medico_nome: doctor.full_name || '',
+      medico_nascita_luogo: doctor.birth_place || '',
+      medico_nascita_data: doctor.birth_date || '',
+      medico_cf: doctor.fiscal_code || '',
+      medico_email: doctor.user_email || '',
+    } : {};
+
     const existing = recordsByCompany[company.id];
     const base = existing || {
       company_id: company.id,
@@ -157,7 +170,7 @@ export default function Allegato3BTab() {
       anno_riferimento: anno,
     };
 
-    setEditRecord({ ...base, ...computed });
+    setEditRecord({ ...base, ...doctorFields, ...computed });
     setDialogOpen(true);
   };
 
