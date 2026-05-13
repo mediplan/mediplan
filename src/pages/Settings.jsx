@@ -400,7 +400,7 @@ function MansionarioTab() {
 
 // ─── Medici Incaricati ────────────────────────────────────────────────────────
 
-const emptyDoctor = { full_name: '', specialization: '', user_email: '', phone: '', notes: '', signature_url: '', active: true };
+const emptyDoctor = { full_name: '', specialization: '', birth_place: '', birth_date: '', fiscal_code: '', user_email: '', phone: '', notes: '', signature_url: '', active: true };
 
 function DoctorDialog({ open, onOpenChange, doctor, onSave }) {
   const [form, setForm] = useState(emptyDoctor);
@@ -434,6 +434,20 @@ function DoctorDialog({ open, onOpenChange, doctor, onSave }) {
           <div>
             <Label>Specializzazione</Label>
             <Input value={form.specialization} onChange={e => setForm(p => ({ ...p, specialization: e.target.value }))} placeholder="es. Medicina del Lavoro" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Luogo di nascita</Label>
+              <Input value={form.birth_place} onChange={e => setForm(p => ({ ...p, birth_place: e.target.value }))} placeholder="es. Roma" />
+            </div>
+            <div>
+              <Label>Data di nascita</Label>
+              <Input type="date" value={form.birth_date} onChange={e => setForm(p => ({ ...p, birth_date: e.target.value }))} />
+            </div>
+          </div>
+          <div>
+            <Label>Codice Fiscale</Label>
+            <Input value={form.fiscal_code} onChange={e => setForm(p => ({ ...p, fiscal_code: e.target.value }))} placeholder="es. RSSMRA80A01H501U" />
           </div>
           <div>
             <Label>Email utente associato</Label>

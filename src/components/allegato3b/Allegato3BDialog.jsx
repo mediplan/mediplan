@@ -129,7 +129,14 @@ export default function Allegato3BDialog({ open, onOpenChange, record, companies
 
   const handleDoctorChange = (did) => {
     const d = doctors.find(x => x.id === did);
-    if (d) setForm(p => ({ ...p, medico_nome: d.full_name, medico_email: d.user_email || p.medico_email }));
+    if (d) setForm(p => ({
+      ...p,
+      medico_nome: d.full_name,
+      medico_email: d.user_email || p.medico_email,
+      medico_nascita_luogo: d.birth_place || p.medico_nascita_luogo,
+      medico_nascita_data: d.birth_date || p.medico_nascita_data,
+      medico_cf: d.fiscal_code || p.medico_cf,
+    }));
   };
 
   const handleSubmit = (e) => {

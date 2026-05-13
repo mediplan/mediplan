@@ -14,6 +14,19 @@
       "type": "string",
       "description": "Specializzazione (es. Medicina del Lavoro)"
     },
+    "birth_place": {
+      "type": "string",
+      "description": "Luogo di nascita"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data di nascita"
+    },
+    "fiscal_code": {
+      "type": "string",
+      "description": "Codice fiscale del medico"
+    },
     "user_id": {
       "type": "string",
       "description": "ID utente associato (se ha accesso al sistema)"
