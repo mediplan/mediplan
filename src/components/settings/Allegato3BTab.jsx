@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FileText, Plus, Eye, Pencil, Trash2, FileSpreadsheet, Download } from 'lucide-react';
+import { Search, FileText, Plus, Eye, Pencil, Trash2, FileSpreadsheet, Download, Wand2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Allegato3BDialog from '@/components/allegato3b/Allegato3BDialog';
 import Allegato3BPreview from '@/components/allegato3b/Allegato3BPreview';
 import { generateAllegato3BExcel } from '@/lib/generateAllegato3BExcel';
+import { computeAllegato3BFromVisits } from '@/lib/computeAllegato3B';
 
 const STATUS_LABELS = {
   bozza: { label: 'Bozza', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
@@ -50,6 +51,29 @@ export default function Allegato3BTab() {
       ? base44.entities.DoctorProfile.filter({ tenant_id: tenantId, active: true }, 'full_name')
       : base44.entities.DoctorProfile.filter({ active: true }, 'full_name'),
   });
+
+  const { data: allVisits = [] } = useQuery({
+    queryKey: ['medicalVisits', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.MedicalVisit.filter({ tenant_id: tenantId }, '-visit_date')
+      : base44.entities.MedicalVisit.list('-visit_date'),
+  });
+
+  const { data: allPatients = [] } = useQuery({
+    queryKey: ['patients', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.Patient.filter({ tenant_id: tenantId }, 'last_name')
+      : base44.entities.Patient.list('last_name'),
+  });
+
+  const { data: allJobRoles = [] } = useQuery({
+    queryKey: ['jobRoles', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.JobRole.filter({ tenant_id: tenantId }, 'name')
+      : base44.entities.JobRole.list('name'),
+  });
+
+  const [autoFilling, setAutoFilling] = useState(null);
 
   const createMutation = useMutation({
     mutationFn: data => base44.entities.Allegato3B.create(tenantId ? { ...data, tenant_id: tenantId } : data),
@@ -109,6 +133,32 @@ export default function Allegato3BTab() {
       rischi: {},
     };
     generateAllegato3BExcel(rec);
+  };
+
+  const handleAutoFill = (company) => {
+    const anno = Number(filterAnno) || currentYear;
+    const computed = computeAllegato3BFromVisits({
+      companyId: company.id,
+      anno,
+      visits: allVisits,
+      patients: allPatients,
+      jobRoles: allJobRoles,
+    });
+
+    const existing = recordsByCompany[company.id];
+    const base = existing || {
+      company_id: company.id,
+      company_name: company.name,
+      ragione_sociale: company.name,
+      partita_iva: company.vat_number || '',
+      codice_fiscale_azienda: company.fiscal_code || '',
+      indirizzo_sede_legale: [company.address, company.city].filter(Boolean).join(' '),
+      codice_ateco: company.ateco_code || '',
+      anno_riferimento: anno,
+    };
+
+    setEditRecord({ ...base, ...computed });
+    setDialogOpen(true);
   };
 
   const handleNewForCompany = (company) => {
@@ -188,6 +238,18 @@ export default function Allegato3BTab() {
 
                 {/* Azioni */}
                 <div className="flex items-center gap-1 shrink-0">
+                  {/* Auto-popola */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-purple-700 border-purple-300 hover:bg-purple-50"
+                    onClick={() => handleAutoFill(company)}
+                    title="Calcola automaticamente i dati dalle visite dell'anno"
+                    disabled={autoFilling === company.id}
+                  >
+                    <Wand2 className="h-3.5 w-3.5" />
+                    Auto-popola
+                  </Button>
                   {/* Genera Excel */}
                   <Button
                     variant="outline"

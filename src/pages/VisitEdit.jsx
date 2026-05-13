@@ -527,6 +527,18 @@ export default function VisitEdit() {
                   </SelectContent>
                 </Select>
               </div>
+              {(form.judgment === 'idoneo_con_prescrizioni' || form.judgment === 'idoneo_con_limitazioni') && (
+                <div>
+                  <Label>Temporaneità del giudizio parziale <span className="text-muted-foreground text-xs">(per Allegato 3B campi 20/21)</span></Label>
+                  <Select value={form.judgment_permanence || ''} onValueChange={v => handleChange('judgment_permanence', v)}>
+                    <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="temporanea">Temporanea (campo 20)</SelectItem>
+                      <SelectItem value="permanente">Permanente (campo 21)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label>Dettaglio prescrizioni/limitazioni</Label>
                 <Textarea value={form.judgment_details || ''} onChange={e => handleChange('judgment_details', e.target.value)} rows={3} />

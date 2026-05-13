@@ -907,6 +907,14 @@
         "non_idoneo"
       ]
     },
+    "judgment_permanence": {
+      "type": "string",
+      "enum": [
+        "temporanea",
+        "permanente"
+      ],
+      "description": "Per giudizi parziali (prescrizioni/limitazioni): indica se temporanea o permanente. Usato per Allegato 3B campi 20/21."
+    },
     "judgment_details": {
       "type": "string"
     },

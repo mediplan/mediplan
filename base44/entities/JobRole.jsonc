@@ -51,6 +51,13 @@
         }
       }
     },
+    "risks_allegato3b": {
+      "type": "array",
+      "description": "Chiavi rischio Allegato 3B associate a questa mansione (es. ['rumore','mmc'])",
+      "items": {
+        "type": "string"
+      }
+    },
     "required_exams": {
       "type": "array",
       "description": "Accertamenti sanitari previsti",
@@ -84,5 +91,44 @@
   },
   "required": [
     "name"
-  ]
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.tenant_id": "{{user.data.tenant_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.tenant_id": "{{user.data.tenant_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.tenant_id": "{{user.data.tenant_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
