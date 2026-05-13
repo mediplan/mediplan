@@ -36,14 +36,24 @@ export function computeAllegato3BFromVisits({ companyId, anno, visits, patients,
   );
 
   // Contatori lavoratori occupati al 30/6 e al 31/12
-  // Si considera attivi i pazienti assunti prima della data e non terminati prima
+  // Se il paziente ha hire_date usa quella, altrimenti fallback su status === 'active'
+  const companyPatients = patients.filter(p => p.company_id === companyId);
+
   const countAt = (dateStr) => {
     const d = new Date(dateStr);
     let m = 0, f = 0;
-    patients.filter(p => p.company_id === companyId).forEach(p => {
+    companyPatients.forEach(p => {
       const hired = p.hire_date ? new Date(p.hire_date) : null;
       const term = p.termination_date ? new Date(p.termination_date) : null;
-      if (hired && hired <= d && (!term || term > d)) {
+      let active = false;
+      if (hired) {
+        // Ha una data di assunzione: usa quella
+        active = hired <= d && (!term || term > d);
+      } else {
+        // Nessuna data: considera il lavoratore attivo se status === 'active' e non ha data di fine
+        active = p.status === 'active' && (!term || term > d);
+      }
+      if (active) {
         if (p.gender === 'M') m++;
         else if (p.gender === 'F') f++;
       }
