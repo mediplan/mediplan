@@ -19,6 +19,7 @@ import Fatturazione from '@/pages/Fatturazione';
 import SurveillancePlanEditor from '@/pages/SurveillancePlanEditor';
 import Statistiche from '@/pages/Statistiche';
 import Admin from '@/pages/Admin';
+import ClienteDashboard from '@/pages/ClienteDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
       </Route>
       <Route path="/piano-sorveglianza" element={<SurveillancePlanEditor />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/portale-azienda" element={<ClienteDashboard />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
