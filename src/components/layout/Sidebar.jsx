@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, onToggle }) {
         {/* Logo */}
         <div className="p-5 border-b border-border">
           <img
-            src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/5aeed46b4_Gemini_Generated_Image_o3prqo3prqo3prqo.png"
+            src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/7f848690a_Screenshot2026-05-24104256.png"
             alt="MEDIPLAN"
             className="w-full object-contain max-h-16"
           />
