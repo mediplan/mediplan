@@ -1,0 +1,130 @@
+{
+  "name": "Ticket",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "ID tenant di appartenenza"
+    },
+    "ticket_code": {
+      "type": "string",
+      "description": "Codice ticket generato automaticamente (es. 2026-0001)"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Oggetto del ticket"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrizione del problema/richiesta"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "bassa",
+        "media",
+        "alta"
+      ],
+      "default": "media",
+      "description": "Priorit\u00e0 del ticket"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aperto",
+        "in_lavorazione",
+        "risolto",
+        "chiuso"
+      ],
+      "default": "aperto",
+      "description": "Stato del ticket"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bug",
+        "richiesta_funzionalita",
+        "domanda",
+        "altro"
+      ],
+      "default": "altro",
+      "description": "Categoria del ticket"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "ID azienda richiedente"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome azienda richiedente"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Nome dell'utente che ha aperto il ticket"
+    },
+    "created_by_email": {
+      "type": "string",
+      "description": "Email dell'utente che ha aperto il ticket"
+    },
+    "comments": {
+      "type": "array",
+      "description": "Commenti e aggiornamenti sul ticket",
+      "items": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "type": "string"
+          },
+          "author_email": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "description": "Allegati",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data risoluzione"
+    },
+    "billed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Ticket gi\u00e0 fatturato"
+    },
+    "billed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data fatturazione"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note interne"
+    }
+  },
+  "required": [
+    "subject",
+    "description"
+  ]
+}

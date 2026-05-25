@@ -69,6 +69,8 @@ export function canAccess(user, section, licenseRole) {
     dvr_sorveglianza:   ['amministratore', 'medico', 'segreteria'],
     // Può gestire Allegato 3B INAIL
     allegato3b:         ['amministratore', 'segreteria'],
+    // Ticketing assistenza
+    assistenza:         ['amministratore', 'medico', 'operatore', 'segreteria'],
   };
   return (permissions[section] || []).includes(role);
 }

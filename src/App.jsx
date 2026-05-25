@@ -20,6 +20,7 @@ import SurveillancePlanEditor from '@/pages/SurveillancePlanEditor';
 import Statistiche from '@/pages/Statistiche';
 import Admin from '@/pages/Admin';
 import ClienteDashboard from '@/pages/ClienteDashboard';
+import Tickets from '@/pages/Tickets';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
         <Route path="/fatturazione" element={<Fatturazione />} />
         <Route path="/statistiche" element={<Statistiche />} />
         <Route path="/impostazioni" element={<Settings />} />
+        <Route path="/assistenza" element={<Tickets />} />
 
       </Route>
       <Route path="/piano-sorveglianza" element={<SurveillancePlanEditor />} />
