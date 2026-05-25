@@ -95,8 +95,8 @@ export default function Sidebar({ isOpen, onToggle }) {
             to="/assistenza"
             onClick={() => { if (window.innerWidth < 1024) onToggle(); }}
             className={cn(
-              "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-all w-full",
-              location.pathname === '/assistenza' && "bg-muted text-foreground"
+              "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground transition-all w-full",
+              location.pathname === '/assistenza' && "text-foreground"
             )}
           >
             <LifeBuoy className="h-3.5 w-3.5" />
