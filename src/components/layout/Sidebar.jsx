@@ -15,7 +15,6 @@ const ALL_NAV_ITEMS = [
   { path: '/statistiche',  label: 'Statistiche',   icon: BarChart2,       section: 'statistiche' },
   { path: '/scadenze',     label: 'Scadenziario',  icon: CalendarClock,   section: 'scadenze' },
   { path: '/fatturazione', label: 'Fatturazione',  icon: Receipt,         section: 'fatturazione' },
-  { path: '/assistenza',   label: 'Assistenza',    icon: LifeBuoy,        section: 'assistenza' },
   { path: '/impostazioni', label: 'Impostazioni',  icon: Settings,        section: 'impostazioni' },
 ];
 
@@ -92,6 +91,17 @@ export default function Sidebar({ isOpen, onToggle }) {
               <p className="text-[10px] text-muted-foreground">{ROLE_LABELS[licenseRole] || ROLE_LABELS[user.role] || user.role}</p>
             </div>
           )}
+          <Link
+            to="/assistenza"
+            onClick={() => { if (window.innerWidth < 1024) onToggle(); }}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-all w-full",
+              location.pathname === '/assistenza' && "bg-muted text-foreground"
+            )}
+          >
+            <LifeBuoy className="h-3.5 w-3.5" />
+            Assistenza
+          </Link>
           <Button
             variant="ghost"
             size="sm"
