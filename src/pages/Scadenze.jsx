@@ -13,7 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/shared/PageHeader';
-import { Search, AlertTriangle, X, Stethoscope, Activity, FlaskConical, Printer } from 'lucide-react';
+import { Search, AlertTriangle, X, Stethoscope, Activity, FlaskConical, Printer, CalendarCheck } from 'lucide-react';
+import ReportScadenze30GiorniDialog from '@/components/scadenze/ReportScadenze30GiorniDialog';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
 
 
@@ -77,6 +78,7 @@ export default function Scadenze() {
   const [showBirthDate, setShowBirthDate] = useState(false);
   const [showMansione, setShowMansione] = useState(false);
   const [elaborated, setElaborated] = useState(false);
+  const [report30Open, setReport30Open] = useState(false);
 
   // Carica il profilo medico dell'utente corrente (se ruolo = medico)
   const effectiveRole = user?.role === 'admin' ? 'amministratore' : (user?.role === 'user' && licenseRole ? licenseRole : user?.role);
@@ -189,6 +191,20 @@ export default function Scadenze() {
       <PageHeader
         title="Scadenze"
         description="Controllo scadenze visite mediche"
+        action={
+          <Button variant="outline" className="gap-2" onClick={() => setReport30Open(true)}>
+            <CalendarCheck className="h-4 w-4" />
+            Report 30 giorni
+          </Button>
+        }
+      />
+
+      <ReportScadenze30GiorniDialog
+        open={report30Open}
+        onClose={() => setReport30Open(false)}
+        visits={visits}
+        patients={patients}
+        companies={companies}
       />
 
       {/* Filters Card */}
