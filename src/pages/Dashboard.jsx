@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { CalendarDays, FileWarning, ShieldAlert, MapPinned, Stethoscope, Plus, PlayCircle, CheckCircle2 } from 'lucide-react';
 import { useTenant } from '@/lib/useTenant';
+import { useAuth } from '@/lib/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addDays, addMonths, isBefore, isAfter, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -16,6 +17,7 @@ import ScheduleAppointmentDialog from '@/components/appointments/ScheduleAppoint
 
 export default function Dashboard() {
   const { tenantId, isPlatformAdmin } = useTenant();
+  const { isLoadingAuth } = useAuth();
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [scheduleDialogContext, setScheduleDialogContext] = useState({
     type: 'visita_medica',
@@ -30,7 +32,8 @@ export default function Dashboard() {
 
   const queryClient = useQueryClient();
   const tenantFilter = tenantId ? { tenant_id: tenantId } : null;
-  const tenantEnabled = isPlatformAdmin || !!tenantId;
+  // Per utenti non-admin, aspettiamo che il tenantId sia caricato prima di eseguire le query
+  const tenantEnabled = !isLoadingAuth && (isPlatformAdmin || !!tenantId);
 
   const markCompletedMutation = useMutation({
     mutationFn: (appointmentId) => base44.entities.Appointment.update(appointmentId, { status: 'completato' }),
