@@ -13,14 +13,21 @@
   <body>
     <div id="root"></div>
     <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          var hadSW = registrations.length > 0;
-          var promises = registrations.map(function(r) { return r.unregister(); });
-          Promise.all(promises).then(function() {
-            if (hadSW) { window.location.reload(true); }
+      var APP_VERSION = '2026.05.27.2';
+      var storedVersion = localStorage.getItem('app_version');
+      if (storedVersion !== APP_VERSION) {
+        localStorage.setItem('app_version', APP_VERSION);
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(r) { r.unregister(); });
           });
-        });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(name) { caches.delete(name); });
+          });
+        }
+        window.location.reload(true);
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>
