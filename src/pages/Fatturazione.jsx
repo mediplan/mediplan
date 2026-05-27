@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccess } from '@/lib/roles';
+import { useTenant } from '@/lib/useTenant';
 import AccessDenied from '@/components/shared/AccessDenied';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -40,7 +41,8 @@ function getExams(v) {
 }
 
 export default function Fatturazione() {
-  const { user } = useAuth();
+  const { user, licenseRole } = useAuth();
+  const { tenantId } = useTenant();
   const today = new Date();
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(today), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState(format(endOfMonth(today), 'yyyy-MM-dd'));
@@ -49,8 +51,10 @@ export default function Fatturazione() {
   const queryClient = useQueryClient();
 
   const { data: visits = [], isLoading } = useQuery({
-    queryKey: ['medicalVisits'],
-    queryFn: () => base44.entities.MedicalVisit.list('-visit_date', 5000),
+    queryKey: ['medicalVisits', tenantId],
+    queryFn: () => tenantId
+      ? base44.entities.MedicalVisit.filter({ tenant_id: tenantId }, '-visit_date', 5000)
+      : base44.entities.MedicalVisit.list('-visit_date', 5000),
   });
 
   const filtered = useMemo(() => {
@@ -111,7 +115,7 @@ export default function Fatturazione() {
     return map;
   }, [filtered]);
 
-  if (!canAccess(user, 'fatturazione')) return <AccessDenied />;
+  if (!canAccess(user, 'fatturazione', licenseRole)) return <AccessDenied />;
 
   // ─── Export XML Danea EasyFatt ───────────────────────────────────────────────
   const handleExportDanea = () => {

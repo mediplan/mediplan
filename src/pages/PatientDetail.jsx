@@ -209,11 +209,11 @@ export default function PatientDetail() {
   const patientId = window.location.pathname.split('/').pop();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, licenseRole } = useAuth();
   const { tenantId } = useTenant();
-  const canSeeClinic = canAccess(user, 'dati_clinici');
-  const canWriteVisit = canAccess(user, 'visite_write');
-  const canSeeAttachments = canAccess(user, 'allegati_accertamenti');
+  const canSeeClinic = canAccess(user, 'dati_clinici', licenseRole);
+  const canWriteVisit = canAccess(user, 'visite_write', licenseRole);
+  const canSeeAttachments = canAccess(user, 'allegati_accertamenti', licenseRole);
 
   const [deletingVisit, setDeletingVisit] = useState(null);
   const [previewDoc, setPreviewDoc] = useState(null); // { title, html }
