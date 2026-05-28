@@ -6,7 +6,7 @@ import {
   Stethoscope, CheckCircle2, ArrowRight, Menu, X,
   Building2, Users, Calendar, FileText, BarChart3,
   ClipboardList, Bell, Shield, Zap, HeartPulse,
-  ChevronRight, Star, ExternalLink
+  ChevronRight, Star, ExternalLink, Lock
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -156,6 +156,14 @@ export default function Landing() {
     base44.auth.redirectToLogin('/app');
   };
 
+  const handlePortaleAzienda = () => {
+    base44.auth.redirectToLogin('/portale-azienda');
+  };
+
+  const handlePortalePaziente = () => {
+    base44.auth.redirectToLogin('/portale-paziente');
+  };
+
   return (
     <div className="min-h-screen bg-white text-foreground font-inter">
 
@@ -230,6 +238,67 @@ export default function Landing() {
         {/* Decorative blobs */}
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary/40 rounded-full blur-3xl pointer-events-none" />
+      </section>
+
+      {/* AREE RISERVATE */}
+      <section className="py-16 px-4 bg-white border-b border-border">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xs font-semibold tracking-widest text-accent uppercase mb-3">Accesso diretto</p>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Hai già un account?</h2>
+          <p className="text-muted-foreground text-sm mb-8">Accedi alla tua area riservata in base al tuo profilo.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Medico / Studio */}
+            <button
+              onClick={handleLogin}
+              className="group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-border hover:border-primary hover:shadow-md transition-all bg-white text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Stethoscope className="h-6 w-6 text-primary" />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-sm mb-1">Area Medico / Studio</p>
+                <p className="text-xs text-muted-foreground">Gestisci visite, aziende e scadenze</p>
+              </div>
+              <span className="flex items-center gap-1 text-xs text-primary font-medium mt-auto">
+                Accedi <ArrowRight className="h-3 w-3" />
+              </span>
+            </button>
+
+            {/* Azienda */}
+            <button
+              onClick={handlePortaleAzienda}
+              className="group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-border hover:border-accent hover:shadow-md transition-all bg-white text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                <Building2 className="h-6 w-6 text-accent" />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-sm mb-1">Area Riservata Azienda</p>
+                <p className="text-xs text-muted-foreground">Consulta referti e scadenze dei tuoi dipendenti</p>
+              </div>
+              <span className="flex items-center gap-1 text-xs text-accent font-medium mt-auto">
+                Accedi <ArrowRight className="h-3 w-3" />
+              </span>
+            </button>
+
+            {/* Paziente */}
+            <button
+              onClick={handlePortalePaziente}
+              className="group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-border hover:border-secondary-foreground/30 hover:shadow-md transition-all bg-white text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center group-hover:bg-secondary transition-colors">
+                <Users className="h-6 w-6 text-secondary-foreground" />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-sm mb-1">Area Riservata Paziente</p>
+                <p className="text-xs text-muted-foreground">Visualizza i tuoi referti medici</p>
+              </div>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium mt-auto">
+                <Lock className="h-3 w-3" /> Prossimamente
+              </span>
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* FEATURES */}
