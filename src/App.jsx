@@ -22,6 +22,7 @@ import Admin from '@/pages/Admin';
 import ClienteDashboard from '@/pages/ClienteDashboard';
 import Tickets from '@/pages/Tickets';
 import Onboarding from '@/pages/Onboarding';
+import Landing from '@/pages/Landing';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, tenantId, isAuthenticated, user } = useAuth();
@@ -40,9 +41,12 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      // Non autenticato → mostra landing
+      return (
+        <Routes>
+          <Route path="*" element={<Landing />} />
+        </Routes>
+      );
     }
   }
 
@@ -54,8 +58,9 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/app" element={<Dashboard />} />
         <Route path="/aziende" element={<Companies />} />
         <Route path="/aziende/:id" element={<CompanyDetail />} />
         <Route path="/pazienti/:id" element={<PatientDetail />} />

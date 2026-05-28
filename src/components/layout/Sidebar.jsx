@@ -10,7 +10,7 @@ import { canAccess, ROLE_LABELS } from '@/lib/roles';
 import { useAuth } from '@/lib/AuthContext';
 
 const ALL_NAV_ITEMS = [
-  { path: '/',             label: 'Dashboard',    icon: LayoutDashboard, section: 'dashboard' },
+  { path: '/app',          label: 'Dashboard',    icon: LayoutDashboard, section: 'dashboard' },
   { path: '/aziende',      label: 'Aziende',       icon: Building2,       section: 'aziende' },
   { path: '/statistiche',  label: 'Statistiche',   icon: BarChart2,       section: 'statistiche' },
   { path: '/scadenze',     label: 'Scadenziario',  icon: CalendarClock,   section: 'scadenze' },
