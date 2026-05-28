@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Pencil, Trash2, Users, ExternalLink, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { Pencil, Trash2, ExternalLink, ChevronDown, ChevronRight, Search, Copy } from 'lucide-react';
 import { format, parseISO, isPast } from 'date-fns';
 import LicenseUsersPanel from './LicenseUsersPanel';
 
@@ -104,6 +104,24 @@ export default function LicenseList({ licenses, isLoading, onEdit, onRefetch }) 
                         )}
                       </div>
                     </div>
+
+                    {/* Codice accesso */}
+                    {lic.access_code && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <code className="text-xs font-mono bg-muted px-2 py-0.5 rounded tracking-wider text-muted-foreground">
+                          {lic.access_code}
+                        </code>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6"
+                          title="Copia codice"
+                          onClick={() => navigator.clipboard.writeText(lic.access_code)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
 
                     {/* Badges */}
                     <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">

@@ -7,8 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Copy, RefreshCw } from 'lucide-react';
 
 const PLAN_MAX_USERS = { base: 1, standard: 3, professional: -1 };
+
+function generateAccessCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars (O,0,I,1)
+  const segment = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `${segment()}-${segment()}-${segment()}`;
+}
 
 const EMPTY = {
   plan: 'base',
@@ -24,6 +31,7 @@ const EMPTY = {
   current_period_start: '',
   current_period_end: '',
   trial_end: '',
+  access_code: '',
   notes: '',
 };
 
@@ -37,7 +45,7 @@ export default function LicenseFormDialog({ open, onOpenChange, license, onSaved
       // Default trial: 14 giorni
       const trialEnd = new Date();
       trialEnd.setDate(trialEnd.getDate() + 14);
-      setForm({ ...EMPTY, trial_end: trialEnd.toISOString().split('T')[0] });
+      setForm({ ...EMPTY, trial_end: trialEnd.toISOString().split('T')[0], access_code: generateAccessCode() });
     }
   }, [license, open]);
 
@@ -146,6 +154,39 @@ export default function LicenseFormDialog({ open, onOpenChange, license, onSaved
           <div className="space-y-1">
             <Label>Stripe Subscription ID</Label>
             <Input value={form.stripe_subscription_id} onChange={e => set('stripe_subscription_id', e.target.value)} placeholder="sub_..." />
+          </div>
+
+          {/* Codice di accesso */}
+          <div className="col-span-2 space-y-1">
+            <Label>Codice di accesso</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                value={form.access_code}
+                onChange={e => set('access_code', e.target.value)}
+                placeholder="XXXX-XXXX-XXXX"
+                className="font-mono tracking-widest"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                title="Rigenera codice"
+                onClick={() => set('access_code', generateAccessCode())}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                title="Copia codice"
+                onClick={() => navigator.clipboard.writeText(form.access_code)}
+                disabled={!form.access_code}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Codice sicuro da condividere con l'intestatario della licenza.</p>
           </div>
 
           {/* Note */}

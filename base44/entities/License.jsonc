@@ -36,6 +36,10 @@
       "default": "trial",
       "description": "Stato licenza"
     },
+    "access_code": {
+      "type": "string",
+      "description": "Codice di accesso alfanumerico sicuro (es. XXXX-XXXX-XXXX)"
+    },
     "admin_name": {
       "type": "string",
       "description": "Nome intestatario licenza"
