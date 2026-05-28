@@ -21,9 +21,10 @@ import Statistiche from '@/pages/Statistiche';
 import Admin from '@/pages/Admin';
 import ClienteDashboard from '@/pages/ClienteDashboard';
 import Tickets from '@/pages/Tickets';
+import Onboarding from '@/pages/Onboarding';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, tenantId, isAuthenticated, user } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -43,6 +44,11 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
+  }
+
+  // Utente autenticato ma senza tenant → onboarding
+  if (isAuthenticated && user && user.role !== 'admin' && !isLoadingAuth && tenantId === null) {
+    return <Onboarding />;
   }
 
   // Render the main app
