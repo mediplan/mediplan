@@ -162,11 +162,8 @@ export default function Landing() {
       {/* NAVBAR */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <a href="#" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Stethoscope className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-lg font-bold text-foreground">MEDIPLAN</span>
+          <a href="#">
+            <img src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/977c8fc2c_Screenshot2026-05-24104256.png" alt="MEDIPLAN" className="h-9 object-contain" />
           </a>
 
           {/* Desktop nav */}
@@ -375,11 +372,8 @@ export default function Landing() {
       <footer className="bg-slate-900 text-slate-400 py-12 px-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-                <Stethoscope className="h-3.5 w-3.5 text-white" />
-              </div>
-              <span className="text-white font-bold">MEDIPLAN</span>
+            <div className="mb-3">
+              <img src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/977c8fc2c_Screenshot2026-05-24104256.png" alt="MEDIPLAN" className="h-8 object-contain brightness-0 invert" />
             </div>
             <p className="text-xs leading-relaxed max-w-xs">
               Software cloud per la gestione della sorveglianza sanitaria e della medicina del lavoro.
