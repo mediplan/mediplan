@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Users, CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import LicenseList from '@/components/admin/LicenseList';
 import LicenseFormDialog from '@/components/admin/LicenseFormDialog';
+import UnregisteredUsersPanel from '@/components/admin/UnregisteredUsersPanel';
 
 const PLAN_LABELS = { base: 'Base', standard: 'Standard', professional: 'Professional' };
 const STATUS_CONFIG = {
@@ -100,6 +101,9 @@ export default function Admin() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Utenti senza licenza */}
+        <UnregisteredUsersPanel />
 
         {/* License List */}
         <LicenseList
