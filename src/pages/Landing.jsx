@@ -373,7 +373,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
           <div>
             <div className="mb-3">
-              <img src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/977c8fc2c_Screenshot2026-05-24104256.png" alt="MEDIPLAN" className="h-8 object-contain brightness-0 invert" />
+              <img src="https://media.base44.com/images/public/69c0209eff24be664ca77e04/977c8fc2c_Screenshot2026-05-24104256.png" alt="MEDIPLAN" className="h-8 object-contain" style={{filter: 'brightness(10)', mixBlendMode: 'screen'}} />
             </div>
             <p className="text-xs leading-relaxed max-w-xs">
               Software cloud per la gestione della sorveglianza sanitaria e della medicina del lavoro.
