@@ -204,14 +204,14 @@ export default function Landing() {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/40 to-white pt-20 pb-24 px-4">
+      <section className="relative overflow-hidden bg-gradient-to-br from-secondary/30 via-accent/5 to-white pt-20 pb-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-5 gap-1.5 px-3 py-1 text-xs font-medium">
-            <Zap className="h-3 w-3 text-primary" /> Software per la Medicina del Lavoro
+          <Badge className="mb-5 gap-1.5 px-3 py-1 text-xs font-medium bg-accent text-white border-0">
+            <Zap className="h-3 w-3" /> Software per la Medicina del Lavoro
           </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-tight mb-6">
             La sorveglianza sanitaria<br />
-            <span className="text-primary">semplice e digitale</span>
+            <span className="text-accent">semplice e digitale</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
             Mediplan è il gestionale cloud per medici competenti. Aziende, lavoratori, visite, scadenze, Allegato 3B e fatturazione: tutto in un unico strumento.
@@ -228,8 +228,8 @@ export default function Landing() {
         </div>
 
         {/* Decorative blobs */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary/40 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* FEATURES */}
@@ -241,9 +241,9 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f, i) => (
-              <div key={i} className="group p-6 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all bg-white">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                  <f.icon className="h-5 w-5 text-primary" />
+              <div key={i} className="group p-6 rounded-xl border border-border hover:border-accent/40 hover:shadow-md transition-all bg-white">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                  <f.icon className="h-5 w-5 text-accent" />
                 </div>
                 <h3 className="font-semibold mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
@@ -254,7 +254,7 @@ export default function Landing() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" className="py-24 px-4 bg-slate-50">
+      <section id="pricing" className="py-24 px-4 bg-secondary/20">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Piani e prezzi</h2>
@@ -354,7 +354,7 @@ export default function Landing() {
       </section>
 
       {/* CTA FINALE */}
-      <section className="py-24 px-4 bg-gradient-to-br from-primary/90 to-primary text-white">
+      <section className="py-24 px-4 bg-gradient-to-br from-primary to-accent text-white">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">Pronti a semplificare la tua attività?</h2>
           <p className="text-white/80 mb-8 text-lg">Inizia subito con 14 giorni gratuiti. Nessun vincolo, nessuna carta di credito.</p>
