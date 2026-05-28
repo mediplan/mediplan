@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Plus, Users, CreditCard, AlertTriangle, CheckCircle, Clock, XCircle, Ticket } from 'lucide-react';
 import LicenseList from '@/components/admin/LicenseList';
 import LicenseFormDialog from '@/components/admin/LicenseFormDialog';
 import UnregisteredUsersPanel from '@/components/admin/UnregisteredUsersPanel';
+import VouchersPanel from '@/components/admin/VouchersPanel';
 
 const PLAN_LABELS = { base: 'Base', standard: 'Standard', professional: 'Professional' };
 const STATUS_CONFIG = {
@@ -102,16 +103,31 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* Utenti senza licenza */}
-        <UnregisteredUsersPanel />
+        {/* Tabs */}
+        <Tabs defaultValue="licenses">
+          <TabsList className="mb-4">
+            <TabsTrigger value="licenses" className="gap-2"><CreditCard className="h-4 w-4" />Licenze</TabsTrigger>
+            <TabsTrigger value="vouchers" className="gap-2"><Ticket className="h-4 w-4" />Voucher</TabsTrigger>
+            <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" />Utenti non registrati</TabsTrigger>
+          </TabsList>
 
-        {/* License List */}
-        <LicenseList
-          licenses={licenses}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onRefetch={refetch}
-        />
+          <TabsContent value="licenses">
+            <LicenseList
+              licenses={licenses}
+              isLoading={isLoading}
+              onEdit={handleEdit}
+              onRefetch={refetch}
+            />
+          </TabsContent>
+
+          <TabsContent value="vouchers">
+            <VouchersPanel />
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UnregisteredUsersPanel />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <LicenseFormDialog

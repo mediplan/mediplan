@@ -1,0 +1,61 @@
+{
+  "name": "Voucher",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Codice voucher (es. PROMO-XXXX)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrizione / note interne"
+    },
+    "discount_type": {
+      "type": "string",
+      "enum": [
+        "percent",
+        "fixed"
+      ],
+      "description": "Tipo sconto: percentuale o importo fisso (\u20ac)"
+    },
+    "discount_value": {
+      "type": "number",
+      "description": "Valore sconto (es. 20 per 20% oppure 30 per \u20ac30)"
+    },
+    "applicable_plans": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Piani a cui \u00e8 applicabile (base, standard, professional) \u2014 vuoto = tutti"
+    },
+    "max_uses": {
+      "type": "number",
+      "description": "Numero massimo di utilizzi (0 = illimitato)"
+    },
+    "used_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Quante volte \u00e8 stato usato"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Data di scadenza (opzionale)"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Voucher attivo"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note interne aggiuntive"
+    }
+  },
+  "required": [
+    "code",
+    "discount_type",
+    "discount_value"
+  ]
+}
