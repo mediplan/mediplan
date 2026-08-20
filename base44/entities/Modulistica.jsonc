@@ -1,0 +1,36 @@
+{
+  "name": "Modulistica",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome del modello"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "stampa_multipla",
+        "comunicazione"
+      ],
+      "description": "Categoria del modello",
+      "default": "standard"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descrizione del modello"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Modello attivo",
+      "default": true
+    },
+    "notes": {
+      "type": "string",
+      "description": "Note"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

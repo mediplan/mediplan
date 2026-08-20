@@ -1,0 +1,18 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "amministratore",
+        "medico",
+        "operatore",
+        "segreteria"
+      ],
+      "default": "operatore",
+      "description": "Ruolo: amministratore = accesso completo + gestione utenti, medico = dati clinici delle sue aziende, operatore = accertamenti integrativi, segreteria = amministrativo"
+    }
+  },
+  "required": []
+}
