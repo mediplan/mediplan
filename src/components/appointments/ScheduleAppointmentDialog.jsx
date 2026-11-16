@@ -11,13 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 
@@ -145,25 +138,6 @@ export default function ScheduleAppointmentDialog({
                 }
               />
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="motivo">Motivo</Label>
-            <Select
-              value={formData.motivo}
-              onValueChange={(value) =>
-                setFormData({ ...formData, motivo: value })
-              }
-            >
-              <SelectTrigger id="motivo">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="visite_mediche">Svolgere visite mediche</SelectItem>
-                <SelectItem value="sopralluogo">Sopralluogo in azienda</SelectItem>
-                <SelectItem value="riunione_periodica">Riunione periodica</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div>
